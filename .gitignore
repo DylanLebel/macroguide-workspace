@@ -1,0 +1,16 @@
+# Claude Code project files
+.claude/
+
+# Node.js (old server approach)
+node_modules/
+macro-guide-server.js
+LaunchMacroGuide.bat
+
+# Data files (live on shared drive, not in repo)
+data/
+*.lock
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store

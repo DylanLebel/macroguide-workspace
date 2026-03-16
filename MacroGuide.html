@@ -1,0 +1,2182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nordic Minesteel Macro Guide</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #222535;
+      --border: #2e3347;
+      --accent: #4f8ef7;
+      --text: #e2e8f0;
+      --muted: #8892a4;
+      --card-radius: 14px;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #0f1117 0%, #1a1d27 50%, #141824 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 48px 24px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(79,142,247,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .logo-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    .logo-icon { font-size: 2.4rem; filter: drop-shadow(0 0 16px rgba(79,142,247,0.5)); }
+    header h1 {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #e2e8f0, #4f8ef7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p.subtitle { color: var(--muted); font-size: 1.05rem; max-width: 560px; margin: 10px auto 0; }
+    .badge-row { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+    .badge {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 14px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .badge span { color: var(--accent); font-weight: 600; }
+
+    /* ── Nav tabs ── */
+    .nav-tabs {
+      max-width: 960px;
+      margin: 32px auto 0;
+      padding: 0 24px;
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-tab {
+      padding: 10px 20px;
+      border-radius: 8px 8px 0 0;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.18s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      border-bottom: none;
+      margin-bottom: -1px;
+    }
+    .nav-tab:hover { color: var(--text); background: var(--surface2); }
+    .nav-tab.active {
+      background: var(--surface);
+      border-color: var(--border);
+      border-bottom-color: var(--surface);
+      color: var(--text);
+      font-weight: 600;
+    }
+    .nav-tab .tab-count {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 1px 8px;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .nav-tab.active .tab-count { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* ── Page sections ── */
+    .page-section { display: none; }
+    .page-section.active { display: block; }
+
+    /* ── Search + Filter ── */
+    .controls {
+      max-width: 960px;
+      margin: 28px auto 0;
+      padding: 0 24px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .search-wrap { position: relative; flex: 1; min-width: 220px; }
+    .search-wrap svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+    #search {
+      width: 100%;
+      padding: 11px 16px 11px 42px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    #search::placeholder { color: var(--muted); }
+    #search:focus { border-color: var(--accent); }
+
+    .filter-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.18s;
+      white-space: nowrap;
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* ── Cards Grid ── */
+    .grid {
+      max-width: 960px;
+      margin: 24px auto 60px;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      border-color: var(--card-accent);
+    }
+    .card.hidden { display: none; }
+    .card-top { height: 6px; background: var(--card-accent, var(--accent)); }
+    .card-body { padding: 22px 22px 18px; flex: 1; }
+    .card-icon { font-size: 2rem; margin-bottom: 12px; display: block; }
+    .card h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+    .card-tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--card-accent) 15%, transparent);
+      color: var(--card-accent, var(--accent));
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+    .card p.desc { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+    .card-footer { padding: 0 22px 18px; display: flex; align-items: center; justify-content: space-between; }
+    .card-hint { font-size: 0.75rem; color: var(--muted); opacity: 0.7; }
+    .expand-icon {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; color: var(--muted);
+      transition: all 0.2s; flex-shrink: 0;
+    }
+    .card:hover .expand-icon { background: var(--card-accent); border-color: var(--card-accent); color: #fff; }
+
+    .no-results { text-align: center; padding: 60px 20px; color: var(--muted); grid-column: 1/-1; }
+    .no-results span { font-size: 2.5rem; display: block; margin-bottom: 12px; }
+
+    /* ── Detail Modal ── */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      max-width: 620px;
+      width: 100%;
+      max-height: 88vh;
+      overflow-y: auto;
+      animation: pop 0.22s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes pop {
+      from { transform: scale(0.9); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+    .modal-top { height: 8px; border-radius: 18px 18px 0 0; }
+    .modal-header { padding: 28px 28px 0; display: flex; align-items: flex-start; gap: 16px; }
+    .modal-icon { font-size: 2.6rem; flex-shrink: 0; }
+    .modal-title h2 { font-size: 1.35rem; font-weight: 700; }
+    .modal-title .modal-tag {
+      display: inline-block;
+      font-size: 0.74rem; padding: 3px 12px; border-radius: 999px;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 6px;
+    }
+    .close-btn {
+      margin-left: auto;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--muted);
+      width: 36px; height: 36px; cursor: pointer; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all 0.15s;
+    }
+    .close-btn:hover { background: #ef4444; border-color: #ef4444; color: #fff; }
+    .modal-body { padding: 24px 28px 28px; }
+    .modal-body .summary { color: var(--muted); font-size: 0.95rem; margin-bottom: 24px; line-height: 1.7; }
+    .detail-section { margin-bottom: 22px; }
+    .detail-section h3 {
+      font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--muted); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+    .steps { display: flex; flex-direction: column; gap: 10px; }
+    .step { display: flex; gap: 12px; align-items: flex-start; }
+    .step-num {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: color-mix(in srgb, var(--modal-accent) 20%, transparent);
+      color: var(--modal-accent);
+      font-size: 0.75rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .step p { font-size: 0.9rem; color: var(--text); line-height: 1.5; }
+    .tip-box {
+      background: color-mix(in srgb, var(--modal-accent) 10%, transparent);
+      border: 1px solid color-mix(in srgb, var(--modal-accent) 30%, transparent);
+      border-radius: 10px; padding: 14px 16px;
+      font-size: 0.88rem; color: var(--text); line-height: 1.6;
+    }
+    .tip-box strong { color: var(--modal-accent); }
+    .facts { display: flex; flex-wrap: wrap; gap: 10px; }
+    .fact {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 14px; flex: 1; min-width: 130px;
+    }
+    .fact-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .fact-value { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-top: 2px; }
+
+    /* ── Changelog section ── */
+    .cl-section {
+      max-width: 960px;
+      margin: 0 auto 80px;
+      padding: 0 24px;
+    }
+    .cl-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .cl-top-bar h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .cl-top-bar p { font-size: 0.88rem; color: var(--muted); margin-top: 2px; }
+
+    .cl-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+    .cl-filter-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.18s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .cl-filter-btn:hover { border-color: var(--accent); color: var(--text); }
+    .cl-filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .add-entry-btn {
+      padding: 9px 18px;
+      border-radius: 9px;
+      border: 1px solid var(--accent);
+      background: color-mix(in srgb, var(--accent) 15%, transparent);
+      color: var(--accent);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .add-entry-btn:hover { background: var(--accent); color: #fff; }
+
+    /* ── Timeline ── */
+    .timeline {
+      position: relative;
+      padding-left: 28px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    .tl-group { margin-bottom: 32px; }
+    .tl-group-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      margin-left: -28px;
+      padding-left: 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .tl-group-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .tl-item {
+      position: relative;
+      margin-bottom: 14px;
+      transition: opacity 0.2s;
+    }
+    .tl-item.hidden { display: none; }
+
+    .tl-dot {
+      position: absolute;
+      left: -24px;
+      top: 14px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--tl-color, var(--accent));
+      border: 2px solid var(--bg);
+      box-shadow: 0 0 0 2px var(--tl-color, var(--accent));
+      flex-shrink: 0;
+    }
+
+    .tl-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      transition: border-color 0.2s;
+    }
+    .tl-card:hover { border-color: var(--tl-color, var(--accent)); }
+
+    .tl-card-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .tl-macro-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--tl-color, var(--accent));
+      background: color-mix(in srgb, var(--tl-color, var(--accent)) 12%, transparent);
+      border: 1px solid color-mix(in srgb, var(--tl-color, var(--accent)) 25%, transparent);
+      border-radius: 999px;
+      padding: 2px 10px 2px 6px;
+    }
+    .tl-type-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .type-feature  { background: rgba(16,185,129,0.15); color: #10b981; }
+    .type-fix      { background: rgba(239,68,68,0.15);  color: #ef4444; }
+    .type-improve  { background: rgba(79,142,247,0.15); color: #4f8ef7; }
+    .type-breaking { background: rgba(245,158,11,0.15); color: #f59e0b; }
+    .type-doc      { background: rgba(136,146,164,0.15); color: #8892a4; }
+
+    .tl-date {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-left: auto;
+      white-space: nowrap;
+    }
+    .tl-desc {
+      font-size: 0.92rem;
+      color: var(--text);
+      line-height: 1.55;
+    }
+    .tl-author {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .cl-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+    .cl-empty span { font-size: 2.5rem; display: block; margin-bottom: 12px; }
+
+    /* ── Add Entry Modal ── */
+    #addOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    #addOverlay.open { display: flex; }
+
+    .add-modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      max-width: 520px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: pop 0.22s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .add-modal-header {
+      padding: 24px 24px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .add-modal-header h2 { font-size: 1.15rem; font-weight: 700; flex: 1; }
+    .add-modal-body { padding: 0 24px 24px; }
+
+    .form-row { margin-bottom: 18px; }
+    .form-row label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 7px;
+    }
+    .form-row input,
+    .form-row select,
+    .form-row textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--text);
+      font-size: 0.93rem;
+      padding: 10px 13px;
+      outline: none;
+      transition: border-color 0.18s;
+      font-family: inherit;
+    }
+    .form-row input:focus,
+    .form-row select:focus,
+    .form-row textarea:focus { border-color: var(--accent); }
+    .form-row textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+    .form-row select option { background: #1a1d27; }
+
+    .type-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+    .type-pick-btn {
+      flex: 1;
+      min-width: 90px;
+      padding: 9px 10px;
+      border-radius: 9px;
+      border: 2px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .type-pick-btn:hover { border-color: var(--accent); color: var(--text); }
+    .type-pick-btn.selected { color: #fff; }
+    .type-pick-btn[data-type="feature"].selected  { background: #10b981; border-color: #10b981; }
+    .type-pick-btn[data-type="fix"].selected      { background: #ef4444; border-color: #ef4444; }
+    .type-pick-btn[data-type="improve"].selected  { background: #4f8ef7; border-color: #4f8ef7; }
+    .type-pick-btn[data-type="breaking"].selected { background: #f59e0b; border-color: #f59e0b; }
+    .type-pick-btn[data-type="doc"].selected      { background: #8892a4; border-color: #8892a4; }
+    .tk-type-btn {
+      padding: .5rem 1rem; border-radius: 8px; border: 2px solid var(--border);
+      background: transparent; color: var(--muted); cursor: pointer; font-size: .85rem; transition: all .2s;
+    }
+    .tk-type-btn:hover { border-color: var(--accent); color: var(--text); }
+    .tk-type-btn.selected { color: #fff; }
+    .tk-type-btn[data-tktype="bug"].selected     { background: #ef4444; border-color: #ef4444; }
+    .tk-type-btn[data-tktype="feature"].selected  { background: #10b981; border-color: #10b981; }
+    .tk-type-btn[data-tktype="change"].selected   { background: #f59e0b; border-color: #f59e0b; }
+
+    .form-row-2 { display: flex; gap: 12px; }
+    .form-row-2 .form-row { flex: 1; margin-bottom: 0; }
+
+    .form-actions { display: flex; gap: 10px; margin-top: 24px; }
+    .btn-cancel {
+      flex: 1;
+      padding: 11px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.93rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-cancel:hover { background: var(--surface2); color: var(--text); }
+    .btn-save {
+      flex: 2;
+      padding: 11px;
+      border-radius: 9px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.93rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-save:hover { background: #3a7de8; }
+    .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .save-note {
+      background: color-mix(in srgb, var(--accent) 10%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+      border-radius: 9px;
+      padding: 11px 14px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 14px;
+    }
+    .save-note strong { color: var(--accent); }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── Admin lock button ── */
+    .admin-toggle {
+      position: fixed; bottom: 20px; right: 20px; z-index: 50;
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--muted); font-size: 1.1rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    .admin-toggle:hover { border-color: var(--accent); color: var(--accent); }
+    .admin-toggle.authed { background: #10b981; border-color: #10b981; color: #fff; }
+    .admin-only { display: none !important; }
+    body.is-admin .admin-only { display: flex !important; }
+
+    /* ── Tickets section ── */
+    .tk-section { max-width: 960px; margin: 0 auto 80px; padding: 0 24px; }
+    .tk-top-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .tk-top-bar h2 { font-size: 1.1rem; font-weight: 700; }
+    .tk-top-bar p { font-size: 0.88rem; color: var(--muted); margin-top: 2px; }
+
+    .tk-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tk-filter-btn {
+      padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--muted); font-size: 0.82rem;
+      cursor: pointer; transition: all 0.18s; white-space: nowrap;
+    }
+    .tk-filter-btn:hover { border-color: var(--accent); color: var(--text); }
+    .tk-filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .tk-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .tk-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px 20px; border-left: 4px solid var(--tk-color, var(--accent));
+      transition: border-color 0.2s;
+    }
+    .tk-card:hover { border-color: var(--tk-color, var(--accent)); }
+    .tk-card-header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+    .tk-title { font-size: 1rem; font-weight: 700; color: var(--text); flex: 1; min-width: 200px; }
+    .tk-status-badge {
+      font-size: 0.72rem; font-weight: 700; padding: 3px 10px;
+      border-radius: 999px; text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .tk-status-open       { background: rgba(79,142,247,0.15); color: #4f8ef7; }
+    .tk-status-in-progress { background: rgba(245,158,11,0.15); color: #f59e0b; }
+    .tk-status-done       { background: rgba(16,185,129,0.15); color: #10b981; }
+    .tk-status-closed     { background: rgba(136,146,164,0.15); color: #8892a4; }
+    .tk-status-canceled   { background: rgba(239,68,68,0.08); color: #8892a4; }
+
+    .tk-card.canceled { opacity: 0.55; border-left-color: var(--border) !important; }
+    .tk-card.canceled .tk-title { text-decoration: line-through; color: var(--muted); }
+    .tk-cancel-reason { font-size: 0.8rem; color: #ef4444; font-style: italic; margin-top: 6px; }
+
+    .tk-cancel-btn {
+      padding: 3px 8px; border-radius: 5px; border: 1px solid var(--border);
+      background: transparent; color: var(--muted); font-size: 0.7rem;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .tk-cancel-btn:hover { border-color: #ef4444; color: #ef4444; }
+
+    .tk-priority-badge {
+      font-size: 0.7rem; font-weight: 700; padding: 2px 8px;
+      border-radius: 999px; text-transform: uppercase;
+    }
+    .tk-prio-low      { background: rgba(136,146,164,0.15); color: #8892a4; }
+    .tk-prio-medium   { background: rgba(79,142,247,0.15); color: #4f8ef7; }
+    .tk-prio-high     { background: rgba(245,158,11,0.15); color: #f59e0b; }
+    .tk-prio-critical { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+    .tk-card-body { font-size: 0.9rem; color: var(--muted); line-height: 1.55; margin-bottom: 10px; }
+    .tk-card-footer { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 0.78rem; color: var(--muted); }
+    .tk-macro-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 0.78rem; font-weight: 600;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 999px; padding: 2px 9px;
+    }
+    .tk-status-actions { margin-left: auto; display: flex; gap: 6px; }
+    .tk-status-btn {
+      padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--muted); font-size: 0.72rem;
+      cursor: pointer; transition: all 0.15s; font-weight: 600;
+    }
+    .tk-status-btn:hover { border-color: var(--accent); color: var(--text); }
+
+    .tk-empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .tk-empty span { font-size: 2.5rem; display: block; margin-bottom: 12px; }
+
+    /* ── Admin login overlay ── */
+    #adminOverlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+      z-index: 300; align-items: center; justify-content: center; padding: 24px;
+    }
+    #adminOverlay.open { display: flex; }
+    .admin-modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px; max-width: 380px; width: 100%;
+      padding: 28px; text-align: center;
+      animation: pop 0.22s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .admin-modal h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+    .admin-modal p { font-size: 0.85rem; color: var(--muted); margin-bottom: 18px; }
+    .admin-modal input {
+      width: 100%; padding: 11px 14px; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 9px;
+      color: var(--text); font-size: 0.95rem; outline: none;
+      text-align: center; margin-bottom: 14px;
+    }
+    .admin-modal input:focus { border-color: var(--accent); }
+    .admin-modal .admin-actions { display: flex; gap: 10px; }
+    .admin-err { color: #ef4444; font-size: 0.82rem; margin-bottom: 10px; display: none; }
+
+    /* ── Toast notifications ── */
+    .toast-container {
+      position: fixed; bottom: 72px; right: 20px; z-index: 400;
+      display: flex; flex-direction: column-reverse; gap: 8px;
+    }
+    .toast {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 18px; min-width: 260px; max-width: 380px;
+      font-size: 0.88rem; color: var(--text); box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      display: flex; align-items: center; gap: 10px;
+      animation: toastIn 0.25s ease-out;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .toast.removing { opacity: 0; transform: translateX(20px); }
+    .toast-success { border-left: 4px solid #10b981; }
+    .toast-error   { border-left: 4px solid #ef4444; }
+    .toast-info    { border-left: 4px solid #4f8ef7; }
+    .toast-icon { font-size: 1.1rem; flex-shrink: 0; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
+
+    /* ── Connection status dot ── */
+    .conn-dot {
+      width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+      margin-right: 6px; flex-shrink: 0;
+    }
+    .conn-dot.ok      { background: #10b981; box-shadow: 0 0 6px #10b98188; }
+    .conn-dot.error   { background: #ef4444; box-shadow: 0 0 6px #ef444488; }
+    .conn-dot.loading { background: #f59e0b; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    @media (max-width: 600px) {
+      header { padding: 36px 16px 32px; }
+      .grid, .cl-section, .tk-section, .controls { padding: 0 16px; }
+      .nav-tabs { padding: 0 16px; }
+      .form-row-2 { flex-direction: column; gap: 18px; }
+      .toast-container { left: 12px; right: 12px; bottom: 72px; }
+      .toast { min-width: unset; }
+    }
+    /* ── Getting Started section ── */
+    .gs-section { max-width: 760px; margin: 0 auto 80px; padding: 0 24px; }
+    .gs-hero { text-align: center; padding: 32px 0 36px; }
+    .gs-hero-icon { font-size: 3rem; margin-bottom: 14px; }
+    .gs-hero h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+    .gs-hero p { color: var(--muted); font-size: 1rem; max-width: 480px; margin: 0 auto; }
+    .gs-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--card-radius); padding: 24px; margin-bottom: 16px;
+    }
+    .gs-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 14px; }
+    .gs-card > p { color: var(--muted); font-size: 0.92rem; line-height: 1.65; }
+    .gs-card > p + p { margin-top: 8px; }
+    .gs-faq { display: flex; flex-direction: column; gap: 10px; }
+    .gs-faq-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+    .gs-faq-q { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+    .gs-faq-a { font-size: 0.87rem; color: var(--muted); line-height: 1.6; }
+    .gs-card-cta { text-align: center; border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+    .gs-card-cta h3 { justify-content: center; font-size: 1.1rem; }
+
+    /* ── Ticket votes & sort ── */
+    .tk-vote-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--muted); font-size: 0.78rem;
+      cursor: pointer; transition: all 0.15s; font-weight: 600;
+    }
+    .tk-vote-btn:hover:not(:disabled) { border-color: #10b981; color: #10b981; }
+    .tk-vote-btn.voted { background: rgba(16,185,129,0.12); border-color: #10b981; color: #10b981; cursor: default; }
+    .tk-win-user { font-size: 0.72rem; color: var(--muted); opacity: 0.7; font-style: italic; }
+    .tk-sort-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 0.82rem; color: var(--muted); }
+    .tk-sort-btn {
+      padding: 4px 12px; border-radius: 6px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--muted); font-size: 0.8rem; cursor: pointer; transition: all 0.15s;
+    }
+    .tk-sort-btn.active { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
+    .tk-sort-btn:hover { border-color: var(--accent); color: var(--text); }
+  </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header>
+  <div class="logo-row">
+    <span class="logo-icon">⚙️</span>
+    <h1>Nordic Minesteel Macro Guide</h1>
+  </div>
+  <p class="subtitle">Everything you need to know about the SolidWorks automation tools — explained clearly, without the jargon.</p>
+  <div class="badge-row">
+    <div class="badge"><span>8</span> Macros</div>
+    <div class="badge">SolidWorks Automation</div>
+    <div class="badge">Nordic Minesteel Technologies</div>
+    <div class="badge">Maintained by <span>Dylan Lebel</span></div>
+  </div>
+</header>
+
+<!-- ══ NAV TABS ══ -->
+<div class="nav-tabs">
+  <button class="nav-tab active" data-tab="macros">
+    ⚙️ Macros
+    <span class="tab-count">8</span>
+  </button>
+  <button class="nav-tab" data-tab="changelog" id="clTab">
+    📋 Changelog
+    <span class="tab-count" id="clCount">0</span>
+  </button>
+  <button class="nav-tab" data-tab="tickets" id="tkTab">
+    🎫 Requests
+    <span class="tab-count" id="tkCount">0</span>
+  </button>
+  <button class="nav-tab" data-tab="start">
+    🚀 Getting Started
+  </button>
+</div>
+
+<!-- ══ MACROS TAB ══ -->
+<div class="page-section active" id="tab-macros">
+
+  <div class="controls">
+    <div class="search-wrap">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input id="search" type="text" placeholder="Search macros…" autocomplete="off" />
+    </div>
+    <div class="filter-btns">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="drawings">Drawings</button>
+      <button class="filter-btn" data-filter="parts">Parts &amp; Models</button>
+      <button class="filter-btn" data-filter="pdm">PDM / Files</button>
+    </div>
+  </div>
+
+  <div class="grid" id="grid">
+
+    <div class="card" style="--card-accent:#4f8ef7" data-category="drawings" data-id="datefixer">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <span class="card-icon">📅</span>
+        <h2>Date Fixer</h2>
+        <span class="card-tag">Drawings</span>
+        <p class="desc">Automatically finds and corrects the creation date on engineering drawings so they always show the right date.</p>
+      </div>
+      <div class="card-footer">
+        <span class="card-hint">Click to learn more</span>
+        <div class="expand-icon">›</div>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#7c3aed" data-category="drawings" data-id="drawingtemplateupdate">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <span class="card-icon">📐</span>
+        <h2>Drawing Template Update</h2>
+        <span class="card-tag">Drawings</span>
+        <p class="desc">Updates all drawings in a folder to use the latest standardized company template — in one shot, no manual work.</p>
+      </div>
+      <div class="card-footer">
+        <span class="card-hint">Click to learn more</span>
+        <div class="expand-icon">›</div>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#10b981" data-category="parts" data-id="modeltoimperial">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <span class="card-icon">📏</span>
+        <h2>Model to Imperial</h2>
+        <span class="card-tag">Parts &amp; Models</span>
+        <p class="desc">Converts 3D models from metric (millimeters) to imperial (inches) — including every sub-part inside an assembly.</p>
+      </div>
+      <div class="card-footer">
+        <span class="card-hint">Click to learn more</span>
+        <div class="expand-icon">›</div>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#f59e0b" data-category="pdm" data-id="movetopdm">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <span class="card-icon">📦</span>
+        <h2>Move to PDM</h2>
+        <span class="card-tag">PDM / Files</span>
+        <p class="desc">Bulk property cleanup tool — renames, removes, and adds file properties to prepare parts and assemblies for PDM. Requires setup before each run.</p>
+      </div>
+      <div class="card-footer">
+        <span class="card-hint">Click to learn more</span>
+        <div class="expand-icon">›</div>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#ef4444" data-category="parts" data-id="newpl">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <span class="card-icon">🏭</span>
+        <h2>Make or Buy Checker</h2>
+        <span class="card-tag">Parts &amp; Models</span>
+        <p class="desc">Looks at a flat plate or bar part and automatically decides if it should be made in-house or purchased from a supplier.</p>
+      </div>
+      <div class="card-footer">
+        <span class="card-hint">Click to learn more</span>
+        <div class="expand-icon">›</div>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#06b6d4" data-category="pdm" data-id="pdmpdf">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <span class="card-icon">📄</span>
+        <h2>PDM PDF Generator</h2>
+        <span class="card-tag">PDM / Files</span>
+        <p class="desc">Creates PDFs from drawings, syncs revisions, audits missing PDFs across assemblies, and runs in batch mode — all connected to the PDM vault.</p>
+      </div>
+      <div class="card-footer">
+        <span class="card-hint">Click to learn more</span>
+        <div class="expand-icon">›</div>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#a855f7" data-category="pdm" data-id="cadlink">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <span class="card-icon">🚀</span>
+        <h2>Prepare for CADLink</h2>
+        <span class="card-tag">PDM / Files</span>
+        <p class="desc">The big one — fills in all required information on parts and assemblies, checks everything is correct, and gets files fully ready for the CADLink system.</p>
+      </div>
+      <div class="card-footer">
+        <span class="card-hint">Click to learn more</span>
+        <div class="expand-icon">›</div>
+      </div>
+    </div>
+
+    <div class="card" style="--card-accent:#e879a0" data-category="pdm" data-id="pdmdxf">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <span class="card-icon">✂️</span>
+        <h2>PDM DXF Exporter</h2>
+        <span class="card-tag">PDM / Files</span>
+        <p class="desc">Exports a flat face from a part as a DXF burn profile, auto-manages revisions and obsolete files in the PDM vault.</p>
+      </div>
+      <div class="card-footer">
+        <span class="card-hint">Click to learn more</span>
+        <div class="expand-icon">›</div>
+      </div>
+    </div>
+
+    <div class="no-results" id="noResults" style="display:none">
+      <span>🔍</span>
+      No macros match your search. Try different keywords.
+    </div>
+  </div>
+
+</div><!-- /tab-macros -->
+
+<!-- ══ CHANGELOG TAB ══ -->
+<div class="page-section" id="tab-changelog">
+  <div class="cl-section">
+
+    <div style="height:28px"></div>
+
+    <div class="cl-top-bar">
+      <div>
+        <h2>Changelog</h2>
+        <p>A history of every update and fix made to the macros.</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="cl-filters" id="clFilters">
+          <button class="cl-filter-btn active" data-clfilter="all">All Macros</button>
+        </div>
+        <button class="add-entry-btn admin-only" id="openAddBtn">
+          <span style="font-size:1.1rem;line-height:1">+</span> Add Entry
+        </button>
+      </div>
+    </div>
+
+    <div class="timeline" id="timeline">
+      <!-- rendered by JS -->
+    </div>
+
+    <div class="cl-empty" id="clEmpty" style="display:none">
+      <span>📋</span>
+      No changelog entries yet.<br>Click <strong>Add Entry</strong> to record the first change.
+    </div>
+
+  </div>
+</div><!-- /tab-changelog -->
+
+<!-- ══ TICKETS TAB ══ -->
+<div class="page-section" id="tab-tickets">
+  <div class="tk-section">
+    <div style="height:28px"></div>
+    <div class="tk-top-bar">
+      <div>
+        <h2>Change Requests</h2>
+        <p>Submit requests for bug fixes, new features, or changes to any macro.</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="tk-filters" id="tkFilters">
+          <button class="tk-filter-btn active" data-tkfilter="all">All</button>
+          <button class="tk-filter-btn" data-tkfilter="open">Open</button>
+          <button class="tk-filter-btn" data-tkfilter="in-progress">In Progress</button>
+          <button class="tk-filter-btn" data-tkfilter="done">Done</button>
+          <button class="tk-filter-btn" data-tkfilter="closed">Closed</button>
+        </div>
+        <button class="add-entry-btn" id="openTkBtn">
+          <span style="font-size:1.1rem;line-height:1">+</span> New Request
+        </button>
+      </div>
+    </div>
+    <div class="tk-sort-bar">
+      Sort:
+      <button class="tk-sort-btn active" data-sort="newest">Newest</button>
+      <button class="tk-sort-btn" data-sort="votes">Most Voted</button>
+    </div>
+    <div class="tk-list" id="tkList"></div>
+    <div class="tk-empty" id="tkEmpty" style="display:none">
+      <span>🎫</span>
+      No requests yet.<br>Click <strong>New Request</strong> to submit one.
+    </div>
+  </div>
+</div><!-- /tab-tickets -->
+
+<!-- ══ GETTING STARTED TAB ══ -->
+<div class="page-section" id="tab-start">
+  <div class="gs-section">
+    <div style="height:28px"></div>
+    <div class="gs-hero">
+      <div class="gs-hero-icon">🚀</div>
+      <h2>Getting Started with Macros</h2>
+      <p>New to the team? This guide gets you up and running with SolidWorks macros in minutes.</p>
+    </div>
+
+    <div class="gs-card">
+      <h3>🤔 What is a macro?</h3>
+      <p>A macro is a small program that runs inside SolidWorks and handles repetitive tasks automatically. Instead of clicking through menus and filling in fields by hand — which takes time and causes mistakes — you press a button and the macro does it instantly.</p>
+      <p>Think of it like a supercharged shortcut that can do dozens of steps at once.</p>
+    </div>
+
+    <div class="gs-card">
+      <h3>▶️ How to run a macro</h3>
+      <p style="margin-bottom:14px">If Dylan has already set up your computer, you'll have macro buttons in your SolidWorks toolbar — just click and go. If your machine is new or not set up yet, contact Dylan.</p>
+      <p style="margin-bottom:14px;font-weight:600;color:var(--text)">Running manually (no toolbar button):</p>
+      <div class="steps" style="--modal-accent:var(--accent)">
+        <div class="step"><div class="step-num">1</div><p>In SolidWorks, go to <strong>Tools → Macro → Run</strong> in the top menu bar.</p></div>
+        <div class="step"><div class="step-num">2</div><p>A file browser opens. Navigate to the macro folder on your computer and find the <strong>.swp</strong> file for the macro you want.</p></div>
+        <div class="step"><div class="step-num">3</div><p>Click <strong>Open</strong>. The macro starts immediately.</p></div>
+      </div>
+    </div>
+
+    <div class="gs-card">
+      <h3>🔧 Adding a macro to your SolidWorks toolbar (one-time setup)</h3>
+      <div class="steps" style="--modal-accent:var(--accent)">
+        <div class="step"><div class="step-num">1</div><p>In SolidWorks, right-click any toolbar and choose <strong>Customize…</strong></p></div>
+        <div class="step"><div class="step-num">2</div><p>Go to the <strong>Commands</strong> tab. In the categories list, find <strong>Macros</strong>.</p></div>
+        <div class="step"><div class="step-num">3</div><p>Drag the <strong>New Macro Button</strong> onto any toolbar.</p></div>
+        <div class="step"><div class="step-num">4</div><p>A dialog opens — browse to the macro file (<code>.swp</code>), pick an icon, and give it a label. Click <strong>OK</strong>.</p></div>
+        <div class="step"><div class="step-num">5</div><p>Your macro button is now in the toolbar. One click to run it every time.</p></div>
+      </div>
+      <div class="tip-box" style="margin-top:14px;--modal-accent:var(--accent)"><strong style="color:var(--accent)">Tip:</strong> Ask Dylan to do this for you — it only takes a minute and saves you from navigating menus every time.</div>
+    </div>
+
+    <div class="gs-card">
+      <h3>⚠️ Common issues &amp; questions</h3>
+      <div class="gs-faq">
+        <div class="gs-faq-item">
+          <div class="gs-faq-q">The macro runs but nothing seems to happen</div>
+          <div class="gs-faq-a">Most macros need the right type of file open first. Make sure the correct part, assembly, or drawing is open before running. Each macro's page in this guide lists what it needs.</div>
+        </div>
+        <div class="gs-faq-item">
+          <div class="gs-faq-q">SolidWorks shows a security warning when I run a macro</div>
+          <div class="gs-faq-a">This is normal. Click "Enable macros" or similar — all macros here are written in-house and are safe to run.</div>
+        </div>
+        <div class="gs-faq-item">
+          <div class="gs-faq-q">The macro gave an unexpected result or something looks wrong</div>
+          <div class="gs-faq-a">Use Ctrl+Z (undo) — most macro changes can be undone. Then submit a bug report in the <strong>Requests</strong> tab so Dylan can look into it.</div>
+        </div>
+        <div class="gs-faq-item">
+          <div class="gs-faq-q">A macro that used to work is now broken or missing</div>
+          <div class="gs-faq-a">The macro file may have moved or been updated. Contact Dylan directly — he maintains all macros and can get you sorted quickly.</div>
+        </div>
+        <div class="gs-faq-item">
+          <div class="gs-faq-q">Can I break something by running a macro?</div>
+          <div class="gs-faq-a">In most cases, no — especially since PDM keeps a history. But for batch operations that modify many files, always check with Dylan before running if you're unsure. When in doubt, ask first.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gs-card gs-card-cta">
+      <div style="font-size:2rem;margin-bottom:8px">💬</div>
+      <h3>Need help?</h3>
+      <p>Contact <strong>Dylan Lebel</strong> for macro setup, questions, or anything not covered here. Or use the <strong>Requests</strong> tab to report a problem or suggest an improvement.</p>
+    </div>
+  </div>
+</div><!-- /tab-start -->
+
+<!-- ══ DETAIL MODAL ══ -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <div class="modal-top" id="modalTop"></div>
+    <div class="modal-header">
+      <span class="modal-icon" id="modalIcon"></span>
+      <div class="modal-title">
+        <h2 id="modalTitle"></h2>
+        <span class="modal-tag" id="modalTag"></span>
+      </div>
+      <button class="close-btn" id="closeBtn">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ══ ADD ENTRY MODAL ══ -->
+<div id="addOverlay">
+  <div class="add-modal">
+    <div class="add-modal-header">
+      <h2>Add Changelog Entry</h2>
+      <button class="close-btn" id="closeAddBtn">✕</button>
+    </div>
+    <div class="add-modal-body">
+
+      <div class="form-row">
+        <label>Which macro changed?</label>
+        <select id="f-macro">
+          <option value="all|All Macros|⚙️|#4f8ef7">⚙️ All Macros / General</option>
+          <option value="datefixer|Date Fixer|📅|#4f8ef7">📅 Date Fixer</option>
+          <option value="drawingtemplateupdate|Drawing Template Update|📐|#7c3aed">📐 Drawing Template Update</option>
+          <option value="modeltoimperial|Model to Imperial|📏|#10b981">📏 Model to Imperial</option>
+          <option value="movetopdm|Move to PDM|📦|#f59e0b">📦 Move to PDM</option>
+          <option value="newpl|Make or Buy Checker|🏭|#ef4444">🏭 Make or Buy Checker</option>
+          <option value="pdmpdf|PDM PDF Generator|📄|#06b6d4">📄 PDM PDF Generator</option>
+          <option value="pdmdxf|PDM DXF Exporter|✂️|#e879a0">✂️ PDM DXF Exporter</option>
+          <option value="cadlink|Prepare for CADLink|🚀|#a855f7">🚀 Prepare for CADLink</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label>Type of change</label>
+        <div class="type-picker">
+          <button class="type-pick-btn selected" data-type="feature">✨ New Feature</button>
+          <button class="type-pick-btn" data-type="improve">⚡ Improvement</button>
+          <button class="type-pick-btn" data-type="fix">🐛 Bug Fix</button>
+          <button class="type-pick-btn" data-type="breaking">⚠️ Breaking Change</button>
+          <button class="type-pick-btn" data-type="doc">📝 Notes</button>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label>What changed? <span style="font-weight:400;text-transform:none;letter-spacing:0">(plain English, no jargon)</span></label>
+        <textarea id="f-desc" placeholder="e.g. The macro now handles assemblies with more than 500 parts without freezing." rows="4"></textarea>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-row">
+          <label>Date</label>
+          <input type="date" id="f-date" />
+        </div>
+        <div class="form-row">
+          <label>Your name <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+          <input type="text" id="f-author" placeholder="e.g. Dylan" />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-cancel" id="cancelAddBtn">Cancel</button>
+        <button class="btn-save" id="saveAddBtn">
+          💾 Save Entry
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ TICKET CREATE MODAL ══ -->
+<div id="tkOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;padding:24px">
+  <div class="add-modal">
+    <div class="add-modal-header">
+      <h2>New Change Request</h2>
+      <button class="close-btn" id="closeTkBtn">✕</button>
+    </div>
+    <div class="add-modal-body">
+      <div class="form-row">
+        <label>Which macro?</label>
+        <select id="tk-macro">
+          <option value="all|General|⚙️|#4f8ef7">⚙️ General / All Macros</option>
+          <option value="datefixer|Date Fixer|📅|#4f8ef7">📅 Date Fixer</option>
+          <option value="drawingtemplateupdate|Drawing Template Update|📐|#7c3aed">📐 Drawing Template Update</option>
+          <option value="modeltoimperial|Model to Imperial|📏|#10b981">📏 Model to Imperial</option>
+          <option value="movetopdm|Move to PDM|📦|#f59e0b">📦 Move to PDM</option>
+          <option value="newpl|Make or Buy Checker|🏭|#ef4444">🏭 Make or Buy Checker</option>
+          <option value="pdmpdf|PDM PDF Generator|📄|#06b6d4">📄 PDM PDF Generator</option>
+          <option value="pdmdxf|PDM DXF Exporter|✂️|#e879a0">✂️ PDM DXF Exporter</option>
+          <option value="cadlink|Prepare for CADLink|🚀|#a855f7">🚀 Prepare for CADLink</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Title <span style="font-weight:400;text-transform:none;letter-spacing:0">(short summary)</span></label>
+        <input type="text" id="tk-title" placeholder='e.g. "Macro freezes on large assemblies"' />
+      </div>
+      <div class="form-row">
+        <label>Request type</label>
+        <div class="type-picker">
+          <button class="tk-type-btn selected" data-tktype="bug">🐛 Bug Report</button>
+          <button class="tk-type-btn" data-tktype="feature">✨ Feature Request</button>
+          <button class="tk-type-btn" data-tktype="change">🔄 Change Request</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Description <span style="font-weight:400;text-transform:none;letter-spacing:0">(what happened, what you expected, steps to reproduce)</span></label>
+        <textarea id="tk-desc" placeholder="Describe the issue or request in detail..." rows="4"></textarea>
+      </div>
+      <div class="form-row-2">
+        <div class="form-row">
+          <label>Priority</label>
+          <select id="tk-prio">
+            <option value="low">Low — nice to have</option>
+            <option value="medium" selected>Medium — should be fixed</option>
+            <option value="high">High — blocking work</option>
+            <option value="critical">Critical — urgent</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Your name</label>
+          <input type="text" id="tk-author" placeholder="e.g. Dylan" />
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" id="cancelTkBtn">Cancel</button>
+        <button class="btn-save" id="saveTkBtn">📨 Submit Request</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CANCEL TICKET MODAL ══ -->
+<div id="cancelOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:250;align-items:center;justify-content:center;padding:24px">
+  <div class="admin-modal" style="text-align:left;max-width:420px">
+    <h2 style="margin-bottom:6px">Cancel Request</h2>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:16px">This will hide the ticket from other users. Admins can still see it was canceled.</p>
+    <div class="form-row">
+      <label>Why are you canceling? <span style="font-weight:400;text-transform:none;letter-spacing:0">(required)</span></label>
+      <textarea id="cancel-reason" placeholder="e.g. Submitted by mistake, issue resolved itself, duplicate..." rows="3" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:0.93rem;padding:10px 13px;outline:none;font-family:inherit;resize:vertical;min-height:70px"></textarea>
+    </div>
+    <div class="form-actions" style="margin-top:16px">
+      <button class="btn-cancel" id="cancelCancelBtn">Go Back</button>
+      <button class="btn-save" id="confirmCancelBtn" style="background:#ef4444;flex:1.5">Cancel This Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADMIN LOGIN MODAL ══ -->
+<div id="adminOverlay">
+  <div class="admin-modal">
+    <h2>🔒 Admin Login</h2>
+    <p>Enter the admin password to unlock editing features.</p>
+    <div class="admin-err" id="adminErr">Incorrect password. Try again.</div>
+    <input type="password" id="adminPw" placeholder="Password" autocomplete="off" />
+    <div class="admin-actions">
+      <button class="btn-cancel" id="cancelAdminBtn" style="flex:1">Cancel</button>
+      <button class="btn-save" id="submitAdminBtn" style="flex:1">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADMIN TOGGLE BUTTON ══ -->
+<button class="admin-toggle" id="adminToggle" title="Admin login">🔒</button>
+
+<!-- ══ TOAST NOTIFICATIONS ══ -->
+<div class="toast-container" id="toasts"></div>
+
+<script>
+// ── Admin config ─────────────────────────────────────────────────────────
+const ADMIN_HASH = '9d3ff1035dda2a249dcab41e3984007b61e16833567deafd1ba319c3fcf1b878'; // default: nmt2026
+
+// ── Toast notifications ─────────────────────────────────────────────────
+function showToast(message, type = 'info') {
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  const container = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.innerHTML = `<span class="toast-icon">${icons[type] || icons.info}</span><span>${message}</span>`;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('removing');
+    setTimeout(() => el.remove(), 300);
+  }, 4000);
+}
+
+// ── API helpers ─────────────────────────────────────────────────────────
+const API_BASE = window.location.origin;
+
+async function apiFetch(path, options = {}) {
+  const resp = await fetch(API_BASE + path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...options
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error || `Server error (${resp.status})`);
+  return data;
+}
+
+// ── Macro data ──────────────────────────────────────────────────────────────
+const macros = {
+
+  datefixer: {
+    icon: '📅', title: 'Date Fixer', tag: 'Drawings', color: '#4f8ef7',
+    summary: `Drawings contain a "Date Created" field that sometimes gets set incorrectly — for example, it might show the date the file was opened or copied rather than the actual date the drawing was first done. Date Fixer automatically looks inside each drawing's revision table to find the true original date and corrects the field so the records are accurate.`,
+    steps: [
+      'You point it at a folder of drawing files.',
+      'It opens each drawing and reads the revision table inside.',
+      'It pulls out the earliest revision date — the original creation date.',
+      'It writes that date into the "Date Created" field of the drawing.',
+      'It logs everything it did (successes and any problems) so you can review.'
+    ],
+    tip: `Best used when you've discovered a batch of drawings with wrong or missing creation dates. Run it once and all the dates are fixed — no need to open each drawing manually.`,
+    facts: [
+      { label: 'Works on', value: 'Drawing files (.slddrw)' },
+      { label: 'Batch capable', value: 'Yes — whole folders' },
+      { label: 'Creates a log', value: 'Yes' }
+    ],
+    moreTips: [
+      'If a drawing has no revision table at all, the macro skips it safely — your other files are not affected.',
+      'After the run, check the log it creates. It lists every file: fixed, skipped, or had a problem. Good to keep if someone asks what changed.'
+    ]
+  },
+
+  drawingtemplateupdate: {
+    icon: '📐', title: 'Drawing Template Update', tag: 'Drawings', color: '#7c3aed',
+    summary: `When the company updates its standard drawing template (the border, title block, logo, etc.), every existing drawing needs to be updated to match. Doing that one-by-one would take forever. This macro does it in bulk — it goes through an entire folder of drawings and replaces the old template with the new one automatically.`,
+    steps: [
+      'You select a folder of drawings to update.',
+      'The macro detects what paper size each drawing is (B-size or D-size).',
+      'It replaces the old sheet format with the correct new template for that paper size.',
+      'It saves each updated drawing.',
+      'It reports which files were updated successfully and flags any that had issues.'
+    ],
+    tip: `Run this whenever the company releases a new version of the drawing template. It ensures every drawing in the folder looks consistent and meets current standards — without touching a single file manually.`,
+    facts: [
+      { label: 'Works on', value: 'Drawing files (.slddrw)' },
+      { label: 'Sheet sizes', value: 'B-size and D-size (ANSI)' },
+      { label: 'Batch capable', value: 'Yes — whole folders' }
+    ],
+    moreTips: [
+      'Back up your drawings before any bulk update — even a safe one. A quick folder copy takes seconds and gives peace of mind.',
+      'If a drawing looks wrong after the update, it likely uses a non-standard sheet size. Flag it to Dylan so support can be added for that format.'
+    ]
+  },
+
+  modeltoimperial: {
+    icon: '📏', title: 'Model to Imperial', tag: 'Parts & Models', color: '#10b981',
+    summary: `Sometimes 3D models arrive in metric units (millimeters) but need to be in imperial units (inches) for a particular project or client. Manually converting every part — especially in a large assembly with dozens of sub-components — would be very tedious and error-prone. This macro handles the entire conversion automatically.`,
+    steps: [
+      'Open the part or assembly you want to convert in SolidWorks.',
+      'Run the macro.',
+      'It converts the active file and automatically finds and converts every sub-part inside it too.',
+      'All files are rebuilt and saved in imperial (inches, pounds, seconds).'
+    ],
+    tip: `Works on both single parts and full assemblies. If you run it on an assembly, it drills down through every level and converts everything — you don't need to run it on each part separately.`,
+    facts: [
+      { label: 'Works on', value: 'Parts & Assemblies' },
+      { label: 'Converts to', value: 'Inches / Pounds / Seconds' },
+      { label: 'Handles sub-parts', value: 'Yes, automatically' }
+    ],
+    moreTips: [
+      'Make sure none of the files are read-only or checked out to someone else before running — the macro needs to save every part it converts.',
+      'Conversion is permanent — there is no automatic way to switch back. Only run this when you\'re certain imperial units are what you need.'
+    ]
+  },
+
+  movetopdm: {
+    icon: '📦', title: 'Move to PDM', tag: 'PDM / Files', color: '#f59e0b',
+    summary: `A bulk property cleanup tool for getting files ready for the PDM system. It renames old property names to new ones, removes obsolete properties, and adds new required properties with default values. <strong>Important:</strong> the specific property changes are pre-configured in the macro code — they need to be reviewed and adjusted by your macro admin before each use to match the situation. This is not a "run it and forget it" tool; the rules change depending on the batch of files you're preparing.`,
+    steps: [
+      'Before running: make sure the property rules in the macro are set correctly for your situation (which properties to rename, remove, or add). This is configured inside the macro by the macro admin.',
+      'Run the macro. It can work two ways: on the currently open model, or on an entire folder of files. This is controlled by a setting in the macro.',
+      'It shows you a full summary of every change it will make — renames, deletions, and additions — and asks for confirmation before touching anything.',
+      'It processes the file(s), applying all the property changes.',
+      'For assemblies, it drills into every sub-component and processes them too.',
+      'Fasteners and standard purchased parts (bolts, nuts, washers, etc.) are automatically skipped so they aren\'t accidentally modified.'
+    ],
+    tip: `The current default rules rename "Type" to "Reference Category", rename "Purchased Assembly" to "Type", remove "Ref" and "Length", and add "Product Group" (MISC), "Class" (MECH), and "Revision" (1). These defaults should be reviewed before every run — they may not match what your specific batch of files needs. Talk to your macro admin if you're not sure.`,
+    facts: [
+      { label: 'Works on', value: 'Parts, Assemblies & Drawings' },
+      { label: 'Modes', value: 'Active model or entire folder' },
+      { label: 'Batch capable', value: 'Yes — whole folders + subfolders' },
+      { label: 'Skips fasteners', value: 'Yes (configurable)' },
+      { label: 'Requires setup', value: 'Yes — rules must be configured' }
+    ],
+    moreTips: [
+      'Fasteners and standard purchased hardware (identified by their properties) are automatically skipped. If you have custom fasteners that shouldn\'t be changed, ask Dylan to verify they\'ll be protected.'
+    ],
+    notes: [
+      'Always confirm the property rules with Dylan before running. Using wrong rules on a large batch could add incorrect data to hundreds of files at once.'
+    ]
+  },
+
+  newpl: {
+    icon: '🏭', title: 'Make or Buy Checker', tag: 'Parts & Models', color: '#ef4444',
+    summary: `For flat plate and bar stock parts, the company has manufacturing constraints — there's a maximum size the shop can handle, and a maximum thickness it can work with. Beyond those limits, the part needs to be purchased from a supplier instead of made in-house. This macro reads the part dimensions and material, then automatically stamps it as "Manufacture" (M) or "Purchase" (P). It recognizes specific steel grades, stainless steels, and aluminum alloys by name.`,
+    steps: [
+      'Open the part file in SolidWorks.',
+      'Run the macro.',
+      "It reads the part's thickness, width, and length from the 3D model.",
+      'It identifies the material — it knows carbon steels (44W, 50W, 300W, 350W, 400W, QT100), stainless steels (304, 308, 309, 316), and aluminum alloys.',
+      "It compares the dimensions against the shop's manufacturing limits: max 6 feet on the short side, max 20 feet on the long side, and max 1.5 inches thick.",
+      'If the part fits within those limits, it stamps the Type property as M (manufacture in-house). If it exceeds any limit, it stamps it as P (purchase from supplier).',
+      'It also determines if the part is a flat plate or bar stock and sets properties accordingly.'
+    ],
+    tip: `This takes a decision that used to require someone to manually measure and look up specs — and makes it instant and consistent every time. It only works on flat plate and bar-type parts — complex machined or welded parts need to be categorized manually.`,
+    facts: [
+      { label: 'Max short side', value: '6 feet' },
+      { label: 'Max long side', value: '20 feet' },
+      { label: 'Max thickness', value: '1.5 inches' },
+      { label: 'Carbon steels', value: '44W, 50W, 300W, 350W, 400W, QT100' },
+      { label: 'Stainless steels', value: '304, 308, 309, 316' },
+      { label: 'Aluminum', value: 'Recognized automatically' }
+    ],
+    moreTips: [
+      'The size limits (6 ft, 20 ft, 1.5 inches thick) are based on actual shop equipment. If that equipment changes, Dylan updates the numbers in the macro.',
+      'Only works on flat plate and bar stock. Machined parts, castings, weldments, and complex shapes must be categorized manually.'
+    ]
+  },
+
+  pdmpdf: {
+    icon: '📄', title: 'PDM PDF Generator', tag: 'PDM / Files', color: '#06b6d4',
+    summary: `Creates PDF copies of drawings from the PDM vault, syncs revision numbers between models and drawings, and manages obsolete PDFs automatically. It has several different modes depending on what you have open when you run it — a single drawing, an assembly, or nothing at all.`,
+    steps: [
+      '<strong>From a single drawing:</strong> Run the macro with a drawing open. It reads the revision, syncs it with the model, creates the PDF (named with the revision), and moves any older-revision PDFs into an "Obsolete" folder.',
+      '<strong>From an assembly:</strong> The macro asks what you want to do — <em>Audit</em> (check which PDFs are missing or out-of-date for every part) or <em>Create</em> (generate PDFs for every component drawing in the assembly). Library items are skipped automatically.',
+      '<strong>With nothing open (batch mode):</strong> You\'re asked whether to process <em>all drawings</em> in a folder or <em>only your checked-out drawings</em>. SolidWorks hides in the background and works through them all automatically.',
+      '<strong>From the command line:</strong> Pass a file path and it runs headlessly — SolidWorks launches itself if needed. Useful for automated or scheduled runs.',
+      'In every mode, it connects to the PDM vault, checks revisions, and organizes PDFs into the correct "Drawings" subfolder based on the project structure.'
+    ],
+    tip: `The Audit mode is especially useful before a release — open the top-level assembly, run the macro, choose Audit, and you'll get a full report showing which component PDFs are missing, which are out-of-date, and which are good to go. No PDFs are created during an audit — it only checks.`,
+    facts: [
+      { label: 'Modes', value: 'Single drawing, Assembly, Batch, Command-line' },
+      { label: 'Audit mode', value: 'Yes — shows missing & outdated PDFs' },
+      { label: 'Handles obsolete PDFs', value: 'Moves old revisions to Obsolete folder' },
+      { label: 'Auto-launches SW', value: 'Yes (command-line mode)' },
+      { label: 'Skips library items', value: 'Yes, automatically' }
+    ],
+    moreTips: [
+      'Audit mode creates no files and changes nothing — it\'s purely a status check. Use it freely before any release to see exactly what\'s missing or outdated.',
+      'In batch mode, don\'t close SolidWorks while it\'s running. Leave it in the background and come back when it\'s done — closing it mid-run will cancel the job.'
+    ]
+  },
+
+  pdmdxf: {
+    icon: '✂️', title: 'PDM DXF Exporter', tag: 'PDM / Files', color: '#e879a0',
+    summary: `Exports a flat (planar) face from a part as a DXF file — commonly used for burn profiles sent to laser/plasma cutting. It automatically names the DXF with the current revision, moves older revisions into an "Obsolete" folder, and checks the file into the PDM vault. It works from a standalone part or by selecting a face on a component inside an assembly.`,
+    steps: [
+      'Open a part (or an assembly) in SolidWorks and select exactly one flat face.',
+      'Run the macro. If you selected a face inside an assembly, it automatically opens the component part and transfers the face selection.',
+      'It reads the Revision property from the part — the revision must be set or the macro will stop.',
+      'It creates a DXF file named like <code>PartName_Rev3.dxf</code> in a "Burn Profiles" subfolder inside the project\'s Drawings folder.',
+      'Any older-revision DXFs (e.g. Rev1, Rev2) are moved into an "Obsolete" subfolder automatically.',
+      'If the file is inside the PDM vault, it checks the DXF in with a comment. If outside the vault, it just saves locally.',
+      'A confirmation message shows the DXF was created successfully.'
+    ],
+    tip: `The face you select must be a flat (planar) face — curved surfaces won't work. If the macro can't transfer the face selection from an assembly to the part, it will try to find any planar face on the part automatically as a fallback. You can also configure the macro to save DXFs to a custom folder outside of PDM if needed.`,
+    facts: [
+      { label: 'Works on', value: 'Parts & Assemblies (face selection)' },
+      { label: 'Output', value: 'DXF burn profile' },
+      { label: 'Auto-revisions', value: 'Yes — names file with revision' },
+      { label: 'Obsolete handling', value: 'Moves old revisions automatically' },
+      { label: 'PDM integration', value: 'Checks in/out automatically' },
+      { label: 'Custom output', value: 'Optional (configurable)' }
+    ],
+    moreTips: [
+      'Old DXF revisions are moved to an Obsolete folder — not permanently deleted. If you ever need a previous revision, it\'s still there.',
+      'The Revision property must be set on the part before running. If it\'s missing, the macro stops and tells you — set the revision first, then re-run.'
+    ]
+  },
+
+  cadlink: {
+    icon: '🚀', title: 'Prepare for CADLink', tag: 'PDM / Files', color: '#a855f7',
+    summary: `The main workhorse macro. It fills in as many required properties as it can automatically — dimensions, weight, material, type, author, date, and more — then validates everything against CADLink's rules and shows you exactly what passed and what still needs your attention. It works from parts, assemblies, or even directly from a drawing.`,
+    steps: [
+      'Open a part, assembly, or drawing and run the macro. If you run it from a drawing, it automatically finds the referenced model and processes that — the drawing itself is left untouched.',
+      'It checks the PDM vault to make sure the file is checked out to you. If it isn\'t, the file is skipped (not modified).',
+      'It auto-calculates dimensions (bounding box), weight, and reads the material directly from the model.',
+      'It fills in properties it can determine automatically: Model Number, Description, Stock Size, Type (Make or Purchase), Product Group, Class, Weight, Weight UOM, Dimensional UOM, Non-Destructive Testing, Author, Date, and for parts also Material, Length, Height, Width, and more.',
+      'For assemblies, it asks whether you want to process all sub-components or just the top-level assembly.',
+      'It validates every property against strict format rules (e.g. Type must be "P" or "M", Product Group must be a known code like CHUTES, MISC, SPARE, etc.).',
+      'A results window shows each property color-coded: green for valid, red for invalid or missing. Anything red needs your manual attention before submitting to CADLink.'
+    ],
+    tip: `You can also select a single flat face on a part and run the macro — instead of the normal property workflow, it will export that face as a DXF file. This is a separate shortcut built into the same macro. Also note: properties that are already filled in correctly are preserved — the macro won't overwrite good data.`,
+    facts: [
+      { label: 'Works on', value: 'Parts, Assemblies & Drawings' },
+      { label: 'Auto-calculates', value: 'Dimensions, weight, material' },
+      { label: 'Validates all fields', value: 'Yes, with color-coded results' },
+      { label: 'Handles sub-parts', value: 'Yes, recursively' },
+      { label: 'DXF export', value: 'Yes (select a face first)' },
+      { label: 'Must be checked out', value: 'Yes, in PDM' }
+    ],
+    moreTips: [
+      'It\'s safe to re-run the macro on a file you\'ve already processed — it won\'t overwrite correct data. If dimensions change, just run it again to refresh.',
+      'For large assemblies, say Yes when it asks about sub-components. It processes everything in one go — no need to run it on each part separately.'
+    ],
+    notes: [
+      'Revision is not set by this macro — revision numbers must be set manually before submitting to CADLink.'
+    ]
+  }
+};
+
+// ── Changelog data ──────────────────────────────────────────────────────────
+let changelogEntries = [];
+
+const typeLabels = {
+  feature:  { label: 'New Feature',      emoji: '✨', cls: 'type-feature' },
+  improve:  { label: 'Improvement',      emoji: '⚡', cls: 'type-improve' },
+  fix:      { label: 'Bug Fix',           emoji: '🐛', cls: 'type-fix' },
+  breaking: { label: 'Breaking Change',  emoji: '⚠️', cls: 'type-breaking' },
+  doc:      { label: 'Notes',            emoji: '📝', cls: 'type-doc' }
+};
+
+// ── Nav tabs ──────────────────────────────────────────────────────────────
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ── Detail Modal ──────────────────────────────────────────────────────────
+const overlay  = document.getElementById('overlay');
+const modal    = document.getElementById('modal');
+const modalTop = document.getElementById('modalTop');
+
+function openModal(id) {
+  const m = macros[id];
+  if (!m) return;
+  modal.style.setProperty('--modal-accent', m.color);
+  modalTop.style.background = m.color;
+  document.getElementById('modalIcon').textContent  = m.icon;
+  document.getElementById('modalTitle').textContent = m.title;
+  const tag = document.getElementById('modalTag');
+  tag.textContent = m.tag;
+  tag.style.background = `color-mix(in srgb, ${m.color} 15%, transparent)`;
+  tag.style.color = m.color;
+  const steps = m.steps.map((s, i) => `
+    <div class="step">
+      <div class="step-num">${i + 1}</div>
+      <p>${s}</p>
+    </div>`).join('');
+  const facts = m.facts.map(f => `
+    <div class="fact">
+      <div class="fact-label">${f.label}</div>
+      <div class="fact-value">${f.value}</div>
+    </div>`).join('');
+  document.getElementById('modalBody').innerHTML = `
+    <p class="summary">${m.summary}</p>
+    <div class="detail-section">
+      <h3>How it works — step by step</h3>
+      <div class="steps">${steps}</div>
+    </div>
+    <div class="detail-section">
+      <h3>Good to know</h3>
+      ${[m.tip, ...(m.moreTips || [])].map((t, i) => `<div class="tip-box"${i > 0 ? ' style="margin-top:10px"' : ''}><strong>${i === 0 ? 'Tip:' : '💡'}</strong> ${t}</div>`).join('')}
+      ${(m.notes || []).map(n => `<div class="tip-box" style="margin-top:10px;border-color:rgba(245,158,11,0.35);background:rgba(245,158,11,0.07)"><strong style="color:#f59e0b">⚠️ Note:</strong> ${n}</div>`).join('')}
+    </div>
+    <div class="detail-section">
+      <h3>Quick facts</h3>
+      <div class="facts">${facts}</div>
+    </div>`;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetailModal() {
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('closeBtn').addEventListener('click', closeDetailModal);
+overlay.addEventListener('click', e => { if (e.target === overlay) closeDetailModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDetailModal(); closeAddModal(); closeTkModal(); closeCancelModal(); document.getElementById('adminOverlay').style.display='none'; } });
+document.querySelectorAll('.card').forEach(card => {
+  card.addEventListener('click', () => openModal(card.dataset.id));
+});
+
+// ── Search + Filter ──────────────────────────────────────────────────────
+const cards = document.querySelectorAll('.card[data-id]');
+const noResults = document.getElementById('noResults');
+let activeFilter = 'all';
+
+function applyFilters() {
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  let visible = 0;
+  cards.forEach(card => {
+    const m    = macros[card.dataset.id];
+    const text = (m.title + ' ' + m.tag + ' ' + m.summary).toLowerCase();
+    const show = (activeFilter === 'all' || card.dataset.category === activeFilter) && (!q || text.includes(q));
+    card.classList.toggle('hidden', !show);
+    if (show) visible++;
+  });
+  noResults.style.display = visible === 0 ? 'block' : 'none';
+}
+
+document.getElementById('search').addEventListener('input', applyFilters);
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    applyFilters();
+  });
+});
+
+// ── Changelog rendering ──────────────────────────────────────────────────
+let clFilter = 'all';
+
+function formatDate(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function groupByMonth(entries) {
+  const groups = {};
+  entries.forEach(e => {
+    const d = new Date(e.date + 'T00:00:00');
+    const key = d.toLocaleDateString('en-CA', { year: 'numeric', month: 'long' });
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(e);
+  });
+  return groups;
+}
+
+function buildClFilters() {
+  const seen = new Set(['all']);
+  const btns = [`<button class="cl-filter-btn ${clFilter === 'all' ? 'active' : ''}" data-clfilter="all">All Macros</button>`];
+  changelogEntries.forEach(e => {
+    if (!seen.has(e.macroId)) {
+      seen.add(e.macroId);
+      btns.push(`<button class="cl-filter-btn ${clFilter === e.macroId ? 'active' : ''}" data-clfilter="${e.macroId}" style="--accent:${e.macroColor}">${e.macroIcon} ${e.macroName}</button>`);
+    }
+  });
+  document.getElementById('clFilters').innerHTML = btns.join('');
+  document.querySelectorAll('.cl-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      clFilter = btn.dataset.clfilter;
+      renderChangelog();
+    });
+  });
+}
+
+function renderChangelog() {
+  const count = changelogEntries.length;
+  document.getElementById('clCount').textContent = count;
+
+  buildClFilters();
+
+  const filtered = clFilter === 'all'
+    ? changelogEntries
+    : changelogEntries.filter(e => e.macroId === clFilter);
+
+  const sorted = [...filtered].sort((a, b) => b.date.localeCompare(a.date));
+  const timeline = document.getElementById('timeline');
+  const empty = document.getElementById('clEmpty');
+
+  if (sorted.length === 0) {
+    timeline.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const groups = groupByMonth(sorted);
+  let html = '';
+  for (const [month, entries] of Object.entries(groups)) {
+    html += `<div class="tl-group"><div class="tl-group-label">${month}</div>`;
+    entries.forEach(e => {
+      const t = typeLabels[e.type] || typeLabels.doc;
+      html += `
+        <div class="tl-item" style="--tl-color:${e.macroColor}">
+          <div class="tl-dot"></div>
+          <div class="tl-card">
+            <div class="tl-card-top">
+              <span class="tl-macro-pill">${e.macroIcon} ${e.macroName}</span>
+              <span class="tl-type-badge ${t.cls}">${t.emoji} ${t.label}</span>
+              <span class="tl-date">${formatDate(e.date)}</span>
+            </div>
+            <div class="tl-desc">${escHtml(e.description)}</div>
+            ${e.author ? `<div class="tl-author">— ${escHtml(e.author)}</div>` : ''}
+          </div>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+  timeline.innerHTML = html;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Add Entry Modal ──────────────────────────────────────────────────────
+const addOverlay = document.getElementById('addOverlay');
+let selectedType = 'feature';
+
+function openAddModal() {
+  // pre-fill today's date
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('f-date').value = today;
+  document.getElementById('f-desc').value = '';
+  document.getElementById('f-author').value = localStorage.getItem('mgUserName') || '';
+  document.getElementById('f-macro').selectedIndex = 0;
+  selectedType = 'feature';
+  document.querySelectorAll('.type-pick-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.type === 'feature');
+  });
+  addOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('f-desc').focus(), 100);
+}
+
+function closeAddModal() {
+  addOverlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('openAddBtn').addEventListener('click', openAddModal);
+document.getElementById('closeAddBtn').addEventListener('click', closeAddModal);
+document.getElementById('cancelAddBtn').addEventListener('click', closeAddModal);
+addOverlay.addEventListener('click', e => { if (e.target === addOverlay) closeAddModal(); });
+
+document.querySelectorAll('.type-pick-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    selectedType = btn.dataset.type;
+    document.querySelectorAll('.type-pick-btn').forEach(b => b.classList.toggle('selected', b === btn));
+  });
+});
+
+document.getElementById('saveAddBtn').addEventListener('click', async () => {
+  const desc = document.getElementById('f-desc').value.trim();
+  const date = document.getElementById('f-date').value;
+  if (!desc) { document.getElementById('f-desc').focus(); document.getElementById('f-desc').style.borderColor = '#ef4444'; return; }
+  if (!date) { document.getElementById('f-date').focus(); return; }
+  document.getElementById('f-desc').style.borderColor = '';
+
+  const macroRaw = document.getElementById('f-macro').value.split('|');
+  const entry = {
+    macroId:    macroRaw[0],
+    macroName:  macroRaw[1],
+    macroIcon:  macroRaw[2],
+    macroColor: macroRaw[3],
+    date,
+    type:        selectedType,
+    description: desc,
+    author:      document.getElementById('f-author').value.trim()
+  };
+
+  const btn = document.getElementById('saveAddBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  try {
+    const result = await apiFetch('/api/changelog/add', {
+      method: 'POST',
+      body: JSON.stringify(entry)
+    });
+    changelogEntries = result.entries;
+    renderChangelog();
+    closeAddModal();
+    showToast('Changelog entry saved.', 'success');
+  } catch (err) {
+    showToast('Failed to save: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '💾 Save Entry';
+  }
+});
+
+// ── Ticket data ──────────────────────────────────────────────────────────
+let ticketEntries = [];
+
+const statusLabels = {
+  open:          { label: 'Open',        cls: 'tk-status-open' },
+  'in-progress': { label: 'In Progress', cls: 'tk-status-in-progress' },
+  done:          { label: 'Done',        cls: 'tk-status-done' },
+  closed:        { label: 'Closed',      cls: 'tk-status-closed' },
+  canceled:      { label: 'Canceled',    cls: 'tk-status-canceled' }
+};
+const prioLabels = {
+  low:      { label: 'Low',      cls: 'tk-prio-low' },
+  medium:   { label: 'Medium',   cls: 'tk-prio-medium' },
+  high:     { label: 'High',     cls: 'tk-prio-high' },
+  critical: { label: 'Critical', cls: 'tk-prio-critical' }
+};
+const tkTypeLabels = { bug: '🐛 Bug', feature: '✨ Feature', change: '🔄 Change' };
+
+let tkFilter = 'all';
+let tkSort = 'newest';
+
+function renderTickets() {
+  const isAdmin = document.body.classList.contains('is-admin');
+  const myName = localStorage.getItem('mgUserName') || '';
+  const winUser = sessionStorage.getItem('winUser') || '';
+  const voted = JSON.parse(localStorage.getItem('mgVoted') || '[]');
+
+  // Count active tickets (not closed/canceled)
+  document.getElementById('tkCount').textContent =
+    ticketEntries.filter(t => t.status !== 'closed' && t.status !== 'canceled').length;
+
+  // Hide canceled from non-admins entirely
+  let pool = ticketEntries;
+  if (!isAdmin) pool = pool.filter(t => t.status !== 'canceled');
+
+  const filtered = tkFilter === 'all' ? pool : pool.filter(t => t.status === tkFilter);
+
+  const sorted = tkSort === 'votes'
+    ? [...filtered].sort((a, b) => (b.votes || 0) - (a.votes || 0) || b.id - a.id)
+    : [...filtered].sort((a, b) => b.id - a.id);
+
+  const list = document.getElementById('tkList');
+  const empty = document.getElementById('tkEmpty');
+  if (sorted.length === 0) { list.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  const nextStatus = { open: 'in-progress', 'in-progress': 'done', done: 'closed' };
+
+  list.innerHTML = sorted.map(t => {
+    const s = statusLabels[t.status] || statusLabels.open;
+    const p = prioLabels[t.priority] || prioLabels.medium;
+    const isCanceled = t.status === 'canceled';
+    const hasVoted = voted.includes(t.id);
+    const isOwnTicket = (myName && t.createdBy === myName) || (winUser && t.windowsUser && t.windowsUser === winUser);
+
+    const adminBtns = isAdmin && !isCanceled && nextStatus[t.status]
+      ? `<button class="tk-status-btn" onclick="changeTicketStatus(${t.id},'${nextStatus[t.status]}')">${statusLabels[nextStatus[t.status]].label} &rarr;</button>`
+      : '';
+
+    const canCancel = !isCanceled && t.status === 'open' && myName && t.createdBy === myName;
+    const cancelBtn = canCancel
+      ? `<button class="tk-cancel-btn" onclick="openCancelModal(${t.id})">Cancel</button>`
+      : '';
+
+    const cancelInfo = isCanceled && t.cancelReason
+      ? `<div class="tk-cancel-reason">Canceled by ${escHtml(t.canceledBy || t.createdBy || 'user')}: "${escHtml(t.cancelReason)}"</div>`
+      : '';
+
+    const winUserBadge = isAdmin && t.windowsUser && t.windowsUser !== t.createdBy
+      ? `<span class="tk-win-user" title="Windows account">🖥 ${escHtml(t.windowsUser)}</span>`
+      : '';
+
+    return `<div class="tk-card ${isCanceled ? 'canceled' : ''}" style="--tk-color:${t.macroColor}">
+      <div class="tk-card-header">
+        <span class="tk-title">${escHtml(t.title)}</span>
+        <span class="tk-priority-badge ${p.cls}">${p.label}</span>
+        <span class="tk-status-badge ${s.cls}">${s.label}</span>
+      </div>
+      <div class="tk-card-body">${escHtml(t.description)}</div>
+      ${cancelInfo}
+      <div class="tk-card-footer">
+        <button class="tk-vote-btn ${hasVoted || isOwnTicket ? 'voted' : ''}" onclick="voteTicket(${t.id})" ${hasVoted || isOwnTicket ? 'disabled' : ''} title="${isOwnTicket ? 'Cannot vote on your own request' : hasVoted ? 'Already voted' : 'Upvote this request'}">👍 ${t.votes || 0}</button>
+        <span class="tk-macro-pill">${t.macroIcon} ${t.macroName}</span>
+        <span>${tkTypeLabels[t.type] || t.type}</span>
+        <span>by ${escHtml(t.createdBy || 'Anonymous')}</span>
+        ${winUserBadge}
+        <span>${formatDate(t.date)}</span>
+        <div class="tk-status-actions">${cancelBtn}${adminBtns}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function changeTicketStatus(id, newStatus) {
+  try {
+    const result = await apiFetch(`/api/tickets/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: newStatus })
+    });
+    ticketEntries = result.entries;
+    renderTickets();
+    showToast('Ticket status updated.', 'success');
+  } catch (err) {
+    showToast('Failed to update status: ' + err.message, 'error');
+  }
+}
+
+async function voteTicket(id) {
+  const voted = JSON.parse(localStorage.getItem('mgVoted') || '[]');
+  if (voted.includes(id)) return;
+  try {
+    const result = await apiFetch(`/api/tickets/${id}/vote`, { method: 'PATCH' });
+    ticketEntries = result.entries;
+    voted.push(id);
+    localStorage.setItem('mgVoted', JSON.stringify(voted));
+    renderTickets();
+    showToast('Vote added!', 'success');
+  } catch (err) {
+    showToast('Could not save vote: ' + err.message, 'error');
+  }
+}
+
+document.querySelectorAll('.tk-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tk-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    tkFilter = btn.dataset.tkfilter;
+    renderTickets();
+  });
+});
+
+document.querySelectorAll('.tk-sort-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tk-sort-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    tkSort = btn.dataset.sort;
+    renderTickets();
+  });
+});
+
+// ── Ticket create modal ──────────────────────────────────────────────────
+const tkOverlay = document.getElementById('tkOverlay');
+let tkSelectedType = 'bug';
+
+document.querySelectorAll('.tk-type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    tkSelectedType = btn.dataset.tktype;
+    document.querySelectorAll('.tk-type-btn').forEach(b => b.classList.toggle('selected', b === btn));
+  });
+});
+
+function openTkModal() {
+  document.getElementById('tk-title').value = '';
+  document.getElementById('tk-desc').value = '';
+  document.getElementById('tk-author').value = localStorage.getItem('mgUserName') || '';
+  document.getElementById('tk-macro').selectedIndex = 0;
+  document.getElementById('tk-prio').value = 'medium';
+  tkSelectedType = 'bug';
+  document.querySelectorAll('.tk-type-btn').forEach(b => b.classList.toggle('selected', b.dataset.tktype === 'bug'));
+  tkOverlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('tk-title').focus(), 100);
+}
+
+function closeTkModal() {
+  tkOverlay.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+document.getElementById('openTkBtn').addEventListener('click', openTkModal);
+document.getElementById('closeTkBtn').addEventListener('click', closeTkModal);
+document.getElementById('cancelTkBtn').addEventListener('click', closeTkModal);
+tkOverlay.addEventListener('click', e => { if (e.target === tkOverlay) closeTkModal(); });
+
+document.getElementById('saveTkBtn').addEventListener('click', async () => {
+  const title = document.getElementById('tk-title').value.trim();
+  const desc = document.getElementById('tk-desc').value.trim();
+  if (!title) { document.getElementById('tk-title').focus(); document.getElementById('tk-title').style.borderColor = '#ef4444'; return; }
+  document.getElementById('tk-title').style.borderColor = '';
+  const macroRaw = document.getElementById('tk-macro').value.split('|');
+  const ticket = {
+    id: Date.now(),
+    macroId: macroRaw[0], macroName: macroRaw[1], macroIcon: macroRaw[2], macroColor: macroRaw[3],
+    title, description: desc, type: tkSelectedType,
+    priority: document.getElementById('tk-prio').value,
+    status: 'open',
+    date: new Date().toISOString().split('T')[0],
+    createdBy: document.getElementById('tk-author').value.trim(),
+    windowsUser: sessionStorage.getItem('winUser') || ''
+  };
+
+  // Remember name for cancel-own-ticket matching
+  if (ticket.createdBy) localStorage.setItem('mgUserName', ticket.createdBy);
+
+  const btn = document.getElementById('saveTkBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+  try {
+    const result = await apiFetch('/api/tickets/add', {
+      method: 'POST',
+      body: JSON.stringify(ticket)
+    });
+    ticketEntries = result.entries;
+    renderTickets();
+    closeTkModal();
+    showToast('Request submitted successfully.', 'success');
+  } catch (err) {
+    showToast('Failed to submit: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📨 Submit Request';
+  }
+});
+
+// ── Cancel ticket modal ──────────────────────────────────────────────────
+let cancelTicketId = null;
+const cancelOverlay = document.getElementById('cancelOverlay');
+
+function openCancelModal(id) {
+  cancelTicketId = id;
+  document.getElementById('cancel-reason').value = '';
+  cancelOverlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('cancel-reason').focus(), 100);
+}
+
+function closeCancelModal() {
+  cancelOverlay.style.display = 'none';
+  document.body.style.overflow = '';
+  cancelTicketId = null;
+}
+
+document.getElementById('cancelCancelBtn').addEventListener('click', closeCancelModal);
+cancelOverlay.addEventListener('click', e => { if (e.target === cancelOverlay) closeCancelModal(); });
+
+document.getElementById('confirmCancelBtn').addEventListener('click', async () => {
+  const reason = document.getElementById('cancel-reason').value.trim();
+  if (!reason) {
+    document.getElementById('cancel-reason').style.borderColor = '#ef4444';
+    document.getElementById('cancel-reason').focus();
+    return;
+  }
+  document.getElementById('cancel-reason').style.borderColor = '';
+  const btn = document.getElementById('confirmCancelBtn');
+  btn.disabled = true;
+  btn.textContent = 'Canceling...';
+  try {
+    const result = await apiFetch(`/api/tickets/${cancelTicketId}/cancel`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        reason,
+        canceledBy: localStorage.getItem('mgUserName') || ''
+      })
+    });
+    ticketEntries = result.entries;
+    renderTickets();
+    closeCancelModal();
+    showToast('Request canceled.', 'info');
+  } catch (err) {
+    showToast('Failed to cancel: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Cancel This Request';
+  }
+});
+
+// ── Data loading from server ─────────────────────────────────────────────
+async function loadData() {
+  try {
+    const [clData, tkData] = await Promise.all([
+      apiFetch('/api/changelog'),
+      apiFetch('/api/tickets')
+    ]);
+    changelogEntries = clData;
+    ticketEntries = tkData;
+    renderChangelog();
+    renderTickets();
+  } catch (err) {
+    showToast('Could not load data from server: ' + err.message, 'error');
+  }
+}
+
+// Auto-refresh every 30s so everyone sees updates without reloading
+setInterval(async () => {
+  try {
+    const [clData, tkData] = await Promise.all([
+      apiFetch('/api/changelog'),
+      apiFetch('/api/tickets')
+    ]);
+    // Only re-render if data actually changed (by length or last entry)
+    if (clData.length !== changelogEntries.length) {
+      changelogEntries = clData;
+      renderChangelog();
+    }
+    if (tkData.length !== ticketEntries.length ||
+        JSON.stringify(tkData.map(t=>t.status)) !== JSON.stringify(ticketEntries.map(t=>t.status))) {
+      ticketEntries = tkData;
+      renderTickets();
+    }
+  } catch { /* silent — will retry next interval */ }
+}, 30000);
+
+// ── Admin auth ──────────────────────────────────────────────────────────
+const adminOverlay = document.getElementById('adminOverlay');
+const adminToggle  = document.getElementById('adminToggle');
+
+async function sha256(msg) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function setAdmin(on) {
+  document.body.classList.toggle('is-admin', on);
+  adminToggle.classList.toggle('authed', on);
+  adminToggle.textContent = on ? '🔓' : '🔒';
+  adminToggle.title = on ? 'Admin mode active (click to log out)' : 'Admin login';
+  if (on) sessionStorage.setItem('nmtAdmin', '1');
+  else sessionStorage.removeItem('nmtAdmin');
+  renderChangelog();
+  renderTickets();
+}
+
+adminToggle.addEventListener('click', () => {
+  if (document.body.classList.contains('is-admin')) { setAdmin(false); return; }
+  adminOverlay.classList.add('open');
+  document.getElementById('adminPw').value = '';
+  document.getElementById('adminErr').style.display = 'none';
+  setTimeout(() => document.getElementById('adminPw').focus(), 100);
+});
+
+document.getElementById('cancelAdminBtn').addEventListener('click', () => adminOverlay.classList.remove('open'));
+adminOverlay.addEventListener('click', e => { if (e.target === adminOverlay) adminOverlay.classList.remove('open'); });
+
+async function tryAdminLogin() {
+  const pw = document.getElementById('adminPw').value;
+  const hash = await sha256(pw);
+  if (hash === ADMIN_HASH) {
+    adminOverlay.classList.remove('open');
+    setAdmin(true);
+  } else {
+    document.getElementById('adminErr').style.display = 'block';
+    document.getElementById('adminPw').value = '';
+    document.getElementById('adminPw').focus();
+  }
+}
+
+document.getElementById('submitAdminBtn').addEventListener('click', tryAdminLogin);
+document.getElementById('adminPw').addEventListener('keydown', e => { if (e.key === 'Enter') tryAdminLogin(); });
+
+// ── Init ──────────────────────────────────────────────────────────────────
+// Capture Windows username passed in URL by the VBS launcher (?user=USERNAME)
+(function() {
+  try {
+    const u = new URLSearchParams(window.location.search).get('user');
+    if (u) sessionStorage.setItem('winUser', u);
+  } catch(e) {}
+})();
+// Restore admin session if previously logged in
+if (sessionStorage.getItem('nmtAdmin') === '1') setAdmin(true);
+// Load data from server
+loadData();
+</script>
+</body>
+</html>
