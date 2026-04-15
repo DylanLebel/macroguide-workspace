@@ -20,6 +20,7 @@ $ErrorActionPreference = 'Stop'
 $Source      = 'C:\AllMacros'
 $DeploySrc   = 'C:\AllMacros\deploy'
 $Target      = 'Y:\Solidworks\Macros\Macro Data PDM\MacroGuide'
+$PdmTarget   = 'C:\NMT_PDM\Libraries\Macro'   # launcher also goes here so the team can open the guide from PDM
 $BackupRoot  = Join-Path $Target ('_backup_' + (Get-Date -Format 'yyyyMMdd_HHmmss'))
 
 # Files to deploy: local path + filename in target
@@ -109,8 +110,51 @@ foreach ($f in $Files) {
 }
 
 Write-Host ""
+
+# 5. Also drop the launcher into the PDM Macros folder so the team can
+#    access the guide from inside the PDM vault view. Dylan needs to check
+#    this file in through PDM the first time it lands so others see it.
+Write-Host "  Deploying launcher to PDM Macros folder..." -ForegroundColor Gray
+$launcherSrc  = Join-Path $DeploySrc 'Open Macro Guide.vbs'
+$launcherDest = Join-Path $PdmTarget 'Open Macro Guide.vbs'
+if (-not (Test-Path $PdmTarget)) {
+    Write-Host "    SKIP  PDM folder not found: $PdmTarget" -ForegroundColor Yellow
+    Write-Host "          (Only Dylan's machine has this - that is fine on other machines.)" -ForegroundColor DarkGray
+} else {
+    # PDM-controlled files are read-only when checked in. Detect this BEFORE
+    # trying to copy so the error message is actually useful.
+    $pdmExisting = $null
+    if (Test-Path $launcherDest) {
+        $pdmExisting = Get-Item $launcherDest
+        if ($pdmExisting.Attributes -band [IO.FileAttributes]::ReadOnly) {
+            Write-Host "    SKIP  Open Macro Guide.vbs in PDM is READ-ONLY (checked in)." -ForegroundColor Yellow
+            Write-Host "          Check it out in PDM, then re-run Deploy-MacroGuide.bat." -ForegroundColor Yellow
+            $failed += 'Open Macro Guide.vbs (PDM read-only)'
+            $pdmExisting = 'skip'
+        }
+    }
+    if ($pdmExisting -ne 'skip') {
+        try {
+            # Back up the existing PDM copy too if one exists
+            if (Test-Path $launcherDest) {
+                if (-not (Test-Path $BackupRoot)) { New-Item -ItemType Directory -Path $BackupRoot -Force | Out-Null }
+                Copy-Item $launcherDest (Join-Path $BackupRoot 'Open Macro Guide.vbs.pdm.bak') -Force
+            }
+            Copy-Item $launcherSrc $launcherDest -Force
+            $size = (Get-Item $launcherDest).Length
+            Write-Host ("    OK  {0,-30}  {1,8:N0} bytes   -> $PdmTarget" -f 'Open Macro Guide.vbs', $size) -ForegroundColor Green
+            Write-Host "    REMINDER: Check this file in via PDM so the rest of the team gets it." -ForegroundColor Yellow
+        } catch {
+            Write-Host ("    FAIL  Open Macro Guide.vbs -> PDM  ({0})" -f $_.Exception.Message) -ForegroundColor Red
+            Write-Host "          The file may still be locked. Close any open instance and retry." -ForegroundColor Yellow
+            $failed += 'Open Macro Guide.vbs (PDM)'
+        }
+    }
+}
+Write-Host ""
+
 if ($failed.Count -eq 0) {
-    Write-Host "  Deploy complete: $copied file(s) updated." -ForegroundColor Green
+    Write-Host "  Deploy complete: $copied file(s) updated on Y:, launcher dropped in PDM." -ForegroundColor Green
     if ($serverLive) {
         Write-Host "  Remember to restart the server so users see the new HTML." -ForegroundColor Yellow
     }

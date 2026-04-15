@@ -53,6 +53,37 @@ $EmailEnabled = $true
 $EmailTo      = 'dlebel@nmtech.com'
 
 # ════════════════════════════════════════════════════════════════════════
+#  ERROR LOG (shared, so Dylan can see what's failing on any user's box)
+# ════════════════════════════════════════════════════════════════════════
+
+# Primary log on Y: so Dylan can see all users' errors in one place.
+# Falls back to APPDATA when Y: isn't reachable (same policy as data dir).
+$SharedErrorLog = 'Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\data\errors.log'
+$LocalErrorLog  = Join-Path $env:APPDATA 'MacroGuide\errors.log'
+
+function Write-ErrorLog {
+    param([string]$Context, [string]$Message, [string]$Detail = '')
+    $ts   = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+    $user = $env:USERNAME
+    $machine = $env:COMPUTERNAME
+    $line = "[$ts] [$user@$machine] [$Context] $Message"
+    if ($Detail) { $line += " | $Detail" }
+    # Try shared first; fall back to local if Y: isn't writable.
+    $target = $SharedErrorLog
+    try {
+        $dir = Split-Path -Parent $target
+        if (-not (Test-Path $dir)) { throw "shared dir missing" }
+        Add-Content -Path $target -Value $line -Encoding UTF8 -ErrorAction Stop
+    } catch {
+        try {
+            $localDir = Split-Path -Parent $LocalErrorLog
+            if (-not (Test-Path $localDir)) { New-Item -ItemType Directory -Path $localDir -Force | Out-Null }
+            Add-Content -Path $LocalErrorLog -Value $line -Encoding UTF8 -ErrorAction SilentlyContinue
+        } catch {}
+    }
+}
+
+# ════════════════════════════════════════════════════════════════════════
 #  FILE LOCKING (cross-machine safe via lock files on shared drive)
 # ════════════════════════════════════════════════════════════════════════
 
@@ -163,6 +194,9 @@ function Send-OutlookEmail {
         Write-Host "  Email sent to ${To}: $Subject" -ForegroundColor Green
     } catch {
         Write-Host "  Email failed ($To): $($_.Exception.Message)" -ForegroundColor Yellow
+        # Most common cause: Outlook isn't running on this user's machine.
+        # Log so Dylan can see who got missed and manually follow up.
+        Write-ErrorLog 'email' "Outlook send failed to $To" "Subject: $Subject | $($_.Exception.Message)"
     }
 }
 
@@ -1038,6 +1072,22 @@ function Handle-Request {
         return
     }
 
+    # ── GET /api/version ─────────────────────────────────
+    # Returns a stable id for the current HTML file (last-write-time ticks).
+    # The page polls this to detect when a deploy has updated the HTML so it
+    # can offer the user a refresh. This is how users pick up content updates
+    # without having to close and reopen the guide.
+    if ($method -eq 'GET' -and $url -eq '/api/version') {
+        $ver = ''
+        try {
+            if (Test-Path $HtmlFile) {
+                $ver = (Get-Item $HtmlFile).LastWriteTimeUtc.Ticks.ToString()
+            }
+        } catch {}
+        Send-JsonResponse $res 200 @{ version = $ver }
+        return
+    }
+
     # ── GET /api/shutdown (localhost only) ───────────────
     if ($method -eq 'GET' -and $url -eq '/api/shutdown') {
         Send-JsonResponse $res 200 @{ ok = $true; message = 'Server shutting down.' }
@@ -1162,6 +1212,7 @@ function Start-Server {
             $errUrl = $context.Request.Url.AbsolutePath
             $errMethod = $context.Request.HttpMethod
             Write-Host "  ERROR [$errMethod $errUrl]: $($_.Exception.Message)" -ForegroundColor Red
+            Write-ErrorLog "$errMethod $errUrl" $_.Exception.Message $_.ScriptStackTrace
             try { Send-JsonResponse $context.Response 500 @{ error = $_.Exception.Message } } catch {}
         }
     }
