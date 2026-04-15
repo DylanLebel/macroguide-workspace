@@ -50,14 +50,12 @@ The guide runs as a lightweight local server (PowerShell — built into Windows,
 C:\AllMacros\                          ← Macro source code (this repo)
 ├── DateFixer\
 ├── DrawingTemplateUpdate\
-├── Evaluation1\
 ├── ModelToImperial\
 ├── MoveToPDM\
 ├── NewPL\
 ├── PDMDXF\
 ├── PDMPDF\
 ├── Prepare_for_CADLink_1234\
-├── Setup\
 ├── MacroGuide.html                    ← The web app
 └── deploy\                            ← Files that go on the shared drive
     ├── macro-guide-server.ps1

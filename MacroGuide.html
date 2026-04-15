@@ -49,7 +49,7 @@
       gap: 14px;
       margin-bottom: 12px;
     }
-    .logo-icon { font-size: 2.4rem; filter: drop-shadow(0 0 16px rgba(79,142,247,0.5)); }
+    .logo-icon { font-size: 2.4rem; height: 2.6rem; width: auto; filter: drop-shadow(0 0 16px rgba(79,142,247,0.5)); vertical-align: middle; }
     header h1 {
       font-size: clamp(1.6rem, 4vw, 2.4rem);
       font-weight: 700;
@@ -571,9 +571,13 @@
     }
     .tk-type-btn:hover { border-color: var(--accent); color: var(--text); }
     .tk-type-btn.selected { color: #fff; }
-    .tk-type-btn[data-tktype="bug"].selected     { background: #ef4444; border-color: #ef4444; }
-    .tk-type-btn[data-tktype="feature"].selected  { background: #10b981; border-color: #10b981; }
-    .tk-type-btn[data-tktype="change"].selected   { background: #f59e0b; border-color: #f59e0b; }
+    .tk-type-btn[data-tktype="bug"].selected      { background: #ef4444; border-color: #ef4444; }
+    .tk-type-btn[data-tktype="feature"].selected   { background: #10b981; border-color: #10b981; }
+    .tk-type-btn[data-tktype="change"].selected    { background: #f59e0b; border-color: #f59e0b; }
+    .tk-type-btn[data-tktype="newmacro"].selected  { background: #f97316; border-color: #f97316; }
+    .tk-type-btn[data-tktype="help"].selected      { background: #6366f1; border-color: #6366f1; }
+    .tk-type-btn[data-tktype="it"].selected        { background: #06b6d4; border-color: #06b6d4; }
+    .tk-type-btn[data-tktype="other"].selected     { background: #8b5cf6; border-color: #8b5cf6; }
 
     .form-row-2 { display: flex; gap: 12px; }
     .form-row-2 .form-row { flex: 1; margin-bottom: 0; }
@@ -641,6 +645,19 @@
     .admin-only { display: none !important; }
     body.is-admin .admin-only { display: flex !important; }
 
+    /* ── Admin restart button ── */
+    .admin-restart {
+      position: fixed; bottom: 20px; right: 72px; z-index: 50;
+      height: 42px; border-radius: 21px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--muted); font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; align-items: center; justify-content: center;
+      transition: all 0.2s; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      padding: 0 16px; gap: 6px;
+    }
+    .admin-restart:hover { border-color: #f59e0b; color: #f59e0b; }
+    .admin-restart:active { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+
     /* ── Tickets section ── */
     .tk-section { max-width: 960px; margin: 0 auto 80px; padding: 0 24px; }
     .tk-top-bar {
@@ -689,6 +706,13 @@
       cursor: pointer; transition: all 0.15s;
     }
     .tk-cancel-btn:hover { border-color: #ef4444; color: #ef4444; }
+
+    .tk-edit-btn {
+      padding: 3px 8px; border-radius: 5px; border: 1px solid var(--border);
+      background: transparent; color: var(--muted); font-size: 0.7rem;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .tk-edit-btn:hover { border-color: var(--accent); color: var(--accent); }
 
     .tk-priority-badge {
       font-size: 0.7rem; font-weight: 700; padding: 2px 8px;
@@ -818,17 +842,268 @@
     }
     .tk-sort-btn.active { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
     .tk-sort-btn:hover { border-color: var(--accent); color: var(--text); }
+
+    /* ── Poke button (proper CSS for hover) ── */
+    .tk-poke-btn {
+      background: color-mix(in srgb, #f59e0b 8%, transparent);
+      border: 1px solid color-mix(in srgb, #f59e0b 30%, transparent);
+      border-radius: 6px; padding: 4px 10px; font-size: 0.78rem;
+      cursor: pointer; color: #f59e0b; font-weight: 600;
+      transition: all 0.15s;
+    }
+    .tk-poke-btn:hover { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+
+    /* ── Poke display with hover tooltip ── */
+    .tk-poke-display {
+      color: #f59e0b; cursor: default; position: relative;
+    }
+    .tk-vote-btn[title]:hover, .tk-poke-display[title]:hover {
+      position: relative;
+    }
+
+    /* ── Comment section ── */
+    .tk-comments { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .tk-comments-toggle {
+      font-size: 0.78rem; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px;
+      cursor: pointer; background: none; border: none; padding: 4px 0; width: 100%;
+      transition: color 0.15s;
+    }
+    .tk-comments-toggle:hover { color: var(--accent); }
+    .tk-comments-toggle .toggle-arrow {
+      display: inline-block; transition: transform 0.2s; font-size: 0.7rem;
+    }
+    .tk-comments-toggle.expanded .toggle-arrow { transform: rotate(90deg); }
+    .tk-comments-body { display: none; margin-top: 10px; }
+    .tk-comments-body.open { display: block; }
+    .tk-comments-header {
+      font-size: 0.78rem; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 10px; display: flex;
+      align-items: center; gap: 8px;
+    }
+    .tk-comment {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 14px; margin-bottom: 8px;
+    }
+    .tk-comment-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+      font-size: 0.8rem;
+    }
+    .tk-comment-user { font-weight: 600; color: var(--text); }
+    .tk-comment-date { color: var(--muted); font-size: 0.72rem; }
+    .tk-comment-edit {
+      margin-left: auto; background: none; border: none;
+      color: var(--muted); font-size: 0.72rem; cursor: pointer;
+      padding: 2px 6px; border-radius: 4px; transition: all 0.15s;
+    }
+    .tk-comment-edit:hover { color: var(--accent); background: rgba(79,142,247,0.1); }
+    .tk-comment-edit-form {
+      margin-top: 8px; display: flex; flex-direction: column; gap: 6px;
+    }
+    .tk-comment-edit-form textarea {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-size: 0.85rem; padding: 8px 12px; outline: none;
+      font-family: inherit; resize: vertical; min-height: 40px;
+    }
+    .tk-comment-edit-form textarea:focus { border-color: var(--accent); }
+    .tk-comment-edit-actions { display: flex; gap: 6px; align-items: center; }
+    .tk-comment-edit-actions button {
+      font-size: 0.75rem; padding: 4px 12px; border-radius: 6px; cursor: pointer;
+      border: none; font-family: inherit; transition: all 0.15s;
+    }
+    .tk-comment-edit-save { background: var(--accent); color: #fff; }
+    .tk-comment-edit-save:hover { filter: brightness(1.1); }
+    .tk-comment-edit-cancel { background: var(--surface2); color: var(--muted); border: 1px solid var(--border) !important; }
+    .tk-comment-edit-cancel:hover { color: var(--text); }
+    .tk-comment-edit-gif-preview img { max-width: 150px; max-height: 100px; border-radius: 6px; margin-top: 4px; }
+    .tk-comment-text { font-size: 0.88rem; color: var(--text); line-height: 1.5; }
+    .tk-comment-text img.comment-gif {
+      max-width: 200px; max-height: 150px; border-radius: 8px;
+      margin-top: 6px; display: block;
+    }
+    .tk-add-comment {
+      display: flex; gap: 8px; align-items: flex-start; margin-top: 8px;
+    }
+    .tk-comment-input {
+      flex: 1; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 0.85rem;
+      padding: 8px 12px; outline: none; font-family: inherit;
+      resize: none; min-height: 36px; max-height: 120px; line-height: 1.4;
+      transition: border-color 0.15s;
+    }
+    .tk-comment-input:focus { border-color: var(--accent); }
+    .tk-comment-input::placeholder { color: var(--muted); }
+    .tk-comment-submit {
+      padding: 8px 14px; border-radius: 8px; border: 1px solid var(--accent);
+      background: var(--accent); color: #fff; font-size: 0.8rem;
+      font-weight: 600; cursor: pointer; transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .tk-comment-submit:hover { background: #3a7de8; }
+    .tk-comment-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+    .tk-comment-tools {
+      display: flex; gap: 4px; margin-top: 4px;
+    }
+    .tk-comment-tool-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 4px 8px; font-size: 0.8rem;
+      cursor: pointer; color: var(--muted); transition: all 0.15s;
+    }
+    .tk-comment-tool-btn:hover { border-color: var(--accent); color: var(--text); }
+
+    /* ── Emoji picker ── */
+    .emoji-picker {
+      display: none; position: absolute; bottom: 100%; left: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 10px; width: 280px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4); z-index: 50;
+      max-height: 200px; overflow-y: auto;
+    }
+    .emoji-picker.open { display: block; }
+    .emoji-picker span {
+      display: inline-block; font-size: 1.3rem; padding: 4px;
+      cursor: pointer; border-radius: 6px; transition: background 0.1s;
+    }
+    .emoji-picker span:hover { background: var(--surface2); }
+
+    /* ── GIF picker ── */
+    .gif-picker {
+      display: none; position: absolute; bottom: 100%; left: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px; width: 340px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5); z-index: 50;
+    }
+    .gif-picker.open { display: block; }
+    .gif-picker-input {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 0.85rem;
+      padding: 9px 12px; outline: none; margin-bottom: 10px; font-family: inherit;
+      box-sizing: border-box;
+    }
+    .gif-picker-input::placeholder { color: var(--muted); }
+    .gif-picker-input:focus { border-color: var(--accent); }
+    .gif-picker-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
+      max-height: 240px; overflow-y: auto;
+    }
+    .gif-picker-grid img {
+      width: 100%; height: 90px; object-fit: cover; border-radius: 8px;
+      cursor: pointer; border: 2px solid transparent; transition: all 0.12s;
+      background: var(--surface2);
+    }
+    .gif-picker-grid img:hover { border-color: var(--accent); transform: scale(1.03); }
+    .gif-credit {
+      font-size: 0.65rem; color: var(--muted); text-align: center;
+      margin-top: 8px; font-style: italic;
+    }
+
+    /* ── File upload drop zone ── */
+    .file-drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .file-drop-zone:hover, .file-drop-zone.dragover {
+      border-color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 5%, transparent);
+      color: var(--text);
+    }
+    .file-drop-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer;
+    }
+    .file-drop-icon { font-size: 1.8rem; display: block; margin-bottom: 6px; }
+    .file-drop-hint { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+    .file-preview-list {
+      display: flex; flex-direction: column; gap: 8px; margin-top: 10px;
+    }
+    .file-preview-item {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 12px; font-size: 0.85rem;
+    }
+    .file-preview-item img {
+      width: 40px; height: 40px; object-fit: cover; border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .file-preview-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+    .file-preview-size { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+    .file-preview-remove {
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      font-size: 1rem; padding: 2px 6px; border-radius: 4px; transition: all 0.15s;
+    }
+    .file-preview-remove:hover { color: #ef4444; background: rgba(239,68,68,0.1); }
+
+    /* ── Attachment display on ticket cards ── */
+    .tk-attachments {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;
+    }
+    .tk-attach-thumb {
+      width: 64px; height: 64px; border-radius: 8px; object-fit: cover;
+      border: 1px solid var(--border); cursor: pointer; transition: all 0.15s;
+    }
+    .tk-attach-thumb:hover { border-color: var(--accent); transform: scale(1.05); }
+    .tk-attach-file {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 6px 12px; font-size: 0.78rem;
+      color: var(--muted); text-decoration: none; transition: all 0.15s;
+    }
+    .tk-attach-file:hover { border-color: var(--accent); color: var(--text); }
+    .tk-attach-count {
+      font-size: 0.75rem; color: var(--muted); display: inline-flex;
+      align-items: center; gap: 4px;
+    }
+
+    /* ── Image lightbox ── */
+    .lightbox {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      z-index: 500; align-items: center; justify-content: center; padding: 24px;
+      cursor: pointer;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox img {
+      max-width: 90vw; max-height: 90vh; border-radius: 12px;
+      box-shadow: 0 8px 48px rgba(0,0,0,0.6);
+    }
   </style>
 </head>
 <body>
 
+<!-- ══ WORK-IN-PROGRESS BANNER ══ -->
+<div id="wipBanner" style="
+  background: linear-gradient(90deg, #fde68a, #fcd34d);
+  color: #78350f;
+  padding: 10px 18px;
+  text-align: center;
+  font-size: 0.92rem;
+  font-weight: 600;
+  border-bottom: 1px solid #f59e0b;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+">
+  <span>🚧</span>
+  <span><strong>Work in progress — treat everything here as a draft.</strong> Dylan is actively rewriting the macro information; details may be inaccurate or incomplete. Don't rely on this as the source of truth yet. Use the <strong>Requests</strong> tab to flag anything wrong.</span>
+</div>
+
 <!-- ══ HEADER ══ -->
 <header>
   <div class="logo-row">
-    <span class="logo-icon">⚙️</span>
+    <img class="logo-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEIAAAA+CAMAAACoaj1gAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAGNQTFRFAHGkEyE+EHqqQJW7v9voxMfP3+307/b5f7jRYKbGMT1WTllu4ePnIIOvn8rd8PHziZCel52qIi9KbHWHpqu2tbnCj8HXMIy1r9Liz+TucK/MP0tiXWd709XbUJ7Be4OT////ECG7AAAAACF0Uk5T//////////////////////////////////////////8An8HQIQAAAe5JREFUeNrsl9uWgjAMRVOgFRAFFERRZ+b/v3IY5BJ6WlvGFx/c7+y1yAlJoJ+XoY/inRUq2a95VpaoiInCyFdQpUJIUHxRx5fyeD4vO4EQd1A01JNsHIKsOIgefBEaCOJnkuwoBq6giGgisNZV3sTEERR7YuyMda23glGAIqYFGE6VigUSFCFpJItwsoPQyEARENCyukrdcIDu3JCBIGYO7T22oIjIyG5vK8Y3KE5koZnrmhesICUoErISXmbJUQuEK0J6AgsnG5sLP3Z6Cm962TdYCgpFDoIT69J0CoQpzuSEh1Nua1DE5IFpItFy3nhIlF3RkCf6RCLPQGzhcEVEK1hMpP8punDOqFC7dQ66YC02cbBKoUzbbNOuKYdlp6rEWxFa13IUeiraJ5v97FfXEygyyfaJT10jUGzFVa4KB1urn8jZLHHVdQeKbFiSs0SFnoGMinHNHIrcL5wYFMW8okpWV3s4Z1CwjS/Smu2WwPWFTIrrctPxcFyBjAp9494cTd+A4q4rHofYwAXrmoCi0gRppX05jT2QQVEsS1HjpNfCiUDBL6ijNJ5py6ZXoJjPBtafIGkN82ZU5IbeNDGFE4Li0d5pmTsP56HpW1CUf5ds5Xe99xPpBIqa96OTbiJdXv6lUZ/fu7dW/AowAIXFO3LF1XQgAAAAAElFTkSuQmCC" alt="Nordic Minesteel" />
     <h1>Nordic Minesteel Macro Guide</h1>
   </div>
-  <p class="subtitle">Everything you need to know about the SolidWorks automation tools — explained clearly, without the jargon.</p>
+  <p class="subtitle">Your reference for the SolidWorks PDM macros at Nordic Minesteel.</p>
   <div class="badge-row">
     <div class="badge"><span>8</span> Macros</div>
     <div class="badge">SolidWorks Automation</div>
@@ -879,10 +1154,10 @@
     <div class="card" style="--card-accent:#4f8ef7" data-category="drawings" data-id="datefixer">
       <div class="card-top"></div>
       <div class="card-body">
-        <span class="card-icon">📅</span>
+        <span class="card-icon">🗓️</span>
         <h2>Date Fixer</h2>
         <span class="card-tag">Drawings</span>
-        <p class="desc">Automatically finds and corrects the creation date on engineering drawings so they always show the right date.</p>
+        <p class="desc">Fixes the bad date variable in old drawings — replaces it with the actual creation date from the revision table so it stops changing.</p>
       </div>
       <div class="card-footer">
         <span class="card-hint">Click to learn more</span>
@@ -893,10 +1168,10 @@
     <div class="card" style="--card-accent:#7c3aed" data-category="drawings" data-id="drawingtemplateupdate">
       <div class="card-top"></div>
       <div class="card-body">
-        <span class="card-icon">📐</span>
+        <span class="card-icon">🖼️</span>
         <h2>Drawing Template Update</h2>
         <span class="card-tag">Drawings</span>
-        <p class="desc">Updates all drawings in a folder to use the latest standardized company template — in one shot, no manual work.</p>
+        <p class="desc">Changes drawing sheet formats in bulk — smart size detection, supports metric-to-imperial template switching.</p>
       </div>
       <div class="card-footer">
         <span class="card-hint">Click to learn more</span>
@@ -907,7 +1182,7 @@
     <div class="card" style="--card-accent:#10b981" data-category="parts" data-id="modeltoimperial">
       <div class="card-top"></div>
       <div class="card-body">
-        <span class="card-icon">📏</span>
+        <span class="card-icon">📐</span>
         <h2>Model to Imperial</h2>
         <span class="card-tag">Parts &amp; Models</span>
         <p class="desc">Converts 3D models from metric (millimeters) to imperial (inches) — including every sub-part inside an assembly.</p>
@@ -921,10 +1196,10 @@
     <div class="card" style="--card-accent:#f59e0b" data-category="pdm" data-id="movetopdm">
       <div class="card-top"></div>
       <div class="card-body">
-        <span class="card-icon">📦</span>
+        <span class="card-icon">🔧</span>
         <h2>Move to PDM</h2>
         <span class="card-tag">PDM / Files</span>
-        <p class="desc">Bulk property cleanup tool — renames, removes, and adds file properties to prepare parts and assemblies for PDM. Requires setup before each run.</p>
+        <p class="desc">Universal bulk property changer — renames, deletes, adds, and clears custom properties to prepare files for PDM. Not a guaranteed conversion — requires setup and verification.</p>
       </div>
       <div class="card-footer">
         <span class="card-hint">Click to learn more</span>
@@ -936,9 +1211,9 @@
       <div class="card-top"></div>
       <div class="card-body">
         <span class="card-icon">🏭</span>
-        <h2>Make or Buy Checker</h2>
+        <h2>Plate Make/Buy Checker</h2>
         <span class="card-tag">Parts &amp; Models</span>
-        <p class="desc">Looks at a flat plate or bar part and automatically decides if it should be made in-house or purchased from a supplier.</p>
+        <p class="desc">For older models — checks plate dimensions and material against shop limits to re-classify parts from Purchase to Make where possible.</p>
       </div>
       <div class="card-footer">
         <span class="card-hint">Click to learn more</span>
@@ -949,10 +1224,10 @@
     <div class="card" style="--card-accent:#06b6d4" data-category="pdm" data-id="pdmpdf">
       <div class="card-top"></div>
       <div class="card-body">
-        <span class="card-icon">📄</span>
+        <span class="card-icon">📑</span>
         <h2>PDM PDF Generator</h2>
         <span class="card-tag">PDM / Files</span>
-        <p class="desc">Creates PDFs from drawings, syncs revisions, audits missing PDFs across assemblies, and runs in batch mode — all connected to the PDM vault.</p>
+        <p class="desc">Creates PDFs from drawings, assemblies, or entire folders. Audit mode checks for missing/outdated PDFs. Supports checked-out-only batch mode.</p>
       </div>
       <div class="card-footer">
         <span class="card-hint">Click to learn more</span>
@@ -963,10 +1238,10 @@
     <div class="card" style="--card-accent:#a855f7" data-category="pdm" data-id="cadlink">
       <div class="card-top"></div>
       <div class="card-body">
-        <span class="card-icon">🚀</span>
+        <span class="card-icon">⚡</span>
         <h2>Prepare for CADLink</h2>
         <span class="card-tag">PDM / Files</span>
-        <p class="desc">The big one — fills in all required information on parts and assemblies, checks everything is correct, and gets files fully ready for the CADLink system.</p>
+        <p class="desc">The big one — must be run on every model going to CADLink. Fills in properties, validates everything, and shows what still needs your attention. Model must be checked out.</p>
       </div>
       <div class="card-footer">
         <span class="card-hint">Click to learn more</span>
@@ -980,7 +1255,7 @@
         <span class="card-icon">✂️</span>
         <h2>PDM DXF Exporter</h2>
         <span class="card-tag">PDM / Files</span>
-        <p class="desc">Exports a flat face from a part as a DXF burn profile, auto-manages revisions and obsolete files in the PDM vault.</p>
+        <p class="desc">Creates DXF burn profiles from selected faces — proper naming, revision handling, and placement in Burn Profiles folder. Be careful with counter-sink faces.</p>
       </div>
       <div class="card-footer">
         <span class="card-hint">Click to learn more</span>
@@ -1069,70 +1344,108 @@
   <div class="gs-section">
     <div style="height:28px"></div>
     <div class="gs-hero">
-      <div class="gs-hero-icon">🚀</div>
+      <div class="gs-hero-icon">🛠️</div>
       <h2>Getting Started with Macros</h2>
-      <p>New to the team? This guide gets you up and running with SolidWorks macros in minutes.</p>
+      <p>Everything you need to know to start using SolidWorks macros at Nordic Minesteel. Whether you're brand new or just need a refresher.</p>
     </div>
 
     <div class="gs-card">
       <h3>🤔 What is a macro?</h3>
-      <p>A macro is a small program that runs inside SolidWorks and handles repetitive tasks automatically. Instead of clicking through menus and filling in fields by hand — which takes time and causes mistakes — you press a button and the macro does it instantly.</p>
-      <p>Think of it like a supercharged shortcut that can do dozens of steps at once.</p>
+      <p>A macro is a small program that runs inside SolidWorks. Instead of manually clicking through menus, typing in property values, creating PDFs, or repeating the same 20 steps for every file — you press one button and the macro does it all instantly.</p>
+      <p style="margin-top:10px">Every macro on this site was built specifically for Nordic Minesteel's workflow. They know our PDM vault, our folder structures, our property names, our templates, and our manufacturing limits. They're not generic tools — they're custom-built for how we work.</p>
+    </div>
+
+    <div class="gs-card">
+      <h3>⚡ The #1 rule: Check out your files first</h3>
+      <p style="color:#ef4444;font-weight:600;margin-bottom:10px">If the file isn't checked out in PDM, the macro can't save changes. This is the most common mistake.</p>
+      <p>Before running any macro that modifies properties (Prepare for CADLink, Move to PDM, Date Fixer, etc.), make sure the file is <strong>checked out to you</strong> in PDM. If it's checked in, the macro will run and everything might look fine — but when you close the file, all the changes disappear.</p>
+      <div class="tip-box" style="margin-top:14px;--modal-accent:#ef4444"><strong style="color:#ef4444">Remember:</strong> Checked out = changes save. Checked in = changes vanish. Check the lock icon in PDM before running.</div>
     </div>
 
     <div class="gs-card">
       <h3>▶️ How to run a macro</h3>
-      <p style="margin-bottom:14px">If Dylan has already set up your computer, you'll have macro buttons in your SolidWorks toolbar — just click and go. If your machine is new or not set up yet, contact Dylan.</p>
-      <p style="margin-bottom:14px;font-weight:600;color:var(--text)">Running manually (no toolbar button):</p>
+      <p style="margin-bottom:14px">If Dylan has already set up your computer, you'll have <strong>macro buttons in your SolidWorks toolbar</strong> — just click and go. That's the easiest way. If you don't see them, ask Dylan to set them up (takes 2 minutes).</p>
+      <p style="margin-bottom:14px;font-weight:600;color:var(--text)">Running manually (if no toolbar button):</p>
       <div class="steps" style="--modal-accent:var(--accent)">
         <div class="step"><div class="step-num">1</div><p>In SolidWorks, go to <strong>Tools → Macro → Run</strong> in the top menu bar.</p></div>
-        <div class="step"><div class="step-num">2</div><p>A file browser opens. Navigate to the macro folder on your computer and find the <strong>.swp</strong> file for the macro you want.</p></div>
+        <div class="step"><div class="step-num">2</div><p>Browse to <code>C:\AllMacros\</code> (or the Y: drive macro folder) and find the <strong>.swp</strong> file for the macro you want.</p></div>
         <div class="step"><div class="step-num">3</div><p>Click <strong>Open</strong>. The macro starts immediately.</p></div>
       </div>
     </div>
 
     <div class="gs-card">
-      <h3>🔧 Adding a macro to your SolidWorks toolbar (one-time setup)</h3>
+      <h3>🔧 Adding a macro to your toolbar (one-time setup)</h3>
+      <p style="margin-bottom:14px">This puts a permanent button in your SolidWorks toolbar so you never have to browse for the file again.</p>
       <div class="steps" style="--modal-accent:var(--accent)">
         <div class="step"><div class="step-num">1</div><p>In SolidWorks, right-click any toolbar and choose <strong>Customize…</strong></p></div>
         <div class="step"><div class="step-num">2</div><p>Go to the <strong>Commands</strong> tab. In the categories list, find <strong>Macros</strong>.</p></div>
-        <div class="step"><div class="step-num">3</div><p>Drag the <strong>New Macro Button</strong> onto any toolbar.</p></div>
-        <div class="step"><div class="step-num">4</div><p>A dialog opens — browse to the macro file (<code>.swp</code>), pick an icon, and give it a label. Click <strong>OK</strong>.</p></div>
-        <div class="step"><div class="step-num">5</div><p>Your macro button is now in the toolbar. One click to run it every time.</p></div>
+        <div class="step"><div class="step-num">3</div><p>Drag the <strong>New Macro Button</strong> onto any toolbar where you want it.</p></div>
+        <div class="step"><div class="step-num">4</div><p>A dialog opens — browse to the macro file (<code>.swp</code>), pick an icon, and give it a name. Click <strong>OK</strong>.</p></div>
+        <div class="step"><div class="step-num">5</div><p>Done! One click to run it from now on.</p></div>
       </div>
-      <div class="tip-box" style="margin-top:14px;--modal-accent:var(--accent)"><strong style="color:var(--accent)">Tip:</strong> Ask Dylan to do this for you — it only takes a minute and saves you from navigating menus every time.</div>
+      <div class="tip-box" style="margin-top:14px;--modal-accent:var(--accent)"><strong style="color:var(--accent)">Easier option:</strong> Just ask Dylan to set it up for you — it takes one minute and he can add all the macros you need at once.</div>
     </div>
 
     <div class="gs-card">
-      <h3>⚠️ Common issues &amp; questions</h3>
+      <h3>📋 Which macro do I need?</h3>
+      <div class="gs-faq">
+        <div class="gs-faq-item">
+          <div class="gs-faq-q">I need to get a model ready for CADLink</div>
+          <div class="gs-faq-a"><strong>Prepare for CADLink</strong> — the main one. Check out the model, run it, fill in anything it flags as red (Revision, Product Group), done. Works on single parts or entire assemblies.</div>
+        </div>
+        <div class="gs-faq-item">
+          <div class="gs-faq-q">I need to create PDFs from drawings</div>
+          <div class="gs-faq-a"><strong>PDM PDF Generator</strong> — run it from a single drawing, an assembly (creates PDFs for everything), or batch-process a whole folder. Also has an audit mode to check what's missing.</div>
+        </div>
+        <div class="gs-faq-item">
+          <div class="gs-faq-q">I need to create a DXF burn profile</div>
+          <div class="gs-faq-a"><strong>PDM DXF Exporter</strong> — select the flat face you want to cut, run the macro. Be careful to pick the right face (watch out for counter-sinks).</div>
+        </div>
+        <div class="gs-faq-item">
+          <div class="gs-faq-q">I need to clean up properties for PDM</div>
+          <div class="gs-faq-a"><strong>Move to PDM</strong> — talk to Dylan first. The rules need to be configured for your specific batch of files. It's powerful but needs setup.</div>
+        </div>
+        <div class="gs-faq-item">
+          <div class="gs-faq-q">I need to convert metric models to imperial</div>
+          <div class="gs-faq-a"><strong>Model to Imperial</strong> — open the part or assembly, run it. Converts everything including sub-parts automatically.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gs-card">
+      <h3>⚠️ Troubleshooting</h3>
       <div class="gs-faq">
         <div class="gs-faq-item">
           <div class="gs-faq-q">The macro runs but nothing seems to happen</div>
-          <div class="gs-faq-a">Most macros need the right type of file open first. Make sure the correct part, assembly, or drawing is open before running. Each macro's page in this guide lists what it needs.</div>
+          <div class="gs-faq-a">Make sure the right type of file is open — each macro needs a specific type (part, assembly, or drawing). Check the macro's page in this guide for what it expects. Also make sure the file is checked out.</div>
         </div>
         <div class="gs-faq-item">
-          <div class="gs-faq-q">SolidWorks shows a security warning when I run a macro</div>
-          <div class="gs-faq-a">This is normal. Click "Enable macros" or similar — all macros here are written in-house and are safe to run.</div>
+          <div class="gs-faq-q">Properties filled in but disappeared after closing</div>
+          <div class="gs-faq-a"><strong>The file wasn't checked out.</strong> Check it out in PDM, run the macro again, and the changes will stick this time.</div>
         </div>
         <div class="gs-faq-item">
-          <div class="gs-faq-q">The macro gave an unexpected result or something looks wrong</div>
-          <div class="gs-faq-a">Use Ctrl+Z (undo) — most macro changes can be undone. Then submit a bug report in the <strong>Requests</strong> tab so Dylan can look into it.</div>
+          <div class="gs-faq-q">SolidWorks shows a security warning</div>
+          <div class="gs-faq-a">Click "Enable macros" — all macros here are written in-house by Dylan and are safe to run.</div>
         </div>
         <div class="gs-faq-item">
-          <div class="gs-faq-q">A macro that used to work is now broken or missing</div>
-          <div class="gs-faq-a">The macro file may have moved or been updated. Contact Dylan directly — he maintains all macros and can get you sorted quickly.</div>
+          <div class="gs-faq-q">The macro gave an unexpected result</div>
+          <div class="gs-faq-a">Use <strong>Ctrl+Z</strong> (undo) — most changes can be undone. Then submit a bug report in the <strong>Requests</strong> tab so Dylan can investigate.</div>
+        </div>
+        <div class="gs-faq-item">
+          <div class="gs-faq-q">A macro is missing or broken</div>
+          <div class="gs-faq-a">The file may have been updated or moved. Contact Dylan directly — he can fix it in minutes.</div>
         </div>
         <div class="gs-faq-item">
           <div class="gs-faq-q">Can I break something by running a macro?</div>
-          <div class="gs-faq-a">In most cases, no — especially since PDM keeps a history. But for batch operations that modify many files, always check with Dylan before running if you're unsure. When in doubt, ask first.</div>
+          <div class="gs-faq-a">Generally no — PDM keeps full version history so nothing is ever truly lost. But for batch operations (processing hundreds of files), always check with Dylan first if you're not sure about the settings.</div>
         </div>
       </div>
     </div>
 
     <div class="gs-card gs-card-cta">
       <div style="font-size:2rem;margin-bottom:8px">💬</div>
-      <h3>Need help?</h3>
-      <p>Contact <strong>Dylan Lebel</strong> for macro setup, questions, or anything not covered here. Or use the <strong>Requests</strong> tab to report a problem or suggest an improvement.</p>
+      <h3>Still need help?</h3>
+      <p>Contact <strong>Dylan Lebel</strong> for macro setup, troubleshooting, or anything not covered here.<br>Use the <strong>Requests</strong> tab to report bugs, suggest features, or request changes to any macro.</p>
     </div>
   </div>
 </div><!-- /tab-start -->
@@ -1166,14 +1479,15 @@
         <label>Which macro changed?</label>
         <select id="f-macro">
           <option value="all|All Macros|⚙️|#4f8ef7">⚙️ All Macros / General</option>
-          <option value="datefixer|Date Fixer|📅|#4f8ef7">📅 Date Fixer</option>
-          <option value="drawingtemplateupdate|Drawing Template Update|📐|#7c3aed">📐 Drawing Template Update</option>
-          <option value="modeltoimperial|Model to Imperial|📏|#10b981">📏 Model to Imperial</option>
-          <option value="movetopdm|Move to PDM|📦|#f59e0b">📦 Move to PDM</option>
-          <option value="newpl|Make or Buy Checker|🏭|#ef4444">🏭 Make or Buy Checker</option>
-          <option value="pdmpdf|PDM PDF Generator|📄|#06b6d4">📄 PDM PDF Generator</option>
+          <option value="dylanshelp|Dylan's Help|🙋|#f97316">🙋 Dylan's Help</option>
+          <option value="datefixer|Date Fixer|🗓️|#4f8ef7">🗓️ Date Fixer</option>
+          <option value="drawingtemplateupdate|Drawing Template Update|🖼️|#7c3aed">🖼️ Drawing Template Update</option>
+          <option value="modeltoimperial|Model to Imperial|📐|#10b981">📐 Model to Imperial</option>
+          <option value="movetopdm|Move to PDM|🔧|#f59e0b">🔧 Move to PDM</option>
+          <option value="newpl|Plate Make/Buy Checker|🏭|#ef4444">🏭 Plate Make/Buy Checker</option>
+          <option value="pdmpdf|PDM PDF Generator|📑|#06b6d4">📑 PDM PDF Generator</option>
           <option value="pdmdxf|PDM DXF Exporter|✂️|#e879a0">✂️ PDM DXF Exporter</option>
-          <option value="cadlink|Prepare for CADLink|🚀|#a855f7">🚀 Prepare for CADLink</option>
+          <option value="cadlink|Prepare for CADLink|⚡|#a855f7">⚡ Prepare for CADLink</option>
         </select>
       </div>
 
@@ -1225,16 +1539,17 @@
     <div class="add-modal-body">
       <div class="form-row">
         <label>Which macro?</label>
-        <select id="tk-macro">
+        <select id="tk-macro" onchange="onTkMacroChange()">
           <option value="all|General|⚙️|#4f8ef7">⚙️ General / All Macros</option>
-          <option value="datefixer|Date Fixer|📅|#4f8ef7">📅 Date Fixer</option>
-          <option value="drawingtemplateupdate|Drawing Template Update|📐|#7c3aed">📐 Drawing Template Update</option>
-          <option value="modeltoimperial|Model to Imperial|📏|#10b981">📏 Model to Imperial</option>
-          <option value="movetopdm|Move to PDM|📦|#f59e0b">📦 Move to PDM</option>
-          <option value="newpl|Make or Buy Checker|🏭|#ef4444">🏭 Make or Buy Checker</option>
-          <option value="pdmpdf|PDM PDF Generator|📄|#06b6d4">📄 PDM PDF Generator</option>
+          <option value="dylanshelp|Dylan's Help|🙋|#f97316">🙋 Dylan's Help</option>
+          <option value="datefixer|Date Fixer|🗓️|#4f8ef7">🗓️ Date Fixer</option>
+          <option value="drawingtemplateupdate|Drawing Template Update|🖼️|#7c3aed">🖼️ Drawing Template Update</option>
+          <option value="modeltoimperial|Model to Imperial|📐|#10b981">📐 Model to Imperial</option>
+          <option value="movetopdm|Move to PDM|🔧|#f59e0b">🔧 Move to PDM</option>
+          <option value="newpl|Plate Make/Buy Checker|🏭|#ef4444">🏭 Plate Make/Buy Checker</option>
+          <option value="pdmpdf|PDM PDF Generator|📑|#06b6d4">📑 PDM PDF Generator</option>
           <option value="pdmdxf|PDM DXF Exporter|✂️|#e879a0">✂️ PDM DXF Exporter</option>
-          <option value="cadlink|Prepare for CADLink|🚀|#a855f7">🚀 Prepare for CADLink</option>
+          <option value="cadlink|Prepare for CADLink|⚡|#a855f7">⚡ Prepare for CADLink</option>
         </select>
       </div>
       <div class="form-row">
@@ -1243,10 +1558,16 @@
       </div>
       <div class="form-row">
         <label>Request type</label>
-        <div class="type-picker">
+        <div class="type-picker" id="tk-type-picker-macro">
           <button class="tk-type-btn selected" data-tktype="bug">🐛 Bug Report</button>
           <button class="tk-type-btn" data-tktype="feature">✨ Feature Request</button>
           <button class="tk-type-btn" data-tktype="change">🔄 Change Request</button>
+        </div>
+        <div class="type-picker" id="tk-type-picker-dylan" style="display:none;">
+          <button class="tk-type-btn selected" data-tktype="newmacro">🛠️ New Macro</button>
+          <button class="tk-type-btn" data-tktype="help">💬 Ask Dylan</button>
+          <button class="tk-type-btn" data-tktype="it">🖥️ IT / Tech Help</button>
+          <button class="tk-type-btn" data-tktype="other">📋 Other</button>
         </div>
       </div>
       <div class="form-row">
@@ -1267,6 +1588,16 @@
           <label>Your name</label>
           <input type="text" id="tk-author" placeholder="e.g. Dylan" />
         </div>
+      </div>
+      <div class="form-row">
+        <label>Attachments <span style="font-weight:400;text-transform:none;letter-spacing:0">(screenshots, model files, examples — drag & drop or click)</span></label>
+        <div class="file-drop-zone" id="fileDropZone">
+          <input type="file" id="fileInput" multiple accept="image/*,.sldprt,.sldasm,.slddrw,.step,.stp,.iges,.igs,.pdf,.zip,.xlsx,.docx,.txt" />
+          <span class="file-drop-icon">📎</span>
+          Drop files here or <strong>click to browse</strong>
+          <div class="file-drop-hint">Images, SolidWorks models (.sldprt, .sldasm, .slddrw), STEP, PDF, ZIP — max 25 MB each</div>
+        </div>
+        <div class="file-preview-list" id="filePreviewList"></div>
       </div>
       <div class="form-actions">
         <button class="btn-cancel" id="cancelTkBtn">Cancel</button>
@@ -1292,6 +1623,53 @@
   </div>
 </div>
 
+<!-- ══ EDIT TICKET MODAL ══ -->
+<div id="editOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:250;align-items:center;justify-content:center;padding:24px">
+  <div class="add-modal">
+    <div class="add-modal-header">
+      <h2>Edit Request</h2>
+      <button class="close-btn" id="closeEditBtn">✕</button>
+    </div>
+    <div class="add-modal-body">
+      <div class="form-row">
+        <label>Title</label>
+        <input type="text" id="edit-title" />
+      </div>
+      <div class="form-row">
+        <label>Request type</label>
+        <div class="type-picker" id="edit-type-picker-macro">
+          <button class="tk-type-btn edit-type-btn" data-tktype="bug">🐛 Bug Report</button>
+          <button class="tk-type-btn edit-type-btn" data-tktype="feature">✨ Feature Request</button>
+          <button class="tk-type-btn edit-type-btn" data-tktype="change">🔄 Change Request</button>
+        </div>
+        <div class="type-picker" id="edit-type-picker-dylan" style="display:none;">
+          <button class="tk-type-btn edit-type-btn" data-tktype="newmacro">🛠️ New Macro</button>
+          <button class="tk-type-btn edit-type-btn" data-tktype="help">💬 Ask Dylan</button>
+          <button class="tk-type-btn edit-type-btn" data-tktype="it">🖥️ IT / Tech Help</button>
+          <button class="tk-type-btn edit-type-btn" data-tktype="other">📋 Other</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Description</label>
+        <textarea id="edit-desc" rows="4"></textarea>
+      </div>
+      <div class="form-row">
+        <label>Priority</label>
+        <select id="edit-prio">
+          <option value="low">Low — nice to have</option>
+          <option value="medium">Medium — should be fixed</option>
+          <option value="high">High — blocking work</option>
+          <option value="critical">Critical — urgent</option>
+        </select>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" id="cancelEditBtn">Cancel</button>
+        <button class="btn-save" id="saveEditBtn">💾 Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ ADMIN LOGIN MODAL ══ -->
 <div id="adminOverlay">
   <div class="admin-modal">
@@ -1307,14 +1685,26 @@
 </div>
 
 <!-- ══ ADMIN TOGGLE BUTTON ══ -->
+<button class="admin-restart admin-only" id="adminRestart" title="Restart the server to apply changes">🔄 Restart Server</button>
 <button class="admin-toggle" id="adminToggle" title="Admin login">🔒</button>
 
 <!-- ══ TOAST NOTIFICATIONS ══ -->
 <div class="toast-container" id="toasts"></div>
 
+<!-- ══ IMAGE LIGHTBOX ══ -->
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('open')">
+  <img id="lightboxImg" src="" alt="Attachment preview" />
+</div>
+
 <script>
-// ── Admin config ─────────────────────────────────────────────────────────
-const ADMIN_HASH = '9d3ff1035dda2a249dcab41e3984007b61e16833567deafd1ba319c3fcf1b878'; // default: nmt2026
+// ── Admin gate ──────────────────────────────────────────────────────────
+// NOTE: This is an honor-system gate, NOT real security. The hash sits in the
+// page source (View Source reveals it) and the check runs client-side, so a
+// determined user could reverse it. The admin panel only edits the changelog
+// and ticket statuses on the internal guide — nothing destructive — so this
+// is intentional. If the admin panel ever gains riskier actions (deleting
+// data, running scripts, etc.) move the check to a server endpoint instead.
+const ADMIN_HASH = '9d3ff1035dda2a249dcab41e3984007b61e16833567deafd1ba319c3fcf1b878'; // SHA-256 of the shared admin password
 
 // ── Toast notifications ─────────────────────────────────────────────────
 function showToast(message, type = 'info') {
@@ -1347,51 +1737,60 @@ async function apiFetch(path, options = {}) {
 const macros = {
 
   datefixer: {
-    icon: '📅', title: 'Date Fixer', tag: 'Drawings', color: '#4f8ef7',
-    summary: `Drawings contain a "Date Created" field that sometimes gets set incorrectly — for example, it might show the date the file was opened or copied rather than the actual date the drawing was first done. Date Fixer automatically looks inside each drawing's revision table to find the true original date and corrects the field so the records are accurate.`,
+    icon: '🗓️', title: 'Date Fixer', tag: 'Drawings', color: '#4f8ef7',
+    summary: `There was a bug in older drawings where the "Date Created" field used a bad variable — it would show the date you <em>opened</em> the drawing instead of the actual creation date. So every time someone opened it, the date would change. This macro fixes that by reading the first revision entry from the revision table and replacing the bad variable with a static, correct date. New drawings don't have this issue anymore, but old ones still do — and this macro fixes them in bulk so it's not time-consuming.`,
     steps: [
-      'You point it at a folder of drawing files.',
-      'It opens each drawing and reads the revision table inside.',
-      'It pulls out the earliest revision date — the original creation date.',
-      'It writes that date into the "Date Created" field of the drawing.',
-      'It logs everything it did (successes and any problems) so you can review.'
+      'You point it at a folder of drawings.',
+      'It recursively finds all <strong>checked-out</strong> drawing files (read-only/checked-in files are skipped since changes can\'t be saved).',
+      'It opens each drawing and locates the revision table.',
+      'It reads the <strong>first revision row</strong> (the earliest one) and extracts the date — that\'s the real creation date.',
+      'It replaces the "Date Created" custom property with that static date value, so it won\'t change anymore.',
+      'It saves each drawing and logs everything — successes, skips, and errors.'
     ],
-    tip: `Best used when you've discovered a batch of drawings with wrong or missing creation dates. Run it once and all the dates are fixed — no need to open each drawing manually.`,
+    tip: `This is a one-time fix for old drawings. Once a drawing has been processed, the date is permanently corrected. New drawings use the right variable from the start so they don't need this. Make sure the drawings you want to fix are <strong>checked out</strong> before running — the macro only processes writable files.`,
     facts: [
       { label: 'Works on', value: 'Drawing files (.slddrw)' },
-      { label: 'Batch capable', value: 'Yes — whole folders' },
-      { label: 'Creates a log', value: 'Yes' }
+      { label: 'Batch capable', value: 'Yes — whole folders, recursive' },
+      { label: 'Requires checkout', value: 'Yes — skips read-only files' },
+      { label: 'Creates a log', value: 'Yes — timestamped in the folder' },
+      { label: 'Single file mode', value: 'Yes — can run on active drawing too' }
     ],
     moreTips: [
-      'If a drawing has no revision table at all, the macro skips it safely — your other files are not affected.',
-      'After the run, check the log it creates. It lists every file: fixed, skipped, or had a problem. Good to keep if someone asks what changed.'
+      'If a drawing has no revision table, the macro skips it safely — your other files are not affected.',
+      'After the run, check the log file it creates in the folder. It lists every file: fixed, skipped, or had a problem.',
+      'You can also run it on a single open drawing using the ProcessActiveDrawing entry point instead of batch mode.',
+      'Handles both numeric (1, 2, 3) and letter (A, B, C) revision schemes — it always finds the earliest one.'
     ]
   },
 
   drawingtemplateupdate: {
-    icon: '📐', title: 'Drawing Template Update', tag: 'Drawings', color: '#7c3aed',
-    summary: `When the company updates its standard drawing template (the border, title block, logo, etc.), every existing drawing needs to be updated to match. Doing that one-by-one would take forever. This macro does it in bulk — it goes through an entire folder of drawings and replaces the old template with the new one automatically.`,
+    icon: '🖼️', title: 'Drawing Template Update', tag: 'Drawings', color: '#7c3aed',
+    summary: `Changes the SolidWorks drawing sheet format (border, title block, logo) to a different template in bulk. It has smart size handling — it detects whether each drawing is B-size or D-size and applies the correct template for that paper size. A common use case is switching drawings from metric templates to imperial templates, or updating to a new company standard. Instead of opening each drawing one by one, you point this at a folder and it handles them all.`,
     steps: [
-      'You select a folder of drawings to update.',
-      'The macro detects what paper size each drawing is (B-size or D-size).',
-      'It replaces the old sheet format with the correct new template for that paper size.',
-      'It saves each updated drawing.',
-      'It reports which files were updated successfully and flags any that had issues.'
+      'You select a folder containing the drawings to update.',
+      'The macro reads the sheet dimensions of each drawing and automatically detects the paper size (B-size: 11×8.5 or 17×11 inches, D-size: 22×17 or 34×22 inches).',
+      'It applies the matching ANSI Metric Landscape template for that size — so a B-size gets the B template, a D-size gets the D template.',
+      'It processes every sheet in each drawing (multi-sheet drawings are handled correctly).',
+      'It reloads the template, rebuilds the drawing, and saves.',
+      'At the end, it reports how many files succeeded and lists any that failed (usually because they weren\'t checked out or had an unknown sheet size).'
     ],
-    tip: `Run this whenever the company releases a new version of the drawing template. It ensures every drawing in the folder looks consistent and meets current standards — without touching a single file manually.`,
+    tip: `This is the easiest way to change metric drawings to imperial templates (or vice versa) in bulk. Make sure the drawings are checked out before running — if a file can't be saved, it'll show up in the failed list. The macro uses the templates from <code>C:\\NMT_PDM\\Libraries\\Template\\Sheet Formats\\</code>.`,
     facts: [
       { label: 'Works on', value: 'Drawing files (.slddrw)' },
       { label: 'Sheet sizes', value: 'B-size and D-size (ANSI)' },
+      { label: 'Smart sizing', value: 'Auto-detects and matches paper size' },
+      { label: 'Multi-sheet', value: 'Yes — processes all sheets in each drawing' },
       { label: 'Batch capable', value: 'Yes — whole folders' }
     ],
     moreTips: [
-      'Back up your drawings before any bulk update — even a safe one. A quick folder copy takes seconds and gives peace of mind.',
-      'If a drawing looks wrong after the update, it likely uses a non-standard sheet size. Flag it to Dylan so support can be added for that format.'
+      'If a drawing has a non-standard sheet size (not B or D), the macro will skip that sheet and flag it. Let Dylan know and he can add support for that size.',
+      'Files that fail are usually not checked out. Check them out in PDM first, then re-run.',
+      'The macro removes modified notes during template reload by default — this keeps the title block clean after the switch.'
     ]
   },
 
   modeltoimperial: {
-    icon: '📏', title: 'Model to Imperial', tag: 'Parts & Models', color: '#10b981',
+    icon: '📐', title: 'Model to Imperial', tag: 'Parts & Models', color: '#10b981',
     summary: `Sometimes 3D models arrive in metric units (millimeters) but need to be in imperial units (inches) for a particular project or client. Manually converting every part — especially in a large assembly with dozens of sub-components — would be very tedious and error-prone. This macro handles the entire conversion automatically.`,
     steps: [
       'Open the part or assembly you want to convert in SolidWorks.',
@@ -1412,137 +1811,170 @@ const macros = {
   },
 
   movetopdm: {
-    icon: '📦', title: 'Move to PDM', tag: 'PDM / Files', color: '#f59e0b',
-    summary: `A bulk property cleanup tool for getting files ready for the PDM system. It renames old property names to new ones, removes obsolete properties, and adds new required properties with default values. <strong>Important:</strong> the specific property changes are pre-configured in the macro code — they need to be reviewed and adjusted by your macro admin before each use to match the situation. This is not a "run it and forget it" tool; the rules change depending on the batch of files you're preparing.`,
+    icon: '🔧', title: 'Move to PDM', tag: 'PDM / Files', color: '#f59e0b',
+    summary: `A universal bulk custom properties changer for getting files ready for the PDM system. It can rename properties, delete properties, add new properties, and clear property values — all in one run. <strong>This is not a guaranteed automatic conversion</strong> — every old model is different, and the property rules need to be set up for each situation. Think of it as a powerful bulk-edit tool that handles the common changes, but the user still needs to verify the results because edge cases are inevitable with older files.`,
     steps: [
-      'Before running: make sure the property rules in the macro are set correctly for your situation (which properties to rename, remove, or add). This is configured inside the macro by the macro admin.',
-      'Run the macro. It can work two ways: on the currently open model, or on an entire folder of files. This is controlled by a setting in the macro.',
-      'It shows you a full summary of every change it will make — renames, deletions, and additions — and asks for confirmation before touching anything.',
-      'It processes the file(s), applying all the property changes.',
-      'For assemblies, it drills into every sub-component and processes them too.',
-      'Fasteners and standard purchased parts (bolts, nuts, washers, etc.) are automatically skipped so they aren\'t accidentally modified.'
+      '<strong>Before running:</strong> The property rules inside the macro must be configured for your situation. Dylan sets these up — they define what gets renamed, what gets deleted, and what gets added. <strong>Do not run this without confirming the rules are correct for your batch.</strong>',
+      'Run the macro. It works in two modes: <strong>Active Model</strong> (processes what\'s currently open) or <strong>Folder Mode</strong> (processes an entire directory of files).',
+      'In folder mode, it shows you a complete summary of every change it will make — all renames, deletions, and additions listed out — and asks you to confirm before it touches anything.',
+      'It processes each file, applying the property changes. For assemblies, it drills into every sub-component automatically.',
+      'Fasteners and standard parts (types MI, FW, MB, HUC, NUT, PUR, RIV, WSR, HYD, MIS, and anything with IsFastener) are automatically skipped so they aren\'t accidentally modified.',
+      'After processing, it saves each model. In folder mode, it can also process subfolders recursively and handle drawings separately.'
     ],
-    tip: `The current default rules rename "Type" to "Reference Category", rename "Purchased Assembly" to "Type", remove "Ref" and "Length", and add "Product Group" (MISC), "Class" (MECH), and "Revision" (1). These defaults should be reviewed before every run — they may not match what your specific batch of files needs. Talk to your macro admin if you're not sure.`,
+    tip: `<strong>This is a tool, not a magic button.</strong> It handles the common, repetitive property changes that are the same across most files — but every old model can be different. After running, you should still spot-check a few files to make sure everything looks right. If something looks wrong, stop and talk to Dylan before continuing.<br><br>The current default rules: rename "Type" → "Reference Category", rename "Purchased Assembly" → "Type", delete "Ref" and "Length", add "Product Group" (MISC), "Class" (MECH), and "Revision" (1). These change depending on the batch.`,
     facts: [
       { label: 'Works on', value: 'Parts, Assemblies & Drawings' },
+      { label: 'Operations', value: 'Rename, Delete, Add, Clear properties' },
       { label: 'Modes', value: 'Active model or entire folder' },
       { label: 'Batch capable', value: 'Yes — whole folders + subfolders' },
-      { label: 'Skips fasteners', value: 'Yes (configurable)' },
-      { label: 'Requires setup', value: 'Yes — rules must be configured' }
+      { label: 'Skips fasteners', value: 'Yes — MI, FW, MB, NUT, PUR, etc.' },
+      { label: 'Requires setup', value: 'Yes — rules configured per batch' },
+      { label: 'Case-insensitive', value: 'Yes — finds properties regardless of case' }
     ],
     moreTips: [
-      'Fasteners and standard purchased hardware (identified by their properties) are automatically skipped. If you have custom fasteners that shouldn\'t be changed, ask Dylan to verify they\'ll be protected.'
+      '<strong>Always confirm the property rules with Dylan before running.</strong> Using wrong rules on a large batch could add incorrect data to hundreds of files at once.',
+      'The macro is case-insensitive when finding properties — if the file has "type" instead of "Type", it will still find and rename it.',
+      'Drawings-only mode is available — you can process just .slddrw files without touching parts or assemblies.',
+      'If running on an active model, it processes the model and saves immediately. In folder mode, each file is opened, processed, saved, and closed automatically.'
     ],
     notes: [
-      'Always confirm the property rules with Dylan before running. Using wrong rules on a large batch could add incorrect data to hundreds of files at once.'
+      '<strong>Not a guaranteed conversion.</strong> Old models can have wildly different property setups. This handles the common changes, but results should be verified.',
+      'Always confirm rules with Dylan before running — they change depending on the batch of files you\'re preparing.'
     ]
   },
 
   newpl: {
-    icon: '🏭', title: 'Make or Buy Checker', tag: 'Parts & Models', color: '#ef4444',
-    summary: `For flat plate and bar stock parts, the company has manufacturing constraints — there's a maximum size the shop can handle, and a maximum thickness it can work with. Beyond those limits, the part needs to be purchased from a supplier instead of made in-house. This macro reads the part dimensions and material, then automatically stamps it as "Manufacture" (M) or "Purchase" (P). It recognizes specific steel grades, stainless steels, and aluminum alloys by name.`,
+    icon: '🏭', title: 'Plate Make/Buy Checker', tag: 'Parts & Models', color: '#ef4444',
+    summary: `This is specifically for <strong>older models</strong>. Back in the day, all plates were ordered from suppliers — everything was set to "P" (Purchase). But today we can manufacture some plates in-house, as long as they meet our shop's size and material restrictions. This macro checks each plate part against those restrictions and sets it to "M" (Make) or "P" (Purchase) automatically. For parts set to M, it also fills in the proper properties like MTL Part Number and other details needed so the part can actually be manufactured in-house. It only changes parts that we <em>can</em> make — anything outside our capabilities stays as P.`,
     steps: [
-      'Open the part file in SolidWorks.',
-      'Run the macro.',
-      "It reads the part's thickness, width, and length from the 3D model.",
-      'It identifies the material — it knows carbon steels (44W, 50W, 300W, 350W, 400W, QT100), stainless steels (304, 308, 309, 316), and aluminum alloys.',
-      "It compares the dimensions against the shop's manufacturing limits: max 6 feet on the short side, max 20 feet on the long side, and max 1.5 inches thick.",
-      'If the part fits within those limits, it stamps the Type property as M (manufacture in-house). If it exceeds any limit, it stamps it as P (purchase from supplier).',
-      'It also determines if the part is a flat plate or bar stock and sets properties accordingly.'
+      'The macro runs as part of the Prepare for CADLink workflow (it\'s integrated into the property processing).',
+      'It reads the part\'s <strong>thickness, height, and length</strong> from the 3D model geometry.',
+      'It identifies the <strong>material</strong> — it recognizes carbon steels (44W, 50W, 300W, 350W, 400W, QT100, STRENX100XF, A514-Q, 44W-PERF), stainless steels (304, 308, 309, 316), and aluminum alloys (3003, 5052, 5083, 6061, 6063 series).',
+      'It checks dimensions against the shop\'s manufacturing limits: <strong>max 6 ft on the short side, max 20 ft on the long side, max 1.5" thick</strong>.',
+      'If the material is unknown (not in the recognized list), it stays as P — we don\'t make what we can\'t identify.',
+      'If the part is within all limits and the material is recognized: Type is set to <strong>M</strong> (Make) and the proper manufacturing properties (MTL Part Number, etc.) are filled in.',
+      'If the part exceeds any limit: Type stays as <strong>P</strong> (Purchase) — it needs to be ordered from a supplier.'
     ],
-    tip: `This takes a decision that used to require someone to manually measure and look up specs — and makes it instant and consistent every time. It only works on flat plate and bar-type parts — complex machined or welded parts need to be categorized manually.`,
+    tip: `This is mainly for cleaning up old models where everything was defaulted to Purchase. Running it ensures that plates we <em>can</em> make in-house are properly tagged so they don't get needlessly ordered from outside. It's smart enough to only change parts within our actual capabilities — it won't try to manufacture something the shop can't handle.`,
     facts: [
+      { label: 'Purpose', value: 'Re-classify old plates from P to M where possible' },
       { label: 'Max short side', value: '6 feet' },
       { label: 'Max long side', value: '20 feet' },
-      { label: 'Max thickness', value: '1.5 inches' },
-      { label: 'Carbon steels', value: '44W, 50W, 300W, 350W, 400W, QT100' },
+      { label: 'Max thickness', value: '1.5 inches (steel & aluminum)' },
+      { label: 'Carbon steels', value: '44W, 50W, 300W, 350W, 400W, QT100, STRENX100XF, A514-Q' },
       { label: 'Stainless steels', value: '304, 308, 309, 316' },
-      { label: 'Aluminum', value: 'Recognized automatically' }
+      { label: 'Aluminum', value: '3003, 5052, 5083, 6061, 6063 series' },
+      { label: 'Sets for M parts', value: 'Type, MTL Part Number, and related properties' }
     ],
     moreTips: [
-      'The size limits (6 ft, 20 ft, 1.5 inches thick) are based on actual shop equipment. If that equipment changes, Dylan updates the numbers in the macro.',
-      'Only works on flat plate and bar stock. Machined parts, castings, weldments, and complex shapes must be categorized manually.'
+      'If the material isn\'t in the recognized list, the part defaults to P. This is intentional — we only classify parts as Make when we\'re sure about the material.',
+      'The size limits (6 ft, 20 ft, 1.5") are based on our actual shop equipment. If equipment changes, Dylan updates the numbers.',
+      'This only applies to flat plates and bar stock. Complex machined parts, castings, and weldments need to be categorized manually.',
+      'Parts that are already correctly set to M won\'t be downgraded — the macro only changes P → M when limits are met.'
     ]
   },
 
   pdmpdf: {
-    icon: '📄', title: 'PDM PDF Generator', tag: 'PDM / Files', color: '#06b6d4',
-    summary: `Creates PDF copies of drawings from the PDM vault, syncs revision numbers between models and drawings, and manages obsolete PDFs automatically. It has several different modes depending on what you have open when you run it — a single drawing, an assembly, or nothing at all.`,
+    icon: '📑', title: 'PDM PDF Generator', tag: 'PDM / Files', color: '#06b6d4',
+    summary: `A versatile PDF creation and auditing tool with multiple ways to run it depending on what you need. You can create a PDF from a single drawing, generate PDFs for every component in an assembly, batch-process an entire folder, or process only your checked-out drawings. It also has a powerful audit mode that checks for missing or outdated PDFs across an entire assembly without creating anything. Revision handling is automatic — PDFs are named with the current revision, and old revisions are moved to an Obsolete folder.`,
     steps: [
-      '<strong>From a single drawing:</strong> Run the macro with a drawing open. It reads the revision, syncs it with the model, creates the PDF (named with the revision), and moves any older-revision PDFs into an "Obsolete" folder.',
-      '<strong>From an assembly:</strong> The macro asks what you want to do — <em>Audit</em> (check which PDFs are missing or out-of-date for every part) or <em>Create</em> (generate PDFs for every component drawing in the assembly). Library items are skipped automatically.',
-      '<strong>With nothing open (batch mode):</strong> You\'re asked whether to process <em>all drawings</em> in a folder or <em>only your checked-out drawings</em>. SolidWorks hides in the background and works through them all automatically.',
-      '<strong>From the command line:</strong> Pass a file path and it runs headlessly — SolidWorks launches itself if needed. Useful for automated or scheduled runs.',
-      'In every mode, it connects to the PDM vault, checks revisions, and organizes PDFs into the correct "Drawings" subfolder based on the project structure.'
+      '<strong>From a single drawing:</strong> Run the macro with a drawing open. It reads the revision (checking all configurations), syncs with the referenced model, creates the PDF named like <code>PartName_Rev3.pdf</code>, and moves any older-revision PDFs into an "Obsolete" folder. If the drawing has unsaved changes, it warns you and gives options to save first.',
+      '<strong>From an assembly — Create mode:</strong> Opens every component\'s drawing, creates/updates the PDF for each one. Library items are skipped automatically. Great for generating all PDFs for a project at once.',
+      '<strong>From an assembly — Audit mode:</strong> Checks every component drawing and reports which PDFs are <em>missing</em>, which are <em>out-of-date</em> (revision mismatch), and which are <em>up-to-date</em>. Also checks if drawing and model revisions are in sync. Shows results in a color-coded form grouped by PDM approval state. <strong>No files are created or changed</strong> — purely a status check.',
+      '<strong>Batch mode (nothing open) — All drawings:</strong> Select a folder and it processes every drawing file. Includes/excludes subfolders based on configuration. SolidWorks works in the background.',
+      '<strong>Batch mode — Checked-out only:</strong> Same as above, but only processes drawings that are currently checked out to you. Useful when you\'ve been working on specific files and just want to update those PDFs.',
+      '<strong>Command-line mode:</strong> Pass a drawing file path and it runs headlessly. SolidWorks launches itself if needed. Useful for automated/scheduled runs.',
+      'In all modes, PDFs are placed in the correct "Drawings" subfolder based on the project folder structure. The project path is determined from the "3 - Design" folder convention, or the Library path for library items.'
     ],
-    tip: `The Audit mode is especially useful before a release — open the top-level assembly, run the macro, choose Audit, and you'll get a full report showing which component PDFs are missing, which are out-of-date, and which are good to go. No PDFs are created during an audit — it only checks.`,
+    tip: `The <strong>Audit mode</strong> is your best friend before a release. Open the top-level assembly, run the macro, choose Audit, and you get a complete report showing every component's PDF status — missing, outdated, or good. It also flags when a drawing revision doesn't match its model revision, which catches sync issues early. The checked-out-only batch mode is great for daily work — update just the PDFs for files you've been working on without touching anything else.`,
     facts: [
-      { label: 'Modes', value: 'Single drawing, Assembly, Batch, Command-line' },
-      { label: 'Audit mode', value: 'Yes — shows missing & outdated PDFs' },
-      { label: 'Handles obsolete PDFs', value: 'Moves old revisions to Obsolete folder' },
+      { label: 'Modes', value: 'Single drawing, Assembly (Create/Audit), Batch (All/Checked-out), Command-line' },
+      { label: 'Audit checks', value: 'Missing PDFs, outdated revisions, model/drawing sync' },
+      { label: 'Revision naming', value: 'Automatic — PartName_Rev#.pdf' },
+      { label: 'Obsolete handling', value: 'Moves old revisions to Obsolete folder' },
+      { label: 'Multi-config', value: 'Yes — reads revisions from all configurations' },
       { label: 'Auto-launches SW', value: 'Yes (command-line mode)' },
-      { label: 'Skips library items', value: 'Yes, automatically' }
+      { label: 'Skips library items', value: 'Yes, automatically' },
+      { label: 'Unsaved changes', value: 'Warns you with save/skip/cancel options' }
     ],
     moreTips: [
-      'Audit mode creates no files and changes nothing — it\'s purely a status check. Use it freely before any release to see exactly what\'s missing or outdated.',
-      'In batch mode, don\'t close SolidWorks while it\'s running. Leave it in the background and come back when it\'s done — closing it mid-run will cancel the job.'
+      'Audit mode creates no files and changes nothing — it\'s purely a status check. Use it freely and often, especially before releases.',
+      'The audit results form is color-coded: green = up-to-date, red = missing, yellow = outdated revision. It also shows the PDM approval state for each drawing.',
+      'In batch mode, SolidWorks hides in the background. Don\'t close it while it\'s running — closing it mid-run will cancel the job.',
+      'If a drawing has unsaved changes and is checked out, the macro will offer to save before proceeding. If checked in with unsaved changes, it recommends you check out and save first.',
+      'Checked-out-only mode is perfect for end-of-day work — just update the PDFs for the files you touched today.'
     ]
   },
 
   pdmdxf: {
     icon: '✂️', title: 'PDM DXF Exporter', tag: 'PDM / Files', color: '#e879a0',
-    summary: `Exports a flat (planar) face from a part as a DXF file — commonly used for burn profiles sent to laser/plasma cutting. It automatically names the DXF with the current revision, moves older revisions into an "Obsolete" folder, and checks the file into the PDM vault. It works from a standalone part or by selecting a face on a component inside an assembly.`,
+    summary: `Creates burn profiles (DXF files) from flat faces on parts and puts them in the right spot with proper naming and revision handling. Select the face you want to export, run the macro, and the DXF is created, named with the revision, placed in the Burn Profiles folder, and checked into PDM. Old revisions are automatically moved to Obsolete. Works from a standalone part or by selecting a face on a component inside an assembly.`,
     steps: [
-      'Open a part (or an assembly) in SolidWorks and select exactly one flat face.',
+      'Open a part (or an assembly) in SolidWorks and <strong>select exactly one flat face</strong> — the face that will become the burn profile.',
       'Run the macro. If you selected a face inside an assembly, it automatically opens the component part and transfers the face selection.',
-      'It reads the Revision property from the part — the revision must be set or the macro will stop.',
-      'It creates a DXF file named like <code>PartName_Rev3.dxf</code> in a "Burn Profiles" subfolder inside the project\'s Drawings folder.',
-      'Any older-revision DXFs (e.g. Rev1, Rev2) are moved into an "Obsolete" subfolder automatically.',
-      'If the file is inside the PDM vault, it checks the DXF in with a comment. If outside the vault, it just saves locally.',
+      'It reads the <strong>Revision</strong> property from the part — the revision must be set or the macro will stop.',
+      'It creates a DXF file named like <code>PartName_Rev3.dxf</code> in a <strong>"Burn Profiles"</strong> subfolder inside the project\'s Drawings folder (created automatically if it doesn\'t exist).',
+      'Any older-revision DXFs (e.g. Rev1, Rev2) are automatically moved into an "Obsolete" subfolder.',
+      'If the file is inside the PDM vault, it checks the DXF out, overwrites it, and checks it back in with a comment. If outside the vault, it saves locally.',
       'A confirmation message shows the DXF was created successfully.'
     ],
-    tip: `The face you select must be a flat (planar) face — curved surfaces won't work. If the macro can't transfer the face selection from an assembly to the part, it will try to find any planar face on the part automatically as a fallback. You can also configure the macro to save DXFs to a custom folder outside of PDM if needed.`,
+    tip: `<strong>Make sure you're selecting the right face.</strong> The face you select becomes the burn profile — this matters a lot for parts with features like counter-sinks or counter-bores. If the part has counter-sinks, either suppress the counter-sink feature first, or pick the side of the plate that <em>doesn't</em> have the counter-sink so the profile doesn't cut more material than intended. Curved surfaces won't work — the face must be flat (planar).`,
     facts: [
       { label: 'Works on', value: 'Parts & Assemblies (face selection)' },
       { label: 'Output', value: 'DXF burn profile' },
-      { label: 'Auto-revisions', value: 'Yes — names file with revision' },
-      { label: 'Obsolete handling', value: 'Moves old revisions automatically' },
+      { label: 'Output location', value: 'Drawings\\Burn Profiles\\ (auto-created)' },
+      { label: 'Naming', value: 'PartName_Rev#.dxf' },
+      { label: 'Obsolete handling', value: 'Moves old revisions to Obsolete folder' },
       { label: 'PDM integration', value: 'Checks in/out automatically' },
-      { label: 'Custom output', value: 'Optional (configurable)' }
+      { label: 'Assembly support', value: 'Yes — opens component part automatically' },
+      { label: 'Multi-body parts', value: 'Supported' },
+      { label: 'Custom output', value: 'Optional — can save outside PDM' }
     ],
     moreTips: [
-      'Old DXF revisions are moved to an Obsolete folder — not permanently deleted. If you ever need a previous revision, it\'s still there.',
-      'The Revision property must be set on the part before running. If it\'s missing, the macro stops and tells you — set the revision first, then re-run.'
+      '<strong>Counter-sinks and counter-bores:</strong> Be careful which face you select. If the counter-sink is on one side, pick the opposite (clean) face. Or suppress the counter-sink feature before exporting. Otherwise the burn profile may include the counter-sink cutout, causing the plasma/laser to cut more material than needed.',
+      'The Revision property must be set on the part before running. If it\'s blank or missing, the macro stops and tells you.',
+      'Old DXF revisions are moved to Obsolete — not deleted. You can always recover a previous revision.',
+      'If the macro can\'t transfer the face selection from assembly to part, it falls back to finding any planar face on the part automatically.',
+      'For Library parts, the DXF goes into a Burn Profiles folder within the Library path structure instead of the project structure.'
     ]
   },
 
   cadlink: {
-    icon: '🚀', title: 'Prepare for CADLink', tag: 'PDM / Files', color: '#a855f7',
-    summary: `The main workhorse macro. It fills in as many required properties as it can automatically — dimensions, weight, material, type, author, date, and more — then validates everything against CADLink's rules and shows you exactly what passed and what still needs your attention. It works from parts, assemblies, or even directly from a drawing.`,
+    icon: '⚡', title: 'Prepare for CADLink', tag: 'PDM / Files', color: '#a855f7',
+    summary: `<strong>This is the big one.</strong> Every single model that gets CADLinked inside PDM needs to have this macro run on it. It keeps the custom properties consistent and fills in everything needed for CADLink — dimensions, weight, material, type, author, date, stock size, and more. It can't do <em>everything</em> though — the user still needs to set a few properties manually (like Revision, Product Group, and a couple others) because those require human judgment. It works from a single part, an assembly (processes everything inside), or even from a drawing.`,
     steps: [
       'Open a part, assembly, or drawing and run the macro. If you run it from a drawing, it automatically finds the referenced model and processes that — the drawing itself is left untouched.',
-      'It checks the PDM vault to make sure the file is checked out to you. If it isn\'t, the file is skipped (not modified).',
-      'It auto-calculates dimensions (bounding box), weight, and reads the material directly from the model.',
-      'It fills in properties it can determine automatically: Model Number, Description, Stock Size, Type (Make or Purchase), Product Group, Class, Weight, Weight UOM, Dimensional UOM, Non-Destructive Testing, Author, Date, and for parts also Material, Length, Height, Width, and more.',
-      'For assemblies, it asks whether you want to process all sub-components or just the top-level assembly.',
-      'It validates every property against strict format rules (e.g. Type must be "P" or "M", Product Group must be a known code like CHUTES, MISC, SPARE, etc.).',
-      'A results window shows each property color-coded: green for valid, red for invalid or missing. Anything red needs your manual attention before submitting to CADLink.'
+      '<strong>The model must be checked out in PDM.</strong> If it\'s checked in, the macro can read it but can\'t save changes — the properties won\'t stick. This is the most common mistake.',
+      'It auto-calculates: bounding box dimensions (length, height, width), weight from the 3D model, and reads the material directly from the SolidWorks material assignment.',
+      'It fills in properties it can determine automatically: Model Number, Description, Stock Size, Type (M or P — using the plate checker for plates), Weight, Weight UOM, Dimensional UOM, Non-Destructive Testing, Author, Date Created, Material, and more.',
+      'For assemblies, it asks if you want to process all sub-components. <strong>Say Yes</strong> — it processes everything in one go so you don\'t have to run it on each part.',
+      'It validates every property against strict CADLink format rules (e.g. Type must be P or M, Product Group must be a known code, Revision must be numeric, etc.).',
+      'A <strong>color-coded results window</strong> shows the status of each property: green = valid, red = invalid or missing. Anything red needs your manual attention before CADLink submission.',
+      '<strong>Bonus:</strong> If you have a flat face selected when you run the macro, it skips the property workflow and exports that face as a DXF instead (same as the DXF Exporter macro).'
     ],
-    tip: `You can also select a single flat face on a part and run the macro — instead of the normal property workflow, it will export that face as a DXF file. This is a separate shortcut built into the same macro. Also note: properties that are already filled in correctly are preserved — the macro won't overwrite good data.`,
+    tip: `<strong>The model MUST be checked out</strong> or the changes won't be saved. This is the #1 issue people run into — they run the macro, everything looks green, but the properties disappear because the file was checked in.<br><br>Properties the macro <em>cannot</em> set for you (you must fill these in manually): <strong>Revision</strong>, <strong>Product Group</strong>, and a couple others that require your judgment. The results window will flag these as red if they're missing — fill them in and re-run to verify.`,
     facts: [
       { label: 'Works on', value: 'Parts, Assemblies & Drawings' },
-      { label: 'Auto-calculates', value: 'Dimensions, weight, material' },
-      { label: 'Validates all fields', value: 'Yes, with color-coded results' },
-      { label: 'Handles sub-parts', value: 'Yes, recursively' },
-      { label: 'DXF export', value: 'Yes (select a face first)' },
-      { label: 'Must be checked out', value: 'Yes, in PDM' }
+      { label: 'Must be checked out', value: 'Yes — changes won\'t save otherwise' },
+      { label: 'Auto-calculates', value: 'Dimensions, weight, material, stock size' },
+      { label: 'User must set', value: 'Revision, Product Group, and a few others' },
+      { label: 'Validates all fields', value: 'Yes — color-coded results (green/red)' },
+      { label: 'Handles sub-parts', value: 'Yes, recursively through assemblies' },
+      { label: 'DXF export shortcut', value: 'Yes — select a face first' },
+      { label: 'Auto-updates', value: 'Yes — checks for latest macro version on run' },
+      { label: 'Logging', value: 'Yes — debug logs and summary reports' }
     ],
     moreTips: [
-      'It\'s safe to re-run the macro on a file you\'ve already processed — it won\'t overwrite correct data. If dimensions change, just run it again to refresh.',
-      'For large assemblies, say Yes when it asks about sub-components. It processes everything in one go — no need to run it on each part separately.'
+      '<strong>Check out first, then run the macro.</strong> Checked-in files = changes won\'t save. This is the #1 gotcha.',
+      'It\'s safe to re-run the macro any time — if dimensions, weight, or material changed, just run it again and the properties will update to match the current model.',
+      'For large assemblies, always say Yes to sub-components. It processes everything in one go.',
+      'The macro auto-checks for updates every time it runs — if there\'s a newer version on the server, it will prompt you to update.',
+      'Flat bar and plate parts get special handling — the plate checker automatically determines Make vs Purchase based on shop capabilities.'
     ],
     notes: [
-      'Revision is not set by this macro — revision numbers must be set manually before submitting to CADLink.'
+      '<strong>Revision</strong> is NOT set by this macro — you must set it manually before CADLink submission.',
+      '<strong>Product Group</strong> requires your judgment — the macro validates the format but can\'t pick the right one for you.',
+      'The model must be checked out in PDM or changes will not be saved.'
     ]
   }
 };
@@ -1565,6 +1997,10 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
     tab.classList.add('active');
     document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    // Show WIP banner only on the Macros tab — the other tabs (changelog,
+    // requests, getting started) are not drafts and don't need the warning.
+    const wip = document.getElementById('wipBanner');
+    if (wip) wip.style.display = (tab.dataset.tab === 'macros') ? 'flex' : 'none';
   });
 });
 
@@ -1620,7 +2056,15 @@ function closeDetailModal() {
 
 document.getElementById('closeBtn').addEventListener('click', closeDetailModal);
 overlay.addEventListener('click', e => { if (e.target === overlay) closeDetailModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDetailModal(); closeAddModal(); closeTkModal(); closeCancelModal(); document.getElementById('adminOverlay').style.display='none'; } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDetailModal(); closeAddModal(); closeTkModal(); closeCancelModal(); closeEditModal(); document.getElementById('adminOverlay').style.display='none'; document.getElementById('lightbox').classList.remove('open'); } });
+document.addEventListener('click', e => {
+  if (!e.target.closest('.emoji-picker') && !e.target.closest('.tk-comment-tool-btn')) {
+    document.querySelectorAll('.emoji-picker.open').forEach(p => p.classList.remove('open'));
+  }
+  if (!e.target.closest('.gif-picker') && !e.target.closest('.tk-comment-tool-btn')) {
+    document.querySelectorAll('.gif-picker.open').forEach(p => p.classList.remove('open'));
+  }
+});
 document.querySelectorAll('.card').forEach(card => {
   card.addEventListener('click', () => openModal(card.dataset.id));
 });
@@ -1657,14 +2101,15 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 let clFilter = 'all';
 
 function formatDate(iso) {
-  const d = new Date(iso + 'T00:00:00');
+  if (!iso) return '';
+  const d = iso.includes('T') ? new Date(iso) : new Date(iso + 'T00:00:00');
   return d.toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
 function groupByMonth(entries) {
   const groups = {};
   entries.forEach(e => {
-    const d = new Date(e.date + 'T00:00:00');
+    const d = e.date && e.date.includes('T') ? new Date(e.date) : new Date(e.date + 'T00:00:00');
     const key = d.toLocaleDateString('en-CA', { year: 'numeric', month: 'long' });
     if (!groups[key]) groups[key] = [];
     groups[key].push(e);
@@ -1785,12 +2230,13 @@ document.getElementById('saveAddBtn').addEventListener('click', async () => {
   document.getElementById('f-desc').style.borderColor = '';
 
   const macroRaw = document.getElementById('f-macro').value.split('|');
+  const fullDate = date + 'T' + new Date().toISOString().split('T')[1];
   const entry = {
     macroId:    macroRaw[0],
     macroName:  macroRaw[1],
     macroIcon:  macroRaw[2],
     macroColor: macroRaw[3],
-    date,
+    date:        fullDate,
     type:        selectedType,
     description: desc,
     author:      document.getElementById('f-author').value.trim()
@@ -1832,7 +2278,7 @@ const prioLabels = {
   high:     { label: 'High',     cls: 'tk-prio-high' },
   critical: { label: 'Critical', cls: 'tk-prio-critical' }
 };
-const tkTypeLabels = { bug: '🐛 Bug', feature: '✨ Feature', change: '🔄 Change' };
+const tkTypeLabels = { bug: '🐛 Bug', feature: '✨ Feature', change: '🔄 Change', newmacro: '🛠️ New Macro', help: '💬 Ask Dylan', it: '🖥️ IT Help', other: '📋 Other' };
 
 let tkFilter = 'all';
 let tkSort = 'newest';
@@ -1863,6 +2309,7 @@ function renderTickets() {
   empty.style.display = 'none';
 
   const nextStatus = { open: 'in-progress', 'in-progress': 'done', done: 'closed' };
+  const prevStatus = { 'in-progress': 'open', done: 'in-progress', closed: 'done' };
 
   list.innerHTML = sorted.map(t => {
     const s = statusLabels[t.status] || statusLabels.open;
@@ -1871,8 +2318,15 @@ function renderTickets() {
     const hasVoted = voted.includes(t.id);
     const isOwnTicket = (myName && t.createdBy === myName) || (winUser && t.windowsUser && t.windowsUser === winUser);
 
+    const adminRevertBtn = isAdmin && !isCanceled && prevStatus[t.status]
+      ? `<button class="tk-status-btn" onclick="changeTicketStatus(${t.id},'${prevStatus[t.status]}')" style="opacity:0.7" title="Revert to ${statusLabels[prevStatus[t.status]].label}">&larr; ${statusLabels[prevStatus[t.status]].label}</button>`
+      : '';
     const adminBtns = isAdmin && !isCanceled && nextStatus[t.status]
-      ? `<button class="tk-status-btn" onclick="changeTicketStatus(${t.id},'${nextStatus[t.status]}')">${statusLabels[nextStatus[t.status]].label} &rarr;</button>`
+      ? `${adminRevertBtn}<button class="tk-status-btn" onclick="changeTicketStatus(${t.id},'${nextStatus[t.status]}')">${statusLabels[nextStatus[t.status]].label} &rarr;</button>`
+      : adminRevertBtn;
+
+    const adminDeleteBtn = isAdmin
+      ? `<button class="tk-delete-btn" onclick="deleteTicket(${t.id})" title="Permanently delete this request" style="background:#dc2626;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;margin-left:4px">🗑 Delete</button>`
       : '';
 
     const canCancel = !isCanceled && t.status === 'open' && myName && t.createdBy === myName;
@@ -1880,12 +2334,25 @@ function renderTickets() {
       ? `<button class="tk-cancel-btn" onclick="openCancelModal(${t.id})">Cancel</button>`
       : '';
 
+    const canEdit = !isCanceled && (t.status === 'open' || t.status === 'in-progress') && isOwnTicket;
+    const editBtn = canEdit
+      ? `<button class="tk-edit-btn" onclick="openEditModal(${t.id})" title="Edit your request">✏️ Edit</button>`
+      : '';
+
+    // Poke feature — anyone can poke once per day per ticket (not own tickets, not closed/canceled)
+    const poked = JSON.parse(localStorage.getItem('mgPoked') || '{}');
+    const pokedToday = poked[t.id] === new Date().toISOString().split('T')[0];
+    const canPoke = !isCanceled && t.status !== 'closed' && t.status !== 'done' && !pokedToday;
+    const pokeBtn = canPoke
+      ? `<button class="tk-poke-btn" onclick="pokeTicket(${t.id})" title="Nudge Dylan — sends a reminder">👉 Poke</button>`
+      : (pokedToday && !isCanceled && t.status !== 'closed' && t.status !== 'done' ? `<span style="font-size:0.75rem;color:#f59e0b">Poked today ✓</span>` : '');
+
     const cancelInfo = isCanceled && t.cancelReason
       ? `<div class="tk-cancel-reason">Canceled by ${escHtml(t.canceledBy || t.createdBy || 'user')}: "${escHtml(t.cancelReason)}"</div>`
       : '';
 
-    const winUserBadge = isAdmin && t.windowsUser && t.windowsUser !== t.createdBy
-      ? `<span class="tk-win-user" title="Windows account">🖥 ${escHtml(t.windowsUser)}</span>`
+    const winUserBadge = isAdmin && t.windowsUser
+      ? `<span class="tk-win-user" title="Windows account: ${escHtml(t.windowsUser)}">🖥 ${escHtml(t.windowsUser)}</span>`
       : '';
 
     return `<div class="tk-card ${isCanceled ? 'canceled' : ''}" style="--tk-color:${t.macroColor}">
@@ -1896,14 +2363,17 @@ function renderTickets() {
       </div>
       <div class="tk-card-body">${escHtml(t.description)}</div>
       ${cancelInfo}
+      ${renderAttachments(t)}
+      ${renderComments(t)}
       <div class="tk-card-footer">
-        <button class="tk-vote-btn ${hasVoted || isOwnTicket ? 'voted' : ''}" onclick="voteTicket(${t.id})" ${hasVoted || isOwnTicket ? 'disabled' : ''} title="${isOwnTicket ? 'Cannot vote on your own request' : hasVoted ? 'Already voted' : 'Upvote this request'}">👍 ${t.votes || 0}</button>
+        <button class="tk-vote-btn ${hasVoted || isOwnTicket ? 'voted' : ''}" onclick="voteTicket(${t.id})" ${hasVoted || isOwnTicket || isCanceled || t.status === 'done' || t.status === 'closed' ? 'disabled' : ''} title="${(t.voters && t.voters.length) ? 'Liked by: ' + t.voters.join(', ') : isOwnTicket ? 'Cannot vote on your own request' : hasVoted ? 'Already voted' : 'Upvote this request'}">👍 ${t.votes || 0}</button>
         <span class="tk-macro-pill">${t.macroIcon} ${t.macroName}</span>
         <span>${tkTypeLabels[t.type] || t.type}</span>
+        ${t.pokes ? `<span class="tk-poke-display" title="${(t.pokers && t.pokers.length) ? 'Poked by: ' + t.pokers.join(', ') : t.pokes + ' poke(s)'}">👉 ${t.pokes}</span>` : ''}
         <span>by ${escHtml(t.createdBy || 'Anonymous')}</span>
         ${winUserBadge}
         <span>${formatDate(t.date)}</span>
-        <div class="tk-status-actions">${cancelBtn}${adminBtns}</div>
+        <div class="tk-status-actions">${editBtn}${pokeBtn}${cancelBtn}${adminBtns}${adminDeleteBtn}</div>
       </div>
     </div>`;
   }).join('');
@@ -1927,7 +2397,7 @@ async function voteTicket(id) {
   const voted = JSON.parse(localStorage.getItem('mgVoted') || '[]');
   if (voted.includes(id)) return;
   try {
-    const result = await apiFetch(`/api/tickets/${id}/vote`, { method: 'PATCH' });
+    const result = await apiFetch(`/api/tickets/${id}/vote`, { method: 'PATCH', body: JSON.stringify({ windowsUser: sessionStorage.getItem('winUser') || '' }) });
     ticketEntries = result.entries;
     voted.push(id);
     localStorage.setItem('mgVoted', JSON.stringify(voted));
@@ -1935,6 +2405,34 @@ async function voteTicket(id) {
     showToast('Vote added!', 'success');
   } catch (err) {
     showToast('Could not save vote: ' + err.message, 'error');
+  }
+}
+
+async function deleteTicket(id) {
+  if (!confirm('Permanently delete this request? This cannot be undone.')) return;
+  try {
+    const result = await apiFetch(`/api/tickets/${id}/delete`, { method: 'PATCH' });
+    ticketEntries = result.entries;
+    renderTickets();
+    showToast('Request deleted permanently.', 'success');
+  } catch (err) {
+    showToast('Failed to delete: ' + err.message, 'error');
+  }
+}
+
+async function pokeTicket(id) {
+  const poked = JSON.parse(localStorage.getItem('mgPoked') || '{}');
+  const today = new Date().toISOString().split('T')[0];
+  if (poked[id] === today) { showToast('Already poked today — try again tomorrow.', 'info'); return; }
+  try {
+    const result = await apiFetch(`/api/tickets/${id}/poke`, { method: 'PATCH', body: JSON.stringify({ windowsUser: sessionStorage.getItem('winUser') || '' }) });
+    ticketEntries = result.entries;
+    poked[id] = today;
+    localStorage.setItem('mgPoked', JSON.stringify(poked));
+    renderTickets();
+    showToast('Poke sent! Dylan has been reminded.', 'success');
+  } catch (err) {
+    showToast('Could not poke: ' + err.message, 'error');
   }
 }
 
@@ -1960,12 +2458,32 @@ document.querySelectorAll('.tk-sort-btn').forEach(btn => {
 const tkOverlay = document.getElementById('tkOverlay');
 let tkSelectedType = 'bug';
 
-document.querySelectorAll('.tk-type-btn').forEach(btn => {
+document.querySelectorAll('#tk-type-picker-macro .tk-type-btn, #tk-type-picker-dylan .tk-type-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     tkSelectedType = btn.dataset.tktype;
-    document.querySelectorAll('.tk-type-btn').forEach(b => b.classList.toggle('selected', b === btn));
+    // Only deselect siblings in the same picker group
+    btn.closest('.type-picker').querySelectorAll('.tk-type-btn').forEach(b => b.classList.toggle('selected', b === btn));
   });
 });
+
+function onTkMacroChange() {
+  const val = document.getElementById('tk-macro').value.split('|')[0];
+  const isDylan = val === 'dylanshelp';
+  document.getElementById('tk-type-picker-macro').style.display = isDylan ? 'none' : 'flex';
+  document.getElementById('tk-type-picker-dylan').style.display = isDylan ? 'flex' : 'none';
+  // Reset type selection for the visible picker
+  if (isDylan) {
+    tkSelectedType = 'newmacro';
+    document.querySelectorAll('#tk-type-picker-dylan .tk-type-btn').forEach(b => b.classList.toggle('selected', b.dataset.tktype === 'newmacro'));
+    document.getElementById('tk-title').placeholder = 'e.g. "Create a macro to batch rename files"';
+    document.getElementById('tk-desc').placeholder = 'Describe what you need help with...';
+  } else {
+    tkSelectedType = 'bug';
+    document.querySelectorAll('#tk-type-picker-macro .tk-type-btn').forEach(b => b.classList.toggle('selected', b.dataset.tktype === 'bug'));
+    document.getElementById('tk-title').placeholder = 'e.g. "Macro freezes on large assemblies"';
+    document.getElementById('tk-desc').placeholder = 'Describe the issue or request in detail...';
+  }
+}
 
 function openTkModal() {
   document.getElementById('tk-title').value = '';
@@ -1973,8 +2491,14 @@ function openTkModal() {
   document.getElementById('tk-author').value = localStorage.getItem('mgUserName') || '';
   document.getElementById('tk-macro').selectedIndex = 0;
   document.getElementById('tk-prio').value = 'medium';
+  pendingFiles = [];
+  renderFilePreview();
   tkSelectedType = 'bug';
-  document.querySelectorAll('.tk-type-btn').forEach(b => b.classList.toggle('selected', b.dataset.tktype === 'bug'));
+  document.getElementById('tk-type-picker-macro').style.display = 'flex';
+  document.getElementById('tk-type-picker-dylan').style.display = 'none';
+  document.querySelectorAll('#tk-type-picker-macro .tk-type-btn').forEach(b => b.classList.toggle('selected', b.dataset.tktype === 'bug'));
+  document.getElementById('tk-title').placeholder = 'e.g. "Macro freezes on large assemblies"';
+  document.getElementById('tk-desc').placeholder = 'Describe the issue or request in detail...';
   tkOverlay.style.display = 'flex';
   document.body.style.overflow = 'hidden';
   setTimeout(() => document.getElementById('tk-title').focus(), 100);
@@ -2002,9 +2526,10 @@ document.getElementById('saveTkBtn').addEventListener('click', async () => {
     title, description: desc, type: tkSelectedType,
     priority: document.getElementById('tk-prio').value,
     status: 'open',
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString(),
     createdBy: document.getElementById('tk-author').value.trim(),
-    windowsUser: sessionStorage.getItem('winUser') || ''
+    windowsUser: sessionStorage.getItem('winUser') || '',
+    attachments: []
   };
 
   // Remember name for cancel-own-ticket matching
@@ -2014,14 +2539,23 @@ document.getElementById('saveTkBtn').addEventListener('click', async () => {
   btn.disabled = true;
   btn.textContent = 'Submitting...';
   try {
+    // Upload attachments if any
+    if (pendingFiles.length > 0) {
+      btn.textContent = 'Uploading files...';
+      const uploaded = await uploadAttachments(ticket.id);
+      ticket.attachments = uploaded;
+    }
+
     const result = await apiFetch('/api/tickets/add', {
       method: 'POST',
       body: JSON.stringify(ticket)
     });
     ticketEntries = result.entries;
     renderTickets();
+    pendingFiles = [];
+    renderFilePreview();
     closeTkModal();
-    showToast('Request submitted successfully.', 'success');
+    showToast('Request submitted successfully.' + (pendingFiles.length > 0 ? '' : ''), 'success');
   } catch (err) {
     showToast('Failed to submit: ' + err.message, 'error');
   } finally {
@@ -2082,6 +2616,445 @@ document.getElementById('confirmCancelBtn').addEventListener('click', async () =
   }
 });
 
+// ── Edit ticket modal ──────────────────────────────────────────────────
+let editTicketId = null;
+let editSelectedType = 'bug';
+const editOverlay = document.getElementById('editOverlay');
+
+function openEditModal(id) {
+  const ticket = ticketEntries.find(t => t.id === id);
+  if (!ticket) return;
+  editTicketId = id;
+  document.getElementById('edit-title').value = ticket.title;
+  document.getElementById('edit-desc').value = ticket.description || '';
+  document.getElementById('edit-prio').value = ticket.priority || 'medium';
+  editSelectedType = ticket.type || 'bug';
+  const isDylan = ticket.macroId === 'dylanshelp';
+  document.getElementById('edit-type-picker-macro').style.display = isDylan ? 'none' : 'flex';
+  document.getElementById('edit-type-picker-dylan').style.display = isDylan ? 'flex' : 'none';
+  const visiblePicker = isDylan ? '#edit-type-picker-dylan' : '#edit-type-picker-macro';
+  document.querySelectorAll(`${visiblePicker} .edit-type-btn`).forEach(b => b.classList.toggle('selected', b.dataset.tktype === editSelectedType));
+  editOverlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('edit-title').focus(), 100);
+}
+
+function closeEditModal() {
+  editOverlay.style.display = 'none';
+  document.body.style.overflow = '';
+  editTicketId = null;
+}
+
+document.getElementById('closeEditBtn').addEventListener('click', closeEditModal);
+document.getElementById('cancelEditBtn').addEventListener('click', closeEditModal);
+editOverlay.addEventListener('click', e => { if (e.target === editOverlay) closeEditModal(); });
+
+document.querySelectorAll('.edit-type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    editSelectedType = btn.dataset.tktype;
+    btn.closest('.type-picker').querySelectorAll('.edit-type-btn').forEach(b => b.classList.toggle('selected', b === btn));
+  });
+});
+
+document.getElementById('saveEditBtn').addEventListener('click', async () => {
+  const title = document.getElementById('edit-title').value.trim();
+  if (!title) { document.getElementById('edit-title').focus(); document.getElementById('edit-title').style.borderColor = '#ef4444'; return; }
+  document.getElementById('edit-title').style.borderColor = '';
+  const btn = document.getElementById('saveEditBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  try {
+    const result = await apiFetch(`/api/tickets/${editTicketId}/edit`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        title,
+        description: document.getElementById('edit-desc').value.trim(),
+        priority: document.getElementById('edit-prio').value,
+        type: editSelectedType,
+        windowsUser: sessionStorage.getItem('winUser') || ''
+      })
+    });
+    ticketEntries = result.entries;
+    renderTickets();
+    closeEditModal();
+    showToast('Request updated.', 'success');
+  } catch (err) {
+    showToast('Failed to update: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '💾 Save Changes';
+  }
+});
+
+// ── File attachment handling ──────────────────────────────────────────────
+let pendingFiles = [];
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
+const fileInput = document.getElementById('fileInput');
+const fileDropZone = document.getElementById('fileDropZone');
+const filePreviewList = document.getElementById('filePreviewList');
+
+function isImageFile(name) {
+  return /\.(jpe?g|png|gif|bmp|webp|svg)$/i.test(name);
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function renderFilePreview() {
+  filePreviewList.innerHTML = pendingFiles.map((f, i) => {
+    const isImg = isImageFile(f.name);
+    const thumb = isImg ? `<img src="${URL.createObjectURL(f)}" alt="" />` : `<span style="font-size:1.3rem">📄</span>`;
+    return `<div class="file-preview-item">
+      ${thumb}
+      <span class="file-preview-name">${escHtml(f.name)}</span>
+      <span class="file-preview-size">${formatFileSize(f.size)}</span>
+      <button class="file-preview-remove" onclick="removeFile(${i})" title="Remove">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function addFiles(files) {
+  for (const f of files) {
+    if (f.size > MAX_FILE_SIZE) {
+      showToast(`${f.name} is too large (max 25 MB).`, 'error');
+      continue;
+    }
+    if (pendingFiles.some(p => p.name === f.name && p.size === f.size)) continue;
+    pendingFiles.push(f);
+  }
+  renderFilePreview();
+}
+
+function removeFile(index) {
+  pendingFiles.splice(index, 1);
+  renderFilePreview();
+}
+
+fileInput.addEventListener('change', () => { addFiles(fileInput.files); fileInput.value = ''; });
+fileDropZone.addEventListener('dragover', e => { e.preventDefault(); fileDropZone.classList.add('dragover'); });
+fileDropZone.addEventListener('dragleave', () => fileDropZone.classList.remove('dragover'));
+fileDropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  fileDropZone.classList.remove('dragover');
+  addFiles(e.dataTransfer.files);
+});
+
+async function uploadAttachments(ticketId) {
+  const results = [];
+  for (const f of pendingFiles) {
+    try {
+      const resp = await fetch(`${API_BASE}/api/tickets/${ticketId}/attach?name=${encodeURIComponent(f.name)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream' },
+        body: f
+      });
+      if (resp.ok) results.push(f.name);
+      else showToast(`Failed to upload ${f.name}`, 'error');
+    } catch {
+      showToast(`Failed to upload ${f.name}`, 'error');
+    }
+  }
+  return results;
+}
+
+// ── Attachment display on tickets ────────────────────────────────────────
+function renderAttachments(ticket) {
+  const attachments = ticket.attachments || [];
+  if (attachments.length === 0) return '';
+  const imgs = attachments.filter(a => isImageFile(a));
+  const files = attachments.filter(a => !isImageFile(a));
+  let html = '<div class="tk-attachments">';
+  imgs.forEach(a => {
+    const url = `${API_BASE}/api/attachments/${ticket.id}/${encodeURIComponent(a)}`;
+    html += `<img class="tk-attach-thumb" src="${url}" alt="${escHtml(a)}" onclick="openLightbox('${url}')" title="${escHtml(a)}" />`;
+  });
+  files.forEach(a => {
+    const url = `${API_BASE}/api/attachments/${ticket.id}/${encodeURIComponent(a)}`;
+    const ext = a.split('.').pop().toUpperCase();
+    html += `<a class="tk-attach-file" href="${url}" download="${escHtml(a)}" title="Download ${escHtml(a)}">📄 ${ext} — ${escHtml(a)}</a>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function openLightbox(url) {
+  document.getElementById('lightboxImg').src = url;
+  document.getElementById('lightbox').classList.add('open');
+}
+
+// ── Comment rendering ────────────────────────────────────────────────
+function renderComments(ticket) {
+  const comments = ticket.comments || [];
+  const winUser = sessionStorage.getItem('winUser') || '';
+  const voted = JSON.parse(localStorage.getItem('mgVoted') || '[]');
+  const hasVoted = voted.includes(ticket.id);
+  const isCreator = winUser && ticket.windowsUser && ticket.windowsUser === winUser;
+  const hasCommented = comments.some(c => c.windowsUser === winUser);
+  const canComment = (hasVoted || isCreator) && !hasCommented;
+
+  let html = '';
+  if (comments.length > 0 || canComment) {
+    html += `<div class="tk-comments">`;
+    // Toggle button — always visible
+    const countLabel = comments.length > 0 ? `💬 Comments (${comments.length})` : '💬 Add a Comment';
+    html += `<button class="tk-comments-toggle" onclick="toggleComments(this)"><span class="toggle-arrow">▶</span> ${countLabel}</button>`;
+    html += `<div class="tk-comments-body" id="comments-body-${ticket.id}">`;
+    if (comments.length > 0) {
+      const isAdmin = document.body.classList.contains('is-admin');
+      comments.forEach(c => {
+        const isOwn = c.windowsUser === winUser;
+        const editBtn = isOwn ? `<button class="tk-comment-edit" onclick="openEditComment(${ticket.id}, '${escHtml(c.windowsUser)}')">✏️ Edit</button>` : '';
+        const deleteBtn = isAdmin ? `<button class="tk-comment-edit" onclick="deleteComment(${ticket.id}, '${escHtml(c.windowsUser)}')" style="color:#ef4444;" title="Delete this comment">🗑</button>` : '';
+        const gifHtml = c.gifUrl ? `<img class="comment-gif" src="${escHtml(c.gifUrl)}" alt="GIF" />` : '';
+        html += `<div class="tk-comment" id="comment-${ticket.id}-${escHtml(c.windowsUser)}">
+          <div class="tk-comment-header">
+            <span class="tk-comment-user">${escHtml(c.displayName || c.windowsUser)}${isAdmin && c.windowsUser && c.windowsUser !== (c.displayName || '') ? ` <span class="tk-win-user" style="font-size:0.68rem;" title="Windows account">🖥 ${escHtml(c.windowsUser)}</span>` : ''}</span>
+            <span class="tk-comment-date">${formatDate(c.date)}${c.editedDate ? ' (edited)' : ''}</span>
+            ${editBtn}${deleteBtn}
+          </div>
+          <div class="tk-comment-text">${escHtml(c.text || '')}${gifHtml}</div>
+        </div>`;
+      });
+    }
+    if (canComment) {
+      html += `<div class="tk-add-comment">
+        <div style="flex:1;position:relative;">
+          <textarea class="tk-comment-input" id="comment-input-${ticket.id}" placeholder="Add a comment..." rows="1"></textarea>
+          <div class="tk-comment-tools">
+            <button class="tk-comment-tool-btn" onclick="toggleEmojiPicker(${ticket.id})" title="Add emoji">😀</button>
+            <button class="tk-comment-tool-btn" onclick="toggleGifPicker(${ticket.id})" title="Add GIF — thanks Jason G!">GIF</button>
+          </div>
+          <div class="emoji-picker" id="emoji-picker-${ticket.id}"></div>
+          <div class="gif-picker" id="gif-picker-${ticket.id}">
+            <input class="gif-picker-input" id="gif-search-${ticket.id}" placeholder="Search GIFs..." oninput="searchGifs(${ticket.id})" />
+            <div class="gif-picker-grid" id="gif-grid-${ticket.id}"></div>
+            <div class="gif-credit">GIF section inspired by Jason G 🎬 &bull; Powered by GIPHY</div>
+          </div>
+          <input type="hidden" id="comment-gif-${ticket.id}" value="" />
+          <div id="comment-gif-preview-${ticket.id}" style="margin-top:4px;"></div>
+        </div>
+        <button class="tk-comment-submit" onclick="submitComment(${ticket.id})">Post</button>
+      </div>`;
+    } else if (!isCreator && !hasVoted && comments.length > 0) {
+      html += `<div style="font-size:0.75rem;color:var(--muted);margin-top:8px;font-style:italic;">Vote on this request to add a comment.</div>`;
+    }
+    html += `</div>`; // close body
+    html += `</div>`; // close tk-comments
+  }
+  return html;
+}
+
+const EMOJIS = ['😀','😂','🤣','😍','🥳','👍','👎','🎉','🔥','❤️','💯','🙏','👀','🤔','😎','🤯','💪','✅','❌','⚡','🚀','🐛','🎯','💡','⭐','🏆','😅','🤦','🫡','👏','🙌','😤','😱','🥲','💀','🫠'];
+
+function toggleEmojiPicker(ticketId) {
+  const picker = document.getElementById(`emoji-picker-${ticketId}`);
+  // Close any open gif pickers
+  document.querySelectorAll('.gif-picker.open').forEach(p => p.classList.remove('open'));
+  if (!picker.innerHTML) {
+    picker.innerHTML = EMOJIS.map(e => `<span onclick="insertEmoji(${ticketId},'${e}')">${e}</span>`).join('');
+  }
+  picker.classList.toggle('open');
+}
+
+function insertEmoji(ticketId, emoji) {
+  const input = document.getElementById(`comment-input-${ticketId}`);
+  input.value += emoji;
+  input.focus();
+  document.getElementById(`emoji-picker-${ticketId}`).classList.remove('open');
+}
+
+function toggleGifPicker(ticketId) {
+  const picker = document.getElementById(`gif-picker-${ticketId}`);
+  document.querySelectorAll('.emoji-picker.open').forEach(p => p.classList.remove('open'));
+  picker.classList.toggle('open');
+  if (picker.classList.contains('open')) {
+    const searchInput = document.getElementById(`gif-search-${ticketId}`);
+    searchInput.value = '';
+    searchInput.focus();
+    // Load trending GIFs by default
+    loadTrendingGifs(ticketId);
+  }
+}
+
+const GIPHY_KEY = 'GlVGYHkr3WSBnllca54iNt0yFbjz7L65'; // GIPHY public beta key
+let gifSearchTimer = null;
+
+function searchGifs(ticketId) {
+  clearTimeout(gifSearchTimer);
+  gifSearchTimer = setTimeout(() => {
+    const q = document.getElementById(`gif-search-${ticketId}`).value.trim();
+    if (!q) { loadTrendingGifs(ticketId); return; }
+    fetchGifs(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_KEY}&q=${encodeURIComponent(q)}&limit=12&rating=pg`, ticketId);
+  }, 350);
+}
+
+function loadTrendingGifs(ticketId) {
+  fetchGifs(`https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_KEY}&limit=12&rating=pg`, ticketId);
+}
+
+async function fetchGifs(url, ticketId) {
+  const grid = document.getElementById(`gif-grid-${ticketId}`);
+  grid.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted);font-size:0.82rem;">Loading...</div>';
+  try {
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (!data.data || data.data.length === 0) {
+      grid.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted);font-size:0.82rem;">No GIFs found. Try a different search.</div>';
+      return;
+    }
+    grid.innerHTML = data.data.map(g => {
+      const thumb = g.images.fixed_width_small.url;
+      const full = g.images.fixed_width.url;
+      return `<img src="${thumb}" alt="${escHtml(g.title)}" title="${escHtml(g.title)}" onclick="selectGif(${ticketId}, '${full}')" loading="lazy" />`;
+    }).join('');
+  } catch (err) {
+    grid.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted);font-size:0.82rem;">Could not load GIFs. Check your internet connection.</div>';
+  }
+}
+
+function selectGif(ticketId, url) {
+  document.getElementById(`comment-gif-${ticketId}`).value = url;
+  document.getElementById(`comment-gif-preview-${ticketId}`).innerHTML = `<div style="position:relative;display:inline-block;margin-top:6px;"><img src="${url}" style="max-width:180px;max-height:120px;border-radius:8px;border:1px solid var(--border);" /><button onclick="removeGif(${ticketId})" style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:0.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>`;
+  document.getElementById(`gif-picker-${ticketId}`).classList.remove('open');
+}
+
+function removeGif(ticketId) {
+  document.getElementById(`comment-gif-${ticketId}`).value = '';
+  document.getElementById(`comment-gif-preview-${ticketId}`).innerHTML = '';
+}
+
+async function submitComment(ticketId) {
+  const text = document.getElementById(`comment-input-${ticketId}`).value.trim();
+  const gifUrl = document.getElementById(`comment-gif-${ticketId}`).value.trim();
+  if (!text && !gifUrl) { showToast('Write something or add a GIF.', 'info'); return; }
+  try {
+    const result = await apiFetch(`/api/tickets/${ticketId}/comment`, {
+      method: 'POST',
+      body: JSON.stringify({
+        windowsUser: sessionStorage.getItem('winUser') || '',
+        displayName: localStorage.getItem('mgUserName') || sessionStorage.getItem('winUser') || '',
+        text,
+        gifUrl
+      })
+    });
+    ticketEntries = result.entries;
+    renderTickets();
+    showToast('Comment added!', 'success');
+  } catch (err) {
+    showToast('Could not add comment: ' + err.message, 'error');
+  }
+}
+
+function toggleComments(btn) {
+  btn.classList.toggle('expanded');
+  const body = btn.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+function openEditComment(ticketId, windowsUser) {
+  const ticket = ticketEntries.find(t => t.id === ticketId);
+  if (!ticket || !ticket.comments) return;
+  const comment = ticket.comments.find(c => c.windowsUser === windowsUser);
+  if (!comment) return;
+  // Find the comment div and replace its text area with an inline edit form
+  const commentDiv = document.getElementById(`comment-${ticketId}-${windowsUser}`);
+  if (!commentDiv) return;
+  const textDiv = commentDiv.querySelector('.tk-comment-text');
+  if (!textDiv) return;
+  const existingGif = comment.gifUrl || '';
+  const gifPreview = existingGif ? `<div class="tk-comment-edit-gif-preview"><img src="${escHtml(existingGif)}" /><button onclick="this.parentElement.remove();document.getElementById('edit-gif-${ticketId}').value=''" style="background:#ef4444;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:0.65rem;cursor:pointer;margin-left:6px;vertical-align:top;">✕</button></div>` : '';
+  textDiv.innerHTML = `<div class="tk-comment-edit-form">
+    <textarea id="edit-text-${ticketId}">${escHtml(comment.text || '')}</textarea>
+    <input type="hidden" id="edit-gif-${ticketId}" value="${escHtml(existingGif)}" />
+    ${gifPreview}
+    <div class="tk-comment-edit-actions">
+      <button class="tk-comment-edit-save" onclick="saveEditComment(${ticketId})">Save</button>
+      <button class="tk-comment-edit-cancel" onclick="renderTickets()">Cancel</button>
+      <button class="tk-comment-tool-btn" onclick="toggleGifPickerEdit(${ticketId})" title="Change GIF — thanks Jason G!" style="font-size:0.72rem;margin-left:auto;">GIF</button>
+    </div>
+    <div class="gif-picker" id="gif-picker-edit-${ticketId}">
+      <input class="gif-picker-input" id="gif-search-edit-${ticketId}" placeholder="Search GIFs..." oninput="searchGifsEdit(${ticketId})" />
+      <div class="gif-picker-grid" id="gif-grid-edit-${ticketId}"></div>
+      <div class="gif-credit">GIF section inspired by Jason G 🎬 &bull; Powered by GIPHY</div>
+    </div>
+  </div>`;
+}
+
+function toggleGifPickerEdit(ticketId) {
+  const picker = document.getElementById(`gif-picker-edit-${ticketId}`);
+  picker.classList.toggle('open');
+}
+
+function searchGifsEdit(ticketId) {
+  const query = document.getElementById(`gif-search-edit-${ticketId}`).value.trim();
+  const grid = document.getElementById(`gif-grid-edit-${ticketId}`);
+  if (!query) { grid.innerHTML = ''; return; }
+  clearTimeout(window._gifEditDebounce);
+  window._gifEditDebounce = setTimeout(async () => {
+    try {
+      const r = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q=${encodeURIComponent(query)}&limit=12&rating=pg`);
+      const data = await r.json();
+      grid.innerHTML = (data.data || []).map(g => {
+        const url = g.images.fixed_height_small.url;
+        return `<img src="${url}" onclick="selectGifEdit(${ticketId},'${url}')" />`;
+      }).join('');
+    } catch { grid.innerHTML = '<div style="color:var(--muted);font-size:0.75rem;padding:8px;">Could not load GIFs</div>'; }
+  }, 350);
+}
+
+function selectGifEdit(ticketId, url) {
+  document.getElementById(`edit-gif-${ticketId}`).value = url;
+  document.getElementById(`gif-picker-edit-${ticketId}`).classList.remove('open');
+  // Show preview in the edit form
+  const form = document.querySelector(`#edit-text-${ticketId}`).closest('.tk-comment-edit-form');
+  let preview = form.querySelector('.tk-comment-edit-gif-preview');
+  if (!preview) { preview = document.createElement('div'); preview.className = 'tk-comment-edit-gif-preview'; form.querySelector('.tk-comment-edit-actions').before(preview); }
+  preview.innerHTML = `<img src="${url}" /><button onclick="this.parentElement.remove();document.getElementById('edit-gif-${ticketId}').value=''" style="background:#ef4444;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:0.65rem;cursor:pointer;margin-left:6px;vertical-align:top;">✕</button>`;
+}
+
+function saveEditComment(ticketId) {
+  const text = document.getElementById(`edit-text-${ticketId}`).value.trim();
+  const gifUrl = document.getElementById(`edit-gif-${ticketId}`).value.trim();
+  if (!text && !gifUrl) { showToast('Write something or add a GIF.', 'info'); return; }
+  editComment(ticketId, text, gifUrl);
+}
+
+async function editComment(ticketId, text, gifUrl) {
+  try {
+    const result = await apiFetch(`/api/tickets/${ticketId}/comment`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        windowsUser: sessionStorage.getItem('winUser') || '',
+        text,
+        gifUrl
+      })
+    });
+    ticketEntries = result.entries;
+    renderTickets();
+    showToast('Comment updated.', 'success');
+  } catch (err) {
+    showToast('Could not update comment: ' + err.message, 'error');
+  }
+}
+
+async function deleteComment(ticketId, commentUser) {
+  if (!confirm('Delete this comment?')) return;
+  try {
+    const result = await apiFetch(`/api/tickets/${ticketId}/comment`, {
+      method: 'DELETE',
+      body: JSON.stringify({ windowsUser: commentUser })
+    });
+    ticketEntries = result.entries;
+    renderTickets();
+    showToast('Comment deleted.', 'success');
+  } catch (err) {
+    showToast('Could not delete comment: ' + err.message, 'error');
+  }
+}
+
 // ── Data loading from server ─────────────────────────────────────────────
 async function loadData() {
   try {
@@ -2138,6 +3111,25 @@ function setAdmin(on) {
   renderTickets();
 }
 
+document.getElementById('adminRestart').addEventListener('click', async () => {
+  if (!confirm('Restart the server? The page will reload in a few seconds with the latest changes.')) return;
+  try {
+    await fetch(API_BASE + '/api/restart');
+  } catch {}
+  showToast('Server restarting...', 'info');
+  // The server spawns a replacement before exiting. Poll until it's back.
+  setTimeout(async () => {
+    for (let i = 0; i < 30; i++) {
+      await new Promise(r => setTimeout(r, 1000));
+      try {
+        const r = await fetch(API_BASE + '/');
+        if (r.ok) { window.location.reload(); return; }
+      } catch {}
+    }
+    showToast('Server did not come back up. Re-open the Macro Guide from PDM.', 'error');
+  }, 1500);
+});
+
 adminToggle.addEventListener('click', () => {
   if (document.body.classList.contains('is-admin')) { setAdmin(false); return; }
   adminOverlay.classList.add('open');
@@ -2178,5 +3170,12 @@ if (sessionStorage.getItem('nmtAdmin') === '1') setAdmin(true);
 // Load data from server
 loadData();
 </script>
+<!-- NMT_FOOTER -->
+<footer style="margin-top:48px;padding:28px 20px 36px;text-align:center;border-top:1px solid var(--border);">
+  <div style="display:inline-block;background:#fff;padding:14px 22px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.15);">
+    <img src="data:image/png;base64,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" alt="Nordic Minesteel Technologies" style="max-width:320px;width:100%;height:auto;display:block;" />
+  </div>
+  <p style="margin-top:14px;color:var(--muted);font-size:0.82rem;">Maintained by Dylan Lebel &middot; dlebel@nmtech.com</p>
+</footer>
 </body>
 </html>

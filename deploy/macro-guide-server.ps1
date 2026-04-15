@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     Nordic Minesteel Macro Guide — Server
@@ -16,12 +16,15 @@
 
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+Add-Type -AssemblyName System.Web
 
 # ════════════════════════════════════════════════════════════════════════
 #  CONFIGURATION
 # ════════════════════════════════════════════════════════════════════════
 
-$Port = 8123
+$PortCandidates = @(8123, 8124, 8125, 8126)
+$Port = $PortCandidates[0]  # actual chosen port set later when listener starts
+$PortStatusFile = Join-Path $env:TEMP 'MacroGuide.port'
 
 # Paths — auto-detect relative to script, fall back to known locations
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -30,6 +33,10 @@ $DataDir = Join-Path $ScriptDir 'data'
 if (-not (Test-Path $DataDir)) {
     $DataDir = 'Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\data'
 }
+# Local fallback if shared data dir is unavailable (e.g. Y: not mapped).
+# Initialize-DataFiles will switch to this if the primary fails.
+$LocalDataDir = Join-Path $env:APPDATA 'MacroGuide\data'
+$DataSource = 'shared'  # 'shared' or 'local' — set by Initialize-DataFiles
 
 $HtmlFile = Join-Path $ScriptDir 'MacroGuide.html'
 if (-not (Test-Path $HtmlFile)) {
@@ -39,11 +46,10 @@ if (-not (Test-Path $HtmlFile)) {
 $ClFile = Join-Path $DataDir 'changelog.json'
 $TkFile = Join-Path $DataDir 'tickets.json'
 
-# Email notifications — set $EmailEnabled to $true and configure SMTP
-$EmailEnabled = $false
-$EmailSmtp    = 'mail.nmtech.com'
-$EmailPort    = 25
-$EmailFrom    = 'macroguide@nmtech.com'
+
+
+# Email notifications — uses Outlook COM (no credentials needed, works with logged-in Outlook)
+$EmailEnabled = $true
 $EmailTo      = 'dlebel@nmtech.com'
 
 # ════════════════════════════════════════════════════════════════════════
@@ -144,29 +150,250 @@ function Invoke-LockedMutate {
 #  EMAIL NOTIFICATIONS
 # ════════════════════════════════════════════════════════════════════════
 
-function Send-TicketEmail {
-    param($Ticket)
+function Send-OutlookEmail {
+    param([string]$Subject, [string]$HtmlBody, [string]$To = $EmailTo)
     if (-not $EmailEnabled) { return }
     try {
-        $subject = "New Macro Guide Ticket: $($Ticket.title)"
-        $body = @"
-A new ticket was submitted in the Macro Guide.
-
-Title:    $($Ticket.title)
-Type:     $($Ticket.type)
-Priority: $($Ticket.priority)
-Macro:    $($Ticket.macroName)
-From:     $(if ($Ticket.createdBy) { $Ticket.createdBy } else { 'Anonymous' })
-Date:     $($Ticket.date)
-
-Description:
-$(if ($Ticket.description) { $Ticket.description } else { '(no description)' })
-"@
-        Send-MailMessage -From $EmailFrom -To $EmailTo -Subject $subject -Body $body -SmtpServer $EmailSmtp -Port $EmailPort -ErrorAction Stop
-        Write-Host "  Email sent: $subject" -ForegroundColor Green
+        $ol = New-Object -ComObject Outlook.Application
+        $mail = $ol.CreateItem(0)
+        $mail.To = $To
+        $mail.Subject = $Subject
+        $mail.HTMLBody = $HtmlBody
+        $mail.Send()
+        Write-Host "  Email sent to ${To}: $Subject" -ForegroundColor Green
     } catch {
-        Write-Host "  Email failed: $($_.Exception.Message)" -ForegroundColor Yellow
+        Write-Host "  Email failed ($To): $($_.Exception.Message)" -ForegroundColor Yellow
     }
+}
+
+function Get-EmailHtmlWrapper {
+    param([string]$Title, [string]$InnerHtml)
+    return @"
+<!DOCTYPE html>
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--[if mso]>
+<xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+<style>body,table,td,p,a,h2{font-family:'Segoe UI',Arial,sans-serif!important;}td{mso-line-height-rule:exactly;}</style>
+<![endif]-->
+</head>
+<body style="margin:0;padding:0;background-color:#f0f0f0;font-family:'Segoe UI',-apple-system,'Helvetica Neue',Arial,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f0f0f0;">
+<tr><td align="center" style="padding:40px 16px;">
+<!--[if mso]><table role="presentation" width="540" cellpadding="0" cellspacing="0" border="0" align="center" style="border:1px solid #e0e0e0;"><tr><td><![endif]-->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:540px;background-color:#ffffff;border:1px solid #e5e5e5;">
+  <tr><td style="height:4px;background-color:#4f8ef7;font-size:1px;line-height:1px;">&nbsp;</td></tr>
+  <tr><td style="padding:28px 36px 0 36px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr><td style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#b0b0b0;font-weight:600;font-family:'Segoe UI',Arial,sans-serif;padding-bottom:20px;">NORDIC MINESTEEL &bull; MACRO GUIDE</td></tr>
+    <tr><td style="font-size:20px;font-weight:600;color:#1a1a1a;font-family:'Segoe UI',Arial,sans-serif;line-height:28px;padding-bottom:24px;">$Title</td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:0 36px 28px 36px;">
+    $InnerHtml
+  </td></tr>
+  <tr><td style="border-top:1px solid #eeeeee;padding:16px 36px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr><td style="font-size:11px;color:#c0c0c0;font-family:'Segoe UI',Arial,sans-serif;">Automated notification from Macro Guide</td></tr>
+    </table>
+  </td></tr>
+</table>
+<!--[if mso]></td></tr></table><![endif]-->
+</td></tr></table>
+</body></html>
+"@
+}
+
+function Get-EmailRow {
+    param([string]$Label, [string]$Value, [string]$ValueStyle = '')
+    $vs = if ($ValueStyle) { $ValueStyle } else { 'color:#1a1a1a;font-size:14px;font-family:''Segoe UI'',Arial,sans-serif;' }
+    return "<tr><td width=`"110`" style=`"padding:11px 12px 11px 0;border-bottom:1px solid #f0f0f0;color:#999999;font-size:13px;font-family:'Segoe UI',Arial,sans-serif;vertical-align:top;`">$Label</td><td style=`"padding:11px 0;border-bottom:1px solid #f0f0f0;$vs`">$Value</td></tr>"
+}
+
+function Get-EmailBadge {
+    param([string]$Text, [string]$BgColor, [string]$TextColor)
+    return @"
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="background-color:$BgColor;padding:4px 14px;"><span style="color:$TextColor;font-size:12px;font-weight:600;font-family:'Segoe UI',Arial,sans-serif;">$Text</span></td></tr></table><![endif]-->
+<!--[if !mso]><!--><span style="display:inline-block;padding:4px 14px;background-color:$BgColor;color:$TextColor;font-size:12px;font-weight:600;font-family:'Segoe UI',Arial,sans-serif;border-radius:20px;line-height:1.4;">$Text</span><!--<![endif]-->
+"@
+}
+
+function Get-EmailDescBlock {
+    param([string]$Text, [string]$AccentColor = '#4f8ef7')
+    return @"
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+<tr>
+<td width="3" style="background-color:$AccentColor;font-size:1px;width:3px;">&nbsp;</td>
+<td style="background-color:#fafafa;padding:14px 18px;font-size:14px;color:#444444;font-family:'Segoe UI',Arial,sans-serif;line-height:22px;">$Text</td>
+</tr></table>
+"@
+}
+
+function Get-EmailLink {
+    param([string]$Text = 'Open Macro Guide')
+    return @"
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;"><tr>
+<td style="font-size:13px;color:#666666;font-family:'Segoe UI',Arial,sans-serif;padding:10px 14px;background-color:#f5f5f5;border-left:3px solid #4f8ef7;">
+<strong style="color:#333333;">$Text</strong><br/>
+Run <em>Open Macro Guide.vbs</em> from your NMT_PDM shortcut or find it at:<br/>
+<span style="font-family:Consolas,'Courier New',monospace;font-size:12px;color:#4f8ef7;">Y:\Solidworks\Macros\Macro Data PDM\MacroGuide</span>
+</td></tr></table>
+"@
+}
+
+function Get-EmailSectionLabel {
+    param([string]$Text)
+    return "<table role=`"presentation`" width=`"100%`" cellpadding=`"0`" cellspacing=`"0`" border=`"0`" style=`"margin-bottom:10px;`"><tr><td style=`"font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#999999;font-weight:600;font-family:'Segoe UI',Arial,sans-serif;padding-bottom:2px;`">$Text</td></tr></table>"
+}
+
+function Send-TicketEmail {
+    param($Ticket)
+    $subject = "New Macro Guide Request: $($Ticket.title)"
+    $from = if ($Ticket.createdBy) { $Ticket.createdBy } else { 'Anonymous' }
+    $desc = if ($Ticket.description) { [System.Web.HttpUtility]::HtmlEncode($Ticket.description) } else { 'No description provided' }
+    $tTitle = [System.Web.HttpUtility]::HtmlEncode($Ticket.title)
+    $tType = [System.Web.HttpUtility]::HtmlEncode($Ticket.type)
+    $tPrio = [System.Web.HttpUtility]::HtmlEncode($Ticket.priority)
+    $tMacro = [System.Web.HttpUtility]::HtmlEncode($Ticket.macroName)
+    $tFrom = [System.Web.HttpUtility]::HtmlEncode($from)
+    $tDate = [System.Web.HttpUtility]::HtmlEncode($Ticket.date)
+    $rows = @(
+        (Get-EmailRow 'Title' "<strong>$tTitle</strong>")
+        (Get-EmailRow 'Type' $tType)
+        (Get-EmailRow 'Priority' $tPrio)
+        (Get-EmailRow 'Macro' $tMacro)
+        (Get-EmailRow 'From' $tFrom)
+        (Get-EmailRow 'Date' $tDate)
+    ) -join "`n"
+    $descBlock = Get-EmailDescBlock $desc '#4f8ef7'
+    $link = Get-EmailLink
+    $detailLabel = Get-EmailSectionLabel 'Details'
+    $descLabel = Get-EmailSectionLabel 'Description'
+    $inner = @"
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-size:14px;color:#666666;font-family:'Segoe UI',Arial,sans-serif;line-height:22px;padding-bottom:20px;">A new request was submitted in the Macro Guide.</td></tr></table>
+    $detailLabel
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">$rows</table>
+    $descLabel
+    $descBlock
+    $link
+"@
+    $htmlBody = Get-EmailHtmlWrapper -Title "New Request Submitted" -InnerHtml $inner
+    Send-OutlookEmail -Subject $subject -HtmlBody $htmlBody
+}
+
+function Send-VoteEmail {
+    param($Ticket, [int]$NewVoteCount)
+    $subject = "Upvote on: $($Ticket.title) ($NewVoteCount votes)"
+    $from = if ($Ticket.createdBy) { $Ticket.createdBy } else { 'Anonymous' }
+    $tTitle = [System.Web.HttpUtility]::HtmlEncode($Ticket.title)
+    $tStatus = [System.Web.HttpUtility]::HtmlEncode($Ticket.status)
+    $tPrio = [System.Web.HttpUtility]::HtmlEncode($Ticket.priority)
+    $tMacro = [System.Web.HttpUtility]::HtmlEncode($Ticket.macroName)
+    $tFrom = [System.Web.HttpUtility]::HtmlEncode($from)
+    $voteBadge = Get-EmailBadge $NewVoteCount '#eef4ff' '#4f8ef7'
+    $rows = @(
+        (Get-EmailRow 'Title' "<strong>$tTitle</strong>")
+        (Get-EmailRow 'Votes' $voteBadge)
+        (Get-EmailRow 'Status' $tStatus)
+        (Get-EmailRow 'Priority' $tPrio)
+        (Get-EmailRow 'Macro' $tMacro)
+        (Get-EmailRow 'From' $tFrom)
+    ) -join "`n"
+    $link = Get-EmailLink
+    $detailLabel = Get-EmailSectionLabel 'Details'
+    $inner = @"
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-size:14px;color:#666666;font-family:'Segoe UI',Arial,sans-serif;line-height:22px;padding-bottom:20px;">A request was upvoted in the Macro Guide.</td></tr></table>
+    $detailLabel
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">$rows</table>
+    $link
+"@
+    $htmlBody = Get-EmailHtmlWrapper -Title "Request Upvoted" -InnerHtml $inner
+    Send-OutlookEmail -Subject $subject -HtmlBody $htmlBody
+}
+
+function Send-StatusNotification {
+    param($Ticket, [string]$NewStatus)
+    # Collect recipient emails: creator + voters
+    $recipients = @()
+    $creatorUser = if ($Ticket.PSObject.Properties['windowsUser'] -and $Ticket.windowsUser) { $Ticket.windowsUser } else { $null }
+    if ($creatorUser) { $recipients += "$creatorUser@nmtech.com" }
+    if ($Ticket.PSObject.Properties['voters'] -and $Ticket.voters) {
+        foreach ($voter in $Ticket.voters) { if ($voter) { $recipients += "$voter@nmtech.com" } }
+    }
+    $recipients = @($recipients | Select-Object -Unique)
+    if ($recipients.Count -eq 0) {
+        Write-Host "  No recipients for status notification (no windowsUser or voters) — skipping." -ForegroundColor DarkGray
+        return
+    }
+    $recipientList = $recipients -join '; '
+    $title = $Ticket.title
+    if ($NewStatus -eq 'in-progress') {
+        $subject = "Your request is being worked on: $title"
+        $statusLabel = 'In Progress'
+        $badgeBg = '#fef3e2'; $badgeColor = '#b8760a'
+        $msg = "Dylan has started working on your request. You'll be notified again when it's complete."
+    } elseif ($NewStatus -eq 'done') {
+        $subject = "Your request is complete: $title"
+        $statusLabel = 'Done'
+        $badgeBg = '#e8f9ee'; $badgeColor = '#1a8a3a'
+        $msg = "Your request has been completed. If you have questions or need follow-up, submit a new request or reach out to Dylan."
+    } else { return }
+    $tTitle = [System.Web.HttpUtility]::HtmlEncode($title)
+    $tMacro = [System.Web.HttpUtility]::HtmlEncode($Ticket.macroName)
+    $statusBadge = Get-EmailBadge $statusLabel $badgeBg $badgeColor
+    $rows = @(
+        (Get-EmailRow 'Title' "<strong>$tTitle</strong>")
+        (Get-EmailRow 'Macro' $tMacro)
+        (Get-EmailRow 'Status' $statusBadge)
+    ) -join "`n"
+    $link = Get-EmailLink
+    $detailLabel = Get-EmailSectionLabel 'Details'
+    $inner = @"
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-size:14px;color:#666666;font-family:'Segoe UI',Arial,sans-serif;line-height:22px;padding-bottom:20px;">$msg</td></tr></table>
+    $detailLabel
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">$rows</table>
+    $link
+"@
+    $htmlBody = Get-EmailHtmlWrapper -Title $subject -InnerHtml $inner
+    Send-OutlookEmail -Subject $subject -HtmlBody $htmlBody -To $recipientList
+}
+
+function Send-PokeEmail {
+    param($Ticket)
+    $pokes = if ($Ticket.PSObject.Properties['pokes']) { [int]$Ticket.pokes } else { 1 }
+    $subject = "POKE ($pokes): $($Ticket.title)"
+    $from = if ($Ticket.createdBy) { $Ticket.createdBy } else { 'Anonymous' }
+    $desc = if ($Ticket.description) { [System.Web.HttpUtility]::HtmlEncode($Ticket.description) } else { 'No description provided' }
+    $tTitle = [System.Web.HttpUtility]::HtmlEncode($Ticket.title)
+    $tStatus = [System.Web.HttpUtility]::HtmlEncode($Ticket.status)
+    $tPrio = [System.Web.HttpUtility]::HtmlEncode($Ticket.priority)
+    $tMacro = [System.Web.HttpUtility]::HtmlEncode($Ticket.macroName)
+    $tFrom = [System.Web.HttpUtility]::HtmlEncode($from)
+    $pokeBadge = Get-EmailBadge $pokes '#fef0f0' '#c0392b'
+    $rows = @(
+        (Get-EmailRow 'Title' "<strong>$tTitle</strong>")
+        (Get-EmailRow 'Pokes' $pokeBadge)
+        (Get-EmailRow 'Status' $tStatus)
+        (Get-EmailRow 'Priority' $tPrio)
+        (Get-EmailRow 'Macro' $tMacro)
+        (Get-EmailRow 'From' $tFrom)
+    ) -join "`n"
+    $descBlock = Get-EmailDescBlock $desc '#c0392b'
+    $link = Get-EmailLink
+    $detailLabel = Get-EmailSectionLabel 'Details'
+    $descLabel = Get-EmailSectionLabel 'Description'
+    $inner = @"
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-size:14px;color:#666666;font-family:'Segoe UI',Arial,sans-serif;line-height:22px;padding-bottom:20px;">Someone poked a request in the Macro Guide &mdash; they're waiting on this.</td></tr></table>
+    $detailLabel
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">$rows</table>
+    $descLabel
+    $descBlock
+    $link
+"@
+    $htmlBody = Get-EmailHtmlWrapper -Title "Poke Reminder" -InnerHtml $inner
+    Send-OutlookEmail -Subject $subject -HtmlBody $htmlBody
 }
 
 # ════════════════════════════════════════════════════════════════════════
@@ -179,7 +406,21 @@ function Initialize-DataFiles {
             New-Item -ItemType Directory -Path $DataDir -Force | Out-Null
             Write-Host "  Created data directory: $DataDir"
         } catch {
-            throw "Data directory not found and could not be created:`n  $DataDir`n`nMake sure the Y: drive is mapped."
+            # Shared drive unavailable — fall back to local APPDATA so the guide
+            # still works read-only for this user. Their tickets/changelog edits
+            # will NOT be visible to the rest of the team until Y: is restored.
+            Write-Host "  WARNING: Shared data dir unavailable ($DataDir)." -ForegroundColor Yellow
+            Write-Host "  Falling back to local-only mode: $LocalDataDir" -ForegroundColor Yellow
+            Write-Host "  Tickets and changelog edits will NOT sync to the team." -ForegroundColor Yellow
+            try {
+                New-Item -ItemType Directory -Path $LocalDataDir -Force | Out-Null
+            } catch {
+                throw "Could not create local fallback data directory either:`n  $LocalDataDir"
+            }
+            $script:DataDir = $LocalDataDir
+            $script:ClFile  = Join-Path $LocalDataDir 'changelog.json'
+            $script:TkFile  = Join-Path $LocalDataDir 'tickets.json'
+            $script:DataSource = 'local'
         }
     }
     if (-not (Test-Path $ClFile)) {
@@ -196,6 +437,11 @@ function Initialize-DataFiles {
         [System.IO.File]::WriteAllText($TkFile, '[]', [System.Text.Encoding]::UTF8)
         Write-Host "  Created tickets.json (empty)"
     }
+    $attachDir = Join-Path $DataDir 'attachments'
+    if (-not (Test-Path $attachDir)) {
+        New-Item -ItemType Directory -Path $attachDir -Force | Out-Null
+        Write-Host "  Created attachments directory"
+    }
 }
 
 # ════════════════════════════════════════════════════════════════════════
@@ -207,7 +453,7 @@ function Send-JsonResponse {
     $Response.StatusCode = $StatusCode
     $Response.ContentType = 'application/json; charset=utf-8'
     $Response.AddHeader('Access-Control-Allow-Origin', '*')
-    $Response.AddHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,OPTIONS')
+    $Response.AddHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS')
     $Response.AddHeader('Access-Control-Allow-Headers', 'Content-Type')
     $json = ConvertTo-Json $Data -Depth 10 -Compress
     $buffer = [System.Text.Encoding]::UTF8.GetBytes($json)
@@ -237,6 +483,582 @@ function Read-RequestBody {
 }
 
 # ════════════════════════════════════════════════════════════════════════
+#  REQUEST HANDLER (extracted to avoid PS 5.1 nested try/catch bug)
+# ════════════════════════════════════════════════════════════════════════
+
+function Handle-Request {
+    param($req, $res)
+    $url = $req.Url.AbsolutePath
+    $method = $req.HttpMethod
+
+    # ── OPTIONS (CORS preflight) ────────────────────────
+    if ($method -eq 'OPTIONS') {
+        $res.AddHeader('Access-Control-Allow-Origin', '*')
+        $res.AddHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS')
+        $res.AddHeader('Access-Control-Allow-Headers', 'Content-Type')
+        $res.StatusCode = 204
+        $res.OutputStream.Close()
+        return
+    }
+
+    # ── Serve HTML ──────────────────────────────────────
+    if ($method -eq 'GET' -and ($url -eq '/' -or $url -eq '/index.html')) {
+        Send-HtmlResponse $res $HtmlFile
+        return
+    }
+
+    # ── GET /api/changelog ──────────────────────────────
+    if ($method -eq 'GET' -and $url -eq '/api/changelog') {
+        $data = @(Read-JsonFile $ClFile)
+        Send-JsonResponse $res 200 $data
+        return
+    }
+
+    # ── GET /api/tickets ────────────────────────────────
+    if ($method -eq 'GET' -and $url -eq '/api/tickets') {
+        $data = @(Read-JsonFile $TkFile)
+        Send-JsonResponse $res 200 $data
+        return
+    }
+
+    # ── POST /api/changelog/add ─────────────────────────
+    if ($method -eq 'POST' -and $url -eq '/api/changelog/add') {
+        $body = Read-RequestBody $req
+        $entry = $body | ConvertFrom-Json
+        if (-not $entry.date -or -not $entry.description) {
+            Send-JsonResponse $res 400 @{ error = 'Missing required fields (date, description).' }
+            return
+        }
+        $updated = Invoke-LockedMutate $ClFile {
+            param($data)
+            $maxId = 0
+            foreach ($e in $data) {
+                if ($e.PSObject.Properties['id'] -and [int]$e.id -gt $maxId) { $maxId = [int]$e.id }
+            }
+            $entry | Add-Member -NotePropertyName id -NotePropertyValue ($maxId + 1) -Force
+            $data += $entry
+            return $data
+        }
+        Send-JsonResponse $res 200 @{ ok = $true; count = $updated.Count; entries = @($updated) }
+        return
+    }
+
+    # ── POST /api/tickets/add ───────────────────────────
+    if ($method -eq 'POST' -and $url -eq '/api/tickets/add') {
+        $body = Read-RequestBody $req
+        $ticket = $body | ConvertFrom-Json
+        if (-not $ticket.title) {
+            Send-JsonResponse $res 400 @{ error = 'Missing required field (title).' }
+            return
+        }
+        $updated = Invoke-LockedMutate $TkFile {
+            param($data)
+            $data += $ticket
+            return $data
+        }
+        # Send email via Outlook COM
+        Send-TicketEmail $ticket
+        Send-JsonResponse $res 200 @{ ok = $true; count = $updated.Count; entries = @($updated) }
+        return
+    }
+
+    # ── PATCH /api/tickets/{id}/status ──────────────────
+    if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/status$') {
+        $id = [long]$Matches[1]
+        $body = Read-RequestBody $req
+        $parsed = $body | ConvertFrom-Json
+        $newStatus = $parsed.status
+        $validStatuses = @('open', 'in-progress', 'done', 'closed')
+        if ($newStatus -notin $validStatuses) {
+            Send-JsonResponse $res 400 @{ error = "Invalid status. Must be one of: $($validStatuses -join ', ')" }
+            return
+        }
+        $found = $false
+        $notifyTicket = $null
+        $updated = Invoke-LockedMutate $TkFile {
+            param($data)
+            foreach ($tk in $data) {
+                if ([string]$tk.id -eq [string]$id) {
+                    $tk.status = $newStatus
+                    Set-Variable -Name found -Value $true -Scope 2
+                    if ($newStatus -eq 'in-progress' -or $newStatus -eq 'done') {
+                        Set-Variable -Name notifyTicket -Value $tk -Scope 2
+                    }
+                }
+            }
+            return $data
+        }
+        if (-not $found) {
+            Send-JsonResponse $res 404 @{ error = 'Ticket not found.' }
+            return
+        }
+        # Email creator + voters when status changes to in-progress or done
+        if ($notifyTicket) {
+            Send-StatusNotification $notifyTicket $newStatus
+        }
+        Send-JsonResponse $res 200 @{ ok = $true; entries = @($updated) }
+        return
+    }
+
+    # ── PATCH /api/tickets/{id}/cancel ──────────────────
+    if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/cancel$') {
+        $id = [long]$Matches[1]
+        $body = Read-RequestBody $req
+        $parsed = $body | ConvertFrom-Json
+        if (-not $parsed.reason -or [string]::IsNullOrWhiteSpace($parsed.reason)) {
+            Send-JsonResponse $res 400 @{ error = 'A cancellation reason is required.' }
+            return
+        }
+        $found = $false
+        $updated = Invoke-LockedMutate $TkFile {
+            param($data)
+            foreach ($tk in $data) {
+                if ([string]$tk.id -eq [string]$id) {
+                    $tk.status = 'canceled'
+                    $tk | Add-Member -NotePropertyName cancelReason -NotePropertyValue $parsed.reason.Trim() -Force
+                    $tk | Add-Member -NotePropertyName canceledBy -NotePropertyValue $(if ($parsed.canceledBy) { $parsed.canceledBy } else { '' }) -Force
+                    $tk | Add-Member -NotePropertyName canceledDate -NotePropertyValue (Get-Date -Format 'yyyy-MM-dd') -Force
+                    Set-Variable -Name found -Value $true -Scope 2
+                }
+            }
+            return $data
+        }
+        if (-not $found) {
+            Send-JsonResponse $res 404 @{ error = 'Ticket not found.' }
+            return
+        }
+        Send-JsonResponse $res 200 @{ ok = $true; entries = @($updated) }
+        return
+    }
+
+    # ── PATCH /api/tickets/{id}/vote ────────────────────
+    if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/vote$') {
+        $id = [long]$Matches[1]
+        $body = Read-RequestBody $req
+        $parsed = $null
+        $voterUser = $null
+        if ($body -and $body.Trim().Length -gt 0) {
+            try { $parsed = $body | ConvertFrom-Json } catch {}
+        }
+        if ($parsed -and $parsed.PSObject.Properties['windowsUser'] -and $parsed.windowsUser) {
+            $voterUser = $parsed.windowsUser
+        }
+        $found = $false
+        $completed = $false
+        $votedTicket = $null
+        $newVoteCount = 0
+        $updated = Invoke-LockedMutate $TkFile {
+            param($data)
+            foreach ($tk in $data) {
+                if ([string]$tk.id -eq [string]$id) {
+                    Set-Variable -Name found -Value $true -Scope 2
+                    # Block votes on completed tickets
+                    if ($tk.status -in @('done', 'closed', 'canceled')) {
+                        Set-Variable -Name completed -Value $true -Scope 2
+                        return $data
+                    }
+                    $cur = if ($tk.PSObject.Properties['votes']) { [int]$tk.votes } else { 0 }
+                    $tk | Add-Member -NotePropertyName votes -NotePropertyValue ($cur + 1) -Force
+                    # Track voter in voters array
+                    if ($voterUser) {
+                        $existingVoters = @()
+                        if ($tk.PSObject.Properties['voters'] -and $tk.voters) {
+                            $existingVoters = @($tk.voters)
+                        }
+                        if ($voterUser -notin $existingVoters) {
+                            $existingVoters += $voterUser
+                        }
+                        $tk | Add-Member -NotePropertyName voters -NotePropertyValue $existingVoters -Force
+                    }
+                    # Auto-escalate priority based on vote count
+                    $newCount = $cur + 1
+                    $prioOrder = @{ 'low' = 0; 'medium' = 1; 'high' = 2; 'critical' = 3 }
+                    $newPrio = if ($newCount -ge 4) { 'critical' } elseif ($newCount -ge 3) { 'high' } elseif ($newCount -ge 2) { 'medium' } else { $null }
+                    if ($newPrio -and $prioOrder[$newPrio] -gt $prioOrder[$tk.priority]) {
+                        $tk.priority = $newPrio
+                    }
+                    Set-Variable -Name votedTicket -Value $tk -Scope 2
+                    Set-Variable -Name newVoteCount -Value $newCount -Scope 2
+                }
+            }
+            return $data
+        }
+        if ($completed) {
+            Send-JsonResponse $res 400 @{ error = 'Cannot vote on a completed request.' }
+            return
+        }
+        if (-not $found) {
+            Send-JsonResponse $res 404 @{ error = 'Ticket not found.' }
+            return
+        }
+        # Email on upvote
+        if ($votedTicket) {
+            Send-VoteEmail $votedTicket $newVoteCount
+        }
+        Send-JsonResponse $res 200 @{ ok = $true; entries = @($updated) }
+        return
+    }
+
+    # ── PATCH /api/tickets/{id}/poke ─────────────────────
+    if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/poke$') {
+        $id = [long]$Matches[1]
+        $body = Read-RequestBody $req
+        $parsed = $body | ConvertFrom-Json
+        $pokerUser = if ($parsed.PSObject.Properties['windowsUser'] -and $parsed.windowsUser) { $parsed.windowsUser } else { '' }
+        $found = $false
+        $completed = $false
+        $pokedTicket = $null
+        $updated = Invoke-LockedMutate $TkFile {
+            param($data)
+            foreach ($tk in $data) {
+                if ([string]$tk.id -eq [string]$id) {
+                    Set-Variable -Name found -Value $true -Scope 2
+                    # Block pokes on completed tickets
+                    if ($tk.status -in @('done', 'closed', 'canceled')) {
+                        Set-Variable -Name completed -Value $true -Scope 2
+                        return $data
+                    }
+                    $cur = if ($tk.PSObject.Properties['pokes']) { [int]$tk.pokes } else { 0 }
+                    $tk | Add-Member -NotePropertyName pokes -NotePropertyValue ($cur + 1) -Force
+                    $tk | Add-Member -NotePropertyName lastPoke -NotePropertyValue (Get-Date -Format 'yyyy-MM-dd') -Force
+                    # Track who poked
+                    if ($pokerUser) {
+                        if ($tk.PSObject.Properties['pokers'] -and $tk.pokers) {
+                            $existingPokers = @($tk.pokers)
+                        } else {
+                            $existingPokers = @()
+                        }
+                        if ($existingPokers -notcontains $pokerUser) {
+                            $existingPokers += $pokerUser
+                        }
+                        $tk | Add-Member -NotePropertyName pokers -NotePropertyValue $existingPokers -Force
+                    }
+                    Set-Variable -Name pokedTicket -Value $tk -Scope 2
+                }
+            }
+            return $data
+        }
+        if ($completed) {
+            Send-JsonResponse $res 400 @{ error = 'Cannot poke a completed request.' }
+            return
+        }
+        if (-not $found) {
+            Send-JsonResponse $res 404 @{ error = 'Ticket not found.' }
+            return
+        }
+        # Email poke reminder
+        if ($pokedTicket) {
+            Send-PokeEmail $pokedTicket
+        }
+        Send-JsonResponse $res 200 @{ ok = $true; entries = @($updated) }
+        return
+    }
+
+    # ── PATCH /api/tickets/{id}/edit ─────────────────────
+    if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/edit$') {
+        $id = [long]$Matches[1]
+        $body = Read-RequestBody $req
+        $parsed = $body | ConvertFrom-Json
+        $windowsUser = if ($parsed.PSObject.Properties['windowsUser']) { $parsed.windowsUser } else { '' }
+        $found = $false
+        $forbidden = $false
+        $badStatus = $false
+        $updated = Invoke-LockedMutate $TkFile {
+            param($data)
+            foreach ($tk in $data) {
+                if ([string]$tk.id -eq [string]$id) {
+                    Set-Variable -Name found -Value $true -Scope 2
+                    if (-not $windowsUser -or $tk.windowsUser -ne $windowsUser) {
+                        Set-Variable -Name forbidden -Value $true -Scope 2
+                        return $data
+                    }
+                    if ($tk.status -notin @('open', 'in-progress')) {
+                        Set-Variable -Name badStatus -Value $true -Scope 2
+                        return $data
+                    }
+                    $tk.title = $parsed.title
+                    $tk.description = $parsed.description
+                    $tk.priority = $parsed.priority
+                    $tk.type = $parsed.type
+                    $tk | Add-Member -NotePropertyName lastEdited -NotePropertyValue (Get-Date -Format 'yyyy-MM-dd') -Force
+                }
+            }
+            return $data
+        }
+        if (-not $found) {
+            Send-JsonResponse $res 404 @{ error = 'Ticket not found.' }
+            return
+        }
+        if ($forbidden) {
+            Send-JsonResponse $res 403 @{ error = 'You can only edit your own requests.' }
+            return
+        }
+        if ($badStatus) {
+            Send-JsonResponse $res 400 @{ error = 'Cannot edit a completed request.' }
+            return
+        }
+        Send-JsonResponse $res 200 @{ ok = $true; entries = @($updated) }
+        return
+    }
+
+    # ── POST /api/tickets/{id}/attach ─────────────────────
+    if ($method -eq 'POST' -and $url -match '^/api/tickets/(\d+)/attach$') {
+        $id = [long]$Matches[1]
+        $fileName = [System.Web.HttpUtility]::UrlDecode($req.QueryString['name'])
+        if (-not $fileName) {
+            Send-JsonResponse $res 400 @{ error = 'Missing file name query parameter (?name=...).' }
+            return
+        }
+        # Sanitize filename — remove path traversal characters
+        $fileName = [System.IO.Path]::GetFileName($fileName)
+        $attachDir = Join-Path $DataDir "attachments\$id"
+        if (-not (Test-Path $attachDir)) {
+            New-Item -ItemType Directory -Path $attachDir -Force | Out-Null
+        }
+        $filePath = Join-Path $attachDir $fileName
+        # Read binary body and save
+        try {
+            $ms = New-Object System.IO.MemoryStream
+            $req.InputStream.CopyTo($ms)
+            $bytes = $ms.ToArray()
+            $ms.Close()
+            # Limit to 25 MB
+            if ($bytes.Length -gt 26214400) {
+                Send-JsonResponse $res 400 @{ error = 'File too large (max 25 MB).' }
+                return
+            }
+            [System.IO.File]::WriteAllBytes($filePath, $bytes)
+            Write-Host "  Attachment saved: $filePath ($([math]::Round($bytes.Length/1024))KB)" -ForegroundColor Cyan
+            Send-JsonResponse $res 200 @{ ok = $true; name = $fileName; size = $bytes.Length }
+        } catch {
+            Send-JsonResponse $res 500 @{ error = "Failed to save attachment: $($_.Exception.Message)" }
+        }
+        return
+    }
+
+    # ── GET /api/attachments/{id}/{filename} ─────────────
+    if ($method -eq 'GET' -and $url -match '^/api/attachments/(\d+)/(.+)$') {
+        $id = $Matches[1]
+        $fileName = [System.Web.HttpUtility]::UrlDecode($Matches[2])
+        $fileName = [System.IO.Path]::GetFileName($fileName)
+        $filePath = Join-Path $DataDir "attachments\$id\$fileName"
+        if (-not (Test-Path $filePath)) {
+            Send-JsonResponse $res 404 @{ error = 'Attachment not found.' }
+            return
+        }
+        # Determine content type
+        $ext = [System.IO.Path]::GetExtension($fileName).ToLower()
+        $mimeTypes = @{
+            '.jpg'  = 'image/jpeg'; '.jpeg' = 'image/jpeg'; '.png' = 'image/png'
+            '.gif'  = 'image/gif'; '.bmp' = 'image/bmp'; '.webp' = 'image/webp'
+            '.svg'  = 'image/svg+xml'; '.pdf' = 'application/pdf'
+            '.zip'  = 'application/zip'; '.txt' = 'text/plain'
+            '.xlsx' = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            '.docx' = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        }
+        $contentType = if ($mimeTypes.ContainsKey($ext)) { $mimeTypes[$ext] } else { 'application/octet-stream' }
+        $res.StatusCode = 200
+        $res.ContentType = $contentType
+        $res.AddHeader('Access-Control-Allow-Origin', '*')
+        $res.AddHeader('Cache-Control', 'public, max-age=3600')
+        # For non-image files, suggest download
+        $isImage = $ext -in @('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg')
+        if (-not $isImage) {
+            $res.AddHeader('Content-Disposition', "attachment; filename=`"$fileName`"")
+        }
+        $buffer = [System.IO.File]::ReadAllBytes($filePath)
+        $res.ContentLength64 = $buffer.Length
+        $res.OutputStream.Write($buffer, 0, $buffer.Length)
+        $res.OutputStream.Close()
+        return
+    }
+
+    # ── POST /api/tickets/{id}/comment (add comment) ────
+    if ($method -eq 'POST' -and $url -match '^/api/tickets/(\d+)/comment$') {
+        $id = [long]$Matches[1]
+        $body = Read-RequestBody $req
+        $parsed = $body | ConvertFrom-Json
+        $found = $false
+        $forbidden = $false
+        $duplicate = $false
+        $updated = Invoke-LockedMutate $TkFile {
+            param($data)
+            foreach ($tk in $data) {
+                if ([string]$tk.id -eq [string]$id) {
+                    Set-Variable -Name found -Value $true -Scope 2
+                    # Check authorization: must be ticket creator or a voter
+                    $isCreator = ($parsed.windowsUser -and $tk.windowsUser -eq $parsed.windowsUser)
+                    $isVoter = $false
+                    if ($parsed.windowsUser -and $tk.PSObject.Properties['voters'] -and $tk.voters) {
+                        $isVoter = $parsed.windowsUser -in @($tk.voters)
+                    }
+                    if (-not $isCreator -and -not $isVoter) {
+                        Set-Variable -Name forbidden -Value $true -Scope 2
+                        return $data
+                    }
+                    # Check for existing comment from this user
+                    if ($tk.PSObject.Properties['comments'] -and $tk.comments) {
+                        foreach ($c in @($tk.comments)) {
+                            if ($c.windowsUser -eq $parsed.windowsUser) {
+                                Set-Variable -Name duplicate -Value $true -Scope 2
+                                return $data
+                            }
+                        }
+                    }
+                    # Create comment
+                    $comment = @{
+                        windowsUser = $parsed.windowsUser
+                        displayName = $parsed.displayName
+                        text        = $parsed.text
+                        gifUrl      = $parsed.gifUrl
+                        date        = (Get-Date -Format 'yyyy-MM-dd')
+                    }
+                    # Append to comments array (create if needed)
+                    $existingComments = @()
+                    if ($tk.PSObject.Properties['comments'] -and $tk.comments) {
+                        $existingComments = @($tk.comments)
+                    }
+                    $existingComments += [pscustomobject]$comment
+                    $tk | Add-Member -NotePropertyName comments -NotePropertyValue $existingComments -Force
+                }
+            }
+            return $data
+        }
+        if (-not $found) {
+            Send-JsonResponse $res 404 @{ error = 'Ticket not found.' }
+            return
+        }
+        if ($forbidden) {
+            Send-JsonResponse $res 403 @{ error = 'You must vote on a request before commenting.' }
+            return
+        }
+        if ($duplicate) {
+            Send-JsonResponse $res 400 @{ error = 'You already have a comment. Use edit instead.' }
+            return
+        }
+        Send-JsonResponse $res 200 @{ ok = $true; entries = @($updated) }
+        return
+    }
+
+    # ── PATCH /api/tickets/{id}/comment (edit comment) ──
+    if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/comment$') {
+        $id = [long]$Matches[1]
+        $body = Read-RequestBody $req
+        $parsed = $body | ConvertFrom-Json
+        $found = $false
+        $commentFound = $false
+        $updated = Invoke-LockedMutate $TkFile {
+            param($data)
+            foreach ($tk in $data) {
+                if ([string]$tk.id -eq [string]$id) {
+                    Set-Variable -Name found -Value $true -Scope 2
+                    if ($tk.PSObject.Properties['comments'] -and $tk.comments) {
+                        foreach ($c in @($tk.comments)) {
+                            if ($c.windowsUser -eq $parsed.windowsUser) {
+                                $c.text = $parsed.text
+                                $c | Add-Member -NotePropertyName gifUrl -NotePropertyValue $parsed.gifUrl -Force
+                                $c | Add-Member -NotePropertyName editedDate -NotePropertyValue (Get-Date -Format 'yyyy-MM-dd') -Force
+                                Set-Variable -Name commentFound -Value $true -Scope 2
+                            }
+                        }
+                    }
+                }
+            }
+            return $data
+        }
+        if (-not $found) {
+            Send-JsonResponse $res 404 @{ error = 'Ticket not found.' }
+            return
+        }
+        if (-not $commentFound) {
+            Send-JsonResponse $res 404 @{ error = 'Comment not found.' }
+            return
+        }
+        Send-JsonResponse $res 200 @{ ok = $true; entries = @($updated) }
+        return
+    }
+
+    # ── DELETE /api/tickets/{id}/comment (admin delete comment) ──
+    if ($method -eq 'DELETE' -and $url -match '^/api/tickets/(\d+)/comment$') {
+        $id = [long]$Matches[1]
+        $body = Read-RequestBody $req
+        $parsed = $body | ConvertFrom-Json
+        $targetUser = $parsed.windowsUser
+        $found = $false
+        $commentFound = $false
+        $updated = Invoke-LockedMutate $TkFile {
+            param($data)
+            foreach ($tk in $data) {
+                if ([string]$tk.id -eq [string]$id) {
+                    Set-Variable -Name found -Value $true -Scope 2
+                    if ($tk.PSObject.Properties['comments'] -and $tk.comments) {
+                        $newComments = @($tk.comments | Where-Object { $_.windowsUser -ne $targetUser })
+                        if ($newComments.Count -lt @($tk.comments).Count) {
+                            Set-Variable -Name commentFound -Value $true -Scope 2
+                        }
+                        $tk | Add-Member -NotePropertyName comments -NotePropertyValue $newComments -Force
+                    }
+                }
+            }
+            return $data
+        }
+        if (-not $found) {
+            Send-JsonResponse $res 404 @{ error = 'Ticket not found.' }
+            return
+        }
+        if (-not $commentFound) {
+            Send-JsonResponse $res 404 @{ error = 'Comment not found.' }
+            return
+        }
+        Send-JsonResponse $res 200 @{ ok = $true; entries = @($updated) }
+        return
+    }
+
+    # ── PATCH /api/tickets/{id}/delete (admin) ──────────
+    if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/delete$') {
+        $id = [long]$Matches[1]
+        $found = $false
+        $updated = Invoke-LockedMutate $TkFile {
+            param($data)
+            $newData = @()
+            foreach ($tk in $data) {
+                if ([string]$tk.id -eq [string]$id) {
+                    Set-Variable -Name found -Value $true -Scope 2
+                } else {
+                    $newData += $tk
+                }
+            }
+            return $newData
+        }
+        if (-not $found) {
+            Send-JsonResponse $res 404 @{ error = 'Ticket not found.' }
+            return
+        }
+        Send-JsonResponse $res 200 @{ ok = $true; entries = @($updated) }
+        return
+    }
+
+    # ── GET /api/shutdown (localhost only) ───────────────
+    if ($method -eq 'GET' -and $url -eq '/api/shutdown') {
+        Send-JsonResponse $res 200 @{ ok = $true; message = 'Server shutting down.' }
+        Write-Host "  Shutdown requested via browser." -ForegroundColor Yellow
+        return 'SHUTDOWN'
+    }
+
+    # ── GET /api/restart ───────────────────────────────
+    # Stops this server and spawns a replacement, so the browser can reconnect
+    # on the same port after a short retry.
+    if ($method -eq 'GET' -and $url -eq '/api/restart') {
+        Send-JsonResponse $res 200 @{ ok = $true; message = 'Server restarting.' }
+        Write-Host "  Restart requested via browser." -ForegroundColor Yellow
+        return 'RESTART'
+    }
+
+    # ── 404 ─────────────────────────────────────────────
+    Send-JsonResponse $res 404 @{ error = "Not found: $url" }
+}
+
+# ════════════════════════════════════════════════════════════════════════
 #  HTTP SERVER
 # ════════════════════════════════════════════════════════════════════════
 
@@ -254,23 +1076,41 @@ function Start-Server {
 
     Initialize-DataFiles
 
-    $listener = New-Object System.Net.HttpListener
-    $listener.Prefixes.Add("http://localhost:${Port}/")
+    # Try each candidate port in order — falls through if port is busy
+    $listener = $null
+    foreach ($candidate in $PortCandidates) {
+        $listener = New-Object System.Net.HttpListener
+        $listener.Prefixes.Add("http://localhost:${candidate}/")
+        try {
+            $listener.Start()
+            $script:Port = $candidate
+            break
+        } catch {
+            Write-Host "  Port $candidate busy, trying next..." -ForegroundColor DarkGray
+            try { $listener.Close() } catch {}
+            $listener = $null
+        }
+    }
 
-    try {
-        $listener.Start()
-    } catch {
-        Write-Host "  ERROR: Could not start on port $Port." -ForegroundColor Red
-        Write-Host "  The Macro Guide may already be running. Try: http://localhost:$Port" -ForegroundColor Yellow
+    if ($null -eq $listener) {
+        Write-Host "  ERROR: Could not bind to any port in: $($PortCandidates -join ', ')" -ForegroundColor Red
+        Write-Host "  All ports are in use. Close other instances or contact Dylan." -ForegroundColor Yellow
         Write-Host ""
         return
+    }
+
+    # Advertise chosen port so the VBS launcher / other clients can find us
+    try {
+        [System.IO.File]::WriteAllText($PortStatusFile, "$Port", [System.Text.Encoding]::ASCII)
+    } catch {
+        Write-Host "  (Could not write port status file: $($_.Exception.Message))" -ForegroundColor DarkGray
     }
 
     Write-Host "  Server running    : http://localhost:$Port" -ForegroundColor Green
     Write-Host "  HTML source       : $HtmlFile"
     Write-Host "  Data directory    : $DataDir"
     if ($EmailEnabled) {
-        Write-Host "  Email alerts      : $EmailTo (via $EmailSmtp)" -ForegroundColor Green
+        Write-Host "  Email alerts      : $EmailTo (via Outlook)" -ForegroundColor Green
     } else {
         Write-Host "  Email alerts      : disabled"
     }
@@ -278,206 +1118,70 @@ function Start-Server {
     Write-Host "  Press Ctrl+C to stop." -ForegroundColor DarkGray
     Write-Host ""
 
-    $InactivityMinutes = 120
+    $InactivityMinutes = 10
     $LastActivity = [DateTime]::UtcNow
 
-    try {
-        while ($listener.IsListening) {
-            # Auto-shutdown after inactivity
-            if (([DateTime]::UtcNow - $LastActivity).TotalMinutes -gt $InactivityMinutes) {
-                Write-Host "  No activity for $InactivityMinutes minutes — shutting down." -ForegroundColor Yellow
-                break
+    $running = $true
+    while ($running -and $listener.IsListening) {
+        # Auto-shutdown after inactivity
+        if (([DateTime]::UtcNow - $LastActivity).TotalMinutes -gt $InactivityMinutes) {
+            Write-Host "  No activity for $InactivityMinutes minutes — shutting down." -ForegroundColor Yellow
+            break
+        }
+
+        $context = $null
+        try { $context = $listener.GetContext() } catch { break }
+        $LastActivity = [DateTime]::UtcNow
+
+        try {
+            $result = Handle-Request $context.Request $context.Response
+            if ($result -eq 'SHUTDOWN') {
+                $listener.Stop()
+                $running = $false
             }
-            $context = $listener.GetContext()
-            $LastActivity = [DateTime]::UtcNow
-            $req = $context.Request
-            $res = $context.Response
-            $url = $req.Url.AbsolutePath
-            $method = $req.HttpMethod
-
-            try {
-                # ── OPTIONS (CORS preflight) ────────────────────────
-                if ($method -eq 'OPTIONS') {
-                    $res.AddHeader('Access-Control-Allow-Origin', '*')
-                    $res.AddHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,OPTIONS')
-                    $res.AddHeader('Access-Control-Allow-Headers', 'Content-Type')
-                    $res.StatusCode = 204
-                    $res.OutputStream.Close()
-                    continue
-                }
-
-                # ── Serve HTML ──────────────────────────────────────
-                if ($method -eq 'GET' -and ($url -eq '/' -or $url -eq '/index.html')) {
-                    Send-HtmlResponse $res $HtmlFile
-                    continue
-                }
-
-                # ── GET /api/changelog ──────────────────────────────
-                if ($method -eq 'GET' -and $url -eq '/api/changelog') {
-                    $data = @(Read-JsonFile $ClFile)
-                    Send-JsonResponse $res 200 $data
-                    continue
-                }
-
-                # ── GET /api/tickets ────────────────────────────────
-                if ($method -eq 'GET' -and $url -eq '/api/tickets') {
-                    $data = @(Read-JsonFile $TkFile)
-                    Send-JsonResponse $res 200 $data
-                    continue
-                }
-
-                # ── POST /api/changelog/add ─────────────────────────
-                if ($method -eq 'POST' -and $url -eq '/api/changelog/add') {
-                    $body = Read-RequestBody $req
-                    $entry = $body | ConvertFrom-Json
-                    if (-not $entry.date -or -not $entry.description) {
-                        Send-JsonResponse $res 400 @{ error = 'Missing required fields (date, description).' }
-                        continue
-                    }
-                    $updated = Invoke-LockedMutate $ClFile {
-                        param($data)
-                        $data += $entry
-                        return $data
-                    }
-                    Send-JsonResponse $res 200 @{ ok = $true; count = $updated.Count; entries = @($updated) }
-                    continue
-                }
-
-                # ── POST /api/tickets/add ───────────────────────────
-                if ($method -eq 'POST' -and $url -eq '/api/tickets/add') {
-                    $body = Read-RequestBody $req
-                    $ticket = $body | ConvertFrom-Json
-                    if (-not $ticket.title) {
-                        Send-JsonResponse $res 400 @{ error = 'Missing required field (title).' }
-                        continue
-                    }
-                    $updated = Invoke-LockedMutate $TkFile {
-                        param($data)
-                        $data += $ticket
-                        return $data
-                    }
-                    # Send email (non-blocking via job)
-                    if ($EmailEnabled) {
-                        Start-Job -ScriptBlock {
-                            param($From, $To, $Smtp, $SmtpPort, $Ticket)
-                            $subj = "New Macro Guide Ticket: $($Ticket.title)"
-                            $body = "Title: $($Ticket.title)`nType: $($Ticket.type)`nPriority: $($Ticket.priority)`nFrom: $($Ticket.createdBy)`n`n$($Ticket.description)"
-                            Send-MailMessage -From $From -To $To -Subject $subj -Body $body -SmtpServer $Smtp -Port $SmtpPort -ErrorAction SilentlyContinue
-                        } -ArgumentList $EmailFrom, $EmailTo, $EmailSmtp, $EmailPort, $ticket | Out-Null
-                    }
-                    Send-JsonResponse $res 200 @{ ok = $true; count = $updated.Count; entries = @($updated) }
-                    continue
-                }
-
-                # ── PATCH /api/tickets/{id}/status ──────────────────
-                if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/status$') {
-                    $id = [long]$Matches[1]
-                    $body = Read-RequestBody $req
-                    $parsed = $body | ConvertFrom-Json
-                    $newStatus = $parsed.status
-                    $validStatuses = @('open', 'in-progress', 'done', 'closed')
-                    if ($newStatus -notin $validStatuses) {
-                        Send-JsonResponse $res 400 @{ error = "Invalid status. Must be one of: $($validStatuses -join ', ')" }
-                        continue
-                    }
-                    $found = $false
-                    $updated = Invoke-LockedMutate $TkFile {
-                        param($data)
-                        foreach ($tk in $data) {
-                            if ([string]$tk.id -eq [string]$id) {
-                                $tk.status = $newStatus
-                                Set-Variable -Name found -Value $true -Scope 2
-                            }
-                        }
-                        return $data
-                    }
-                    if (-not $found) {
-                        Send-JsonResponse $res 404 @{ error = 'Ticket not found.' }
-                        continue
-                    }
-                    Send-JsonResponse $res 200 @{ ok = $true; entries = @($updated) }
-                    continue
-                }
-
-                # ── PATCH /api/tickets/{id}/cancel ──────────────────
-                if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/cancel$') {
-                    $id = [long]$Matches[1]
-                    $body = Read-RequestBody $req
-                    $parsed = $body | ConvertFrom-Json
-                    if (-not $parsed.reason -or [string]::IsNullOrWhiteSpace($parsed.reason)) {
-                        Send-JsonResponse $res 400 @{ error = 'A cancellation reason is required.' }
-                        continue
-                    }
-                    $found = $false
-                    $updated = Invoke-LockedMutate $TkFile {
-                        param($data)
-                        foreach ($tk in $data) {
-                            if ([string]$tk.id -eq [string]$id) {
-                                $tk.status = 'canceled'
-                                $tk | Add-Member -NotePropertyName cancelReason -NotePropertyValue $parsed.reason.Trim() -Force
-                                $tk | Add-Member -NotePropertyName canceledBy -NotePropertyValue $(if ($parsed.canceledBy) { $parsed.canceledBy } else { '' }) -Force
-                                $tk | Add-Member -NotePropertyName canceledDate -NotePropertyValue (Get-Date -Format 'yyyy-MM-dd') -Force
-                                Set-Variable -Name found -Value $true -Scope 2
-                            }
-                        }
-                        return $data
-                    }
-                    if (-not $found) {
-                        Send-JsonResponse $res 404 @{ error = 'Ticket not found.' }
-                        continue
-                    }
-                    Send-JsonResponse $res 200 @{ ok = $true; entries = @($updated) }
-                    continue
-                }
-
-                # ── PATCH /api/tickets/{id}/vote ────────────────────
-                if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/vote$') {
-                    $id = [long]$Matches[1]
-                    $found = $false
-                    $updated = Invoke-LockedMutate $TkFile {
-                        param($data)
-                        foreach ($tk in $data) {
-                            if ([string]$tk.id -eq [string]$id) {
-                                $cur = if ($tk.PSObject.Properties['votes']) { [int]$tk.votes } else { 0 }
-                                $tk | Add-Member -NotePropertyName votes -NotePropertyValue ($cur + 1) -Force
-                                Set-Variable -Name found -Value $true -Scope 2
-                            }
-                        }
-                        return $data
-                    }
-                    if (-not $found) {
-                        Send-JsonResponse $res 404 @{ error = 'Ticket not found.' }
-                        continue
-                    }
-                    Send-JsonResponse $res 200 @{ ok = $true; entries = @($updated) }
-                    continue
-                }
-
-                # ── GET /api/shutdown (localhost only) ───────────────
-                if ($method -eq 'GET' -and $url -eq '/api/shutdown') {
-                    Send-JsonResponse $res 200 @{ ok = $true; message = 'Server shutting down.' }
-                    Write-Host "  Shutdown requested via browser." -ForegroundColor Yellow
-                    $listener.Stop()
-                    return
-                }
-
-                # ── 404 ─────────────────────────────────────────────
-                Send-JsonResponse $res 404 @{ error = "Not found: $url" }
-
-            } catch {
-                Write-Host "  ERROR [$method $url]: $($_.Exception.Message)" -ForegroundColor Red
+            elseif ($result -eq 'RESTART') {
+                # Stop listener FIRST so the port is freed before the child tries to bind it.
+                $listener.Stop()
+                $listener.Close()
+                # Small pause so Windows actually releases the port.
+                Start-Sleep -Milliseconds 400
+                # Spawn replacement (detached, hidden) running this same script.
                 try {
-                    Send-JsonResponse $res 500 @{ error = $_.Exception.Message }
-                } catch {}
+                    $scriptPath = $PSCommandPath
+                    if (-not $scriptPath) { $scriptPath = $MyInvocation.MyCommand.Path }
+                    Start-Process -FilePath 'powershell.exe' `
+                        -ArgumentList @('-ExecutionPolicy','Bypass','-WindowStyle','Hidden','-File', $scriptPath) `
+                        -WindowStyle Hidden
+                    Write-Host "  Replacement server launched." -ForegroundColor Green
+                } catch {
+                    Write-Host "  ERROR: Could not launch replacement: $($_.Exception.Message)" -ForegroundColor Red
+                }
+                $running = $false
+            }
+        } catch {
+            $errUrl = $context.Request.Url.AbsolutePath
+            $errMethod = $context.Request.HttpMethod
+            Write-Host "  ERROR [$errMethod $errUrl]: $($_.Exception.Message)" -ForegroundColor Red
+            try { Send-JsonResponse $context.Response 500 @{ error = $_.Exception.Message } } catch {}
+        }
+    }
+
+    # Safe to call Stop/Close again even if already stopped (e.g. restart path).
+    try { $listener.Stop() } catch {}
+    try { $listener.Close() } catch {}
+    Release-Lock $ClFile
+    Release-Lock $TkFile
+    # Only remove the port file if it still points at our port. On restart the
+    # replacement child may have already written its own value — don't clobber.
+    try {
+        if (Test-Path $PortStatusFile) {
+            $existing = (Get-Content $PortStatusFile -Raw -ErrorAction SilentlyContinue).Trim()
+            if ($existing -eq "$Port") {
+                Remove-Item $PortStatusFile -Force -ErrorAction SilentlyContinue
             }
         }
-    } finally {
-        $listener.Stop()
-        $listener.Close()
-        Release-Lock $ClFile
-        Release-Lock $TkFile
-        Write-Host "  Server stopped." -ForegroundColor Yellow
-    }
+    } catch {}
+    Write-Host "  Server stopped." -ForegroundColor Yellow
 }
 
 # ── Run ─────────────────────────────────────────────────────────────────
