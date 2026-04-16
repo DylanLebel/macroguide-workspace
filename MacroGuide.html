@@ -657,6 +657,39 @@
     }
     .admin-restart:hover { border-color: #f59e0b; color: #f59e0b; }
     .admin-restart:active { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+    .admin-usage { right: 236px; }
+    .admin-usage:hover { border-color: var(--accent); color: var(--accent); }
+    .admin-usage:active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .usage-panel {
+      max-width: 820px; text-align: left;
+    }
+    .usage-summary {
+      display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 16px;
+    }
+    .usage-pill {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 999px; padding: 5px 10px; font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .usage-table-wrap {
+      max-height: 380px; overflow: auto; border: 1px solid var(--border);
+      border-radius: 10px; background: var(--surface2);
+    }
+    .usage-table {
+      width: 100%; border-collapse: collapse; font-size: 0.82rem;
+    }
+    .usage-table th, .usage-table td {
+      padding: 9px 10px; border-bottom: 1px solid var(--border);
+      text-align: left; vertical-align: top;
+    }
+    .usage-table th {
+      color: var(--muted); font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.5px; background: var(--surface);
+      position: sticky; top: 0;
+    }
+    .usage-table tr:last-child td { border-bottom: none; }
+    .usage-user { color: var(--text); font-weight: 700; }
+    .usage-muted { color: var(--muted); }
 
     /* ── Tickets section ── */
     .tk-section { max-width: 960px; margin: 0 auto 80px; padding: 0 24px; }
@@ -842,6 +875,27 @@
     }
     .tk-sort-btn.active { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
     .tk-sort-btn:hover { border-color: var(--accent); color: var(--text); }
+
+    .tk-help {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px; margin: -4px 0 18px;
+    }
+    .tk-help-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 14px; display: flex;
+      gap: 10px; align-items: flex-start;
+    }
+    .tk-help-icon {
+      width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--surface2); color: var(--accent); font-size: 0.9rem;
+      border: 1px solid var(--border);
+    }
+    .tk-help-title { font-size: 0.82rem; color: var(--text); font-weight: 700; margin-bottom: 3px; }
+    .tk-help-copy { font-size: 0.76rem; color: var(--muted); line-height: 1.45; }
+    @media (max-width: 760px) {
+      .tk-help { grid-template-columns: 1fr; }
+    }
 
     /* ── Poke button (proper CSS for hover) ── */
     .tk-poke-btn {
@@ -1183,7 +1237,7 @@
       </div>
     </div>
 
-    <div class="card" style="--card-accent:#7c3aed" data-category="drawings" data-id="drawingtemplateupdate">
+    <div class="card" style="--card-accent:#14b8a6" data-category="drawings" data-id="drawingtemplateupdate">
       <div class="card-top"></div>
       <div class="card-body">
         <span class="card-icon">🖼️</span>
@@ -1349,6 +1403,29 @@
       <button class="tk-sort-btn active" data-sort="newest">Newest</button>
       <button class="tk-sort-btn" data-sort="votes">Most Voted</button>
     </div>
+    <div class="tk-help" aria-label="Request tips">
+      <div class="tk-help-item">
+        <span class="tk-help-icon">👍</span>
+        <div>
+          <div class="tk-help-title">Vote to join in</div>
+          <div class="tk-help-copy">Upvote requests you care about. Voting also unlocks commenting on that request.</div>
+        </div>
+      </div>
+      <div class="tk-help-item">
+        <span class="tk-help-icon">👉</span>
+        <div>
+          <div class="tk-help-title">Poke for a reminder</div>
+          <div class="tk-help-copy">Use Poke to nudge Dylan about an open request. It can be used once per day per request.</div>
+        </div>
+      </div>
+      <div class="tk-help-item">
+        <span class="tk-help-icon">📎</span>
+        <div>
+          <div class="tk-help-title">Add useful context</div>
+          <div class="tk-help-copy">Screenshots, model files, and clear examples make requests easier to fix.</div>
+        </div>
+      </div>
+    </div>
     <div class="tk-list" id="tkList"></div>
     <div class="tk-empty" id="tkEmpty" style="display:none">
       <span>🎫</span>
@@ -1375,33 +1452,24 @@
 
     <div class="gs-card">
       <h3>⚡ The #1 rule: Check out your files first</h3>
-      <p style="color:#ef4444;font-weight:600;margin-bottom:10px">If the file isn't checked out in PDM, the macro can't save changes. This is the most common mistake.</p>
-      <p>Before running any macro that modifies properties (Prepare for CADLink, Move to PDM, Date Fixer, etc.), make sure the file is <strong>checked out to you</strong> in PDM. If it's checked in, the macro will run and everything might look fine — but when you close the file, all the changes disappear.</p>
-      <div class="tip-box" style="margin-top:14px;--modal-accent:#ef4444"><strong style="color:#ef4444">Remember:</strong> Checked out = changes save. Checked in = changes vanish. Check the lock icon in PDM before running.</div>
+      <p style="color:#ef4444;font-weight:600;margin-bottom:10px">If the file isn't checked out, Prepare for CADLink silently skips it. No error, no warning — it just does nothing to that model.</p>
+      <p>Before running <strong>Prepare for CADLink</strong>, check the model out in PDM. If you don't, the macro will see the read-only file, log "Model is not checked out by us — will skip", and move on without writing any properties.</p>
+      <p style="margin-top:10px">Other macros behave differently — for example <strong>PDMPDF1</strong> attempts to check out the model itself when generating PDFs. When in doubt, check out first.</p>
+      <div class="tip-box" style="margin-top:14px;--modal-accent:#ef4444"><strong style="color:#ef4444">Remember:</strong> Checked out = changes save. Checked in = Prepare for CADLink skips the file. Check the lock icon in PDM before running.</div>
     </div>
 
     <div class="gs-card">
       <h3>▶️ How to run a macro</h3>
-      <p style="margin-bottom:14px">If Dylan has already set up your computer, you'll have <strong>macro buttons in your SolidWorks toolbar</strong> — just click and go. That's the easiest way. If you don't see them, ask Dylan to set them up (takes 2 minutes).</p>
-      <p style="margin-bottom:14px;font-weight:600;color:var(--text)">Running manually (if no toolbar button):</p>
+      <p style="margin-bottom:14px">All macros are run from a <strong>toolbar button in SolidWorks</strong> — one click and go. If you don't have the buttons yet, <strong>ask Dylan</strong>. Takes about a minute to add all the macros you need.</p>
+      <p style="margin-bottom:14px">Don't try to run macros from <code>Tools → Macro → Run</code> — that path can't pass the settings the macros need, so things won't work right. Always use a toolbar button.</p>
+      <p style="margin-bottom:14px;font-weight:600;color:var(--text)">Adding a button yourself (optional — easier to just ask Dylan):</p>
       <div class="steps" style="--modal-accent:var(--accent)">
-        <div class="step"><div class="step-num">1</div><p>In SolidWorks, go to <strong>Tools → Macro → Run</strong> in the top menu bar.</p></div>
-        <div class="step"><div class="step-num">2</div><p>Browse to <code>C:\AllMacros\</code> (or the Y: drive macro folder) and find the <strong>.swp</strong> file for the macro you want.</p></div>
-        <div class="step"><div class="step-num">3</div><p>Click <strong>Open</strong>. The macro starts immediately.</p></div>
+        <div class="step"><div class="step-num">1</div><p>Right-click any toolbar in SolidWorks and choose <strong>Customize…</strong></p></div>
+        <div class="step"><div class="step-num">2</div><p>Go to the <strong>Commands</strong> tab and find the <strong>Macros</strong> category.</p></div>
+        <div class="step"><div class="step-num">3</div><p>Drag the <strong>New Macro Button</strong> onto any toolbar.</p></div>
+        <div class="step"><div class="step-num">4</div><p>Browse to the macro file (<code>.swp</code>), pick an icon, give it a name, click <strong>OK</strong>.</p></div>
+        <div class="step"><div class="step-num">5</div><p>Done — one click to run from now on.</p></div>
       </div>
-    </div>
-
-    <div class="gs-card">
-      <h3>🔧 Adding a macro to your toolbar (one-time setup)</h3>
-      <p style="margin-bottom:14px">This puts a permanent button in your SolidWorks toolbar so you never have to browse for the file again.</p>
-      <div class="steps" style="--modal-accent:var(--accent)">
-        <div class="step"><div class="step-num">1</div><p>In SolidWorks, right-click any toolbar and choose <strong>Customize…</strong></p></div>
-        <div class="step"><div class="step-num">2</div><p>Go to the <strong>Commands</strong> tab. In the categories list, find <strong>Macros</strong>.</p></div>
-        <div class="step"><div class="step-num">3</div><p>Drag the <strong>New Macro Button</strong> onto any toolbar where you want it.</p></div>
-        <div class="step"><div class="step-num">4</div><p>A dialog opens — browse to the macro file (<code>.swp</code>), pick an icon, and give it a name. Click <strong>OK</strong>.</p></div>
-        <div class="step"><div class="step-num">5</div><p>Done! One click to run it from now on.</p></div>
-      </div>
-      <div class="tip-box" style="margin-top:14px;--modal-accent:var(--accent)"><strong style="color:var(--accent)">Easier option:</strong> Just ask Dylan to set it up for you — it takes one minute and he can add all the macros you need at once.</div>
     </div>
 
     <div class="gs-card">
@@ -1413,19 +1481,19 @@
         </div>
         <div class="gs-faq-item">
           <div class="gs-faq-q">I need to create PDFs from drawings</div>
-          <div class="gs-faq-a"><strong>PDM PDF Generator</strong> — run it from a single drawing, an assembly (creates PDFs for everything), or batch-process a whole folder. Also has an audit mode to check what's missing.</div>
+          <div class="gs-faq-a"><strong>PDMPDF1</strong> — run it from a single drawing, an assembly (creates PDFs for everything), or batch-process a whole folder. Also has an audit mode to check what's missing.</div>
         </div>
         <div class="gs-faq-item">
           <div class="gs-faq-q">I need to create a DXF burn profile</div>
-          <div class="gs-faq-a"><strong>PDM DXF Exporter</strong> — select the flat face you want to cut, run the macro. Be careful to pick the right face (watch out for counter-sinks).</div>
+          <div class="gs-faq-a"><strong>PDMDXF</strong> — select the flat face you want to cut, run the macro. Be careful to pick the right face (watch out for counter-sinks).</div>
         </div>
         <div class="gs-faq-item">
           <div class="gs-faq-q">I need to clean up properties for PDM</div>
-          <div class="gs-faq-a"><strong>Move to PDM</strong> — talk to Dylan first. The rules need to be configured for your specific batch of files. It's powerful but needs setup.</div>
+          <div class="gs-faq-a"><strong>MoveToPDM</strong> — talk to Dylan first. The rules need to be configured for your specific batch of files. It's powerful but needs setup.</div>
         </div>
         <div class="gs-faq-item">
           <div class="gs-faq-q">I need to convert metric models to imperial</div>
-          <div class="gs-faq-a"><strong>Model to Imperial</strong> — open the part or assembly, run it. Converts everything including sub-parts automatically.</div>
+          <div class="gs-faq-a"><strong>ModelToImperial</strong> — open the part or assembly, run it. Converts everything including sub-parts automatically.</div>
         </div>
       </div>
     </div>
@@ -1499,7 +1567,7 @@
           <option value="all|All Macros|⚙️|#4f8ef7">⚙️ All Macros / General</option>
           <option value="dylanshelp|Dylan's Help|🙋|#f97316">🙋 Dylan's Help</option>
           <option value="datefixer|Date Fixer|🗓️|#4f8ef7">🗓️ Date Fixer</option>
-          <option value="drawingtemplateupdate|Drawing Template Update|🖼️|#7c3aed">🖼️ Drawing Template Update</option>
+          <option value="drawingtemplateupdate|Drawing Template Update|🖼️|#14b8a6">🖼️ Drawing Template Update</option>
           <option value="modeltoimperial|Model to Imperial|📐|#10b981">📐 Model to Imperial</option>
           <option value="movetopdm|Move to PDM|🔧|#f59e0b">🔧 Move to PDM</option>
           <option value="newpl|Plate Make/Buy Checker|🏭|#ef4444">🏭 Plate Make/Buy Checker</option>
@@ -1561,7 +1629,7 @@
           <option value="all|General|⚙️|#4f8ef7">⚙️ General / All Macros</option>
           <option value="dylanshelp|Dylan's Help|🙋|#f97316">🙋 Dylan's Help</option>
           <option value="datefixer|Date Fixer|🗓️|#4f8ef7">🗓️ Date Fixer</option>
-          <option value="drawingtemplateupdate|Drawing Template Update|🖼️|#7c3aed">🖼️ Drawing Template Update</option>
+          <option value="drawingtemplateupdate|Drawing Template Update|🖼️|#14b8a6">🖼️ Drawing Template Update</option>
           <option value="modeltoimperial|Model to Imperial|📐|#10b981">📐 Model to Imperial</option>
           <option value="movetopdm|Move to PDM|🔧|#f59e0b">🔧 Move to PDM</option>
           <option value="newpl|Plate Make/Buy Checker|🏭|#ef4444">🏭 Plate Make/Buy Checker</option>
@@ -1702,7 +1770,24 @@
   </div>
 </div>
 
+<!-- ══ USAGE VIEW MODAL ══ -->
+<div id="usageOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:275;align-items:center;justify-content:center;padding:24px">
+  <div class="admin-modal usage-panel">
+    <h2>Recent Viewers</h2>
+    <p>Shows page opens logged from the launcher/browser session.</p>
+    <div class="usage-summary" id="usageSummary"></div>
+    <div class="usage-table-wrap" id="usageRows">
+      <div style="padding:18px;color:var(--muted);font-size:0.85rem">Loading...</div>
+    </div>
+    <div class="admin-actions" style="margin-top:16px">
+      <button class="btn-cancel" id="closeUsageBtn" style="flex:1">Close</button>
+      <button class="btn-save" id="refreshUsageBtn" style="flex:1">Refresh</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ ADMIN TOGGLE BUTTON ══ -->
+<button class="admin-restart admin-usage admin-only" id="adminUsage" title="Show recent viewers">View Usage</button>
 <button class="admin-restart admin-only" id="adminRestart" title="Restart the server to apply changes">🔄 Restart Server</button>
 <button class="admin-toggle" id="adminToggle" title="Admin login">🔒</button>
 
@@ -1751,6 +1836,25 @@ async function apiFetch(path, options = {}) {
   return data;
 }
 
+function currentUsagePage() {
+  const activeTab = document.querySelector('.nav-tab.active');
+  return activeTab ? (activeTab.dataset.tab || '') : '';
+}
+
+// Fire-and-forget page-open logging. It must never block the guide from loading.
+async function logUsageOpen() {
+  try {
+    await fetch(API_BASE + '/api/usage/open', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        windowsUser: sessionStorage.getItem('winUser') || '',
+        page: currentUsagePage()
+      })
+    });
+  } catch { /* usage logging must never break the guide */ }
+}
+
 // ── Macro data ──────────────────────────────────────────────────────────────
 const macros = {
 
@@ -1782,7 +1886,7 @@ const macros = {
   },
 
   drawingtemplateupdate: {
-    icon: '🖼️', title: 'Drawing Template Update', tag: 'Drawings', color: '#7c3aed',
+    icon: '🖼️', title: 'Drawing Template Update', tag: 'Drawings', color: '#14b8a6',
     summary: `Changes the SolidWorks drawing sheet format (border, title block, logo) to a different template in bulk. It has smart size handling — it detects whether each drawing is B-size or D-size and applies the correct template for that paper size. A common use case is switching drawings from metric templates to imperial templates, or updating to a new company standard. Instead of opening each drawing one by one, you point this at a folder and it handles them all.`,
     steps: [
       'You select a folder containing the drawings to update.',
@@ -2074,7 +2178,7 @@ function closeDetailModal() {
 
 document.getElementById('closeBtn').addEventListener('click', closeDetailModal);
 overlay.addEventListener('click', e => { if (e.target === overlay) closeDetailModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDetailModal(); closeAddModal(); closeTkModal(); closeCancelModal(); closeEditModal(); document.getElementById('adminOverlay').style.display='none'; document.getElementById('lightbox').classList.remove('open'); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDetailModal(); closeAddModal(); closeTkModal(); closeCancelModal(); closeEditModal(); document.getElementById('adminOverlay').style.display='none'; document.getElementById('usageOverlay').style.display='none'; document.getElementById('lightbox').classList.remove('open'); } });
 document.addEventListener('click', e => {
   if (!e.target.closest('.emoji-picker') && !e.target.closest('.tk-comment-tool-btn')) {
     document.querySelectorAll('.emoji-picker.open').forEach(p => p.classList.remove('open'));
@@ -3132,6 +3236,8 @@ setInterval(checkVersion, 60000);
 // ── Admin auth ──────────────────────────────────────────────────────────
 const adminOverlay = document.getElementById('adminOverlay');
 const adminToggle  = document.getElementById('adminToggle');
+const usageOverlay = document.getElementById('usageOverlay');
+const adminUsageBtn = document.getElementById('adminUsage');
 
 async function sha256(msg) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
@@ -3168,6 +3274,54 @@ document.getElementById('adminRestart').addEventListener('click', async () => {
   }, 1500);
 });
 
+async function loadUsage() {
+  const summary = document.getElementById('usageSummary');
+  const rows = document.getElementById('usageRows');
+  summary.innerHTML = '<span class="usage-pill">Loading...</span>';
+  rows.innerHTML = '<div style="padding:18px;color:var(--muted);font-size:0.85rem">Loading...</div>';
+
+  try {
+    const usage = await apiFetch('/api/usage');
+    const unique = usage.unique || [];
+    const entries = usage.entries || [];
+    summary.innerHTML = `
+      <span class="usage-pill">${unique.length} unique viewer${unique.length === 1 ? '' : 's'}</span>
+      <span class="usage-pill">${entries.length} recent open${entries.length === 1 ? '' : 's'}</span>
+      <span class="usage-pill">Log: ${usage.source ? escHtml(String(usage.source)) : 'not created yet'}</span>
+    `;
+
+    if (entries.length === 0) {
+      rows.innerHTML = '<div style="padding:18px;color:var(--muted);font-size:0.85rem">No usage has been logged yet.</div>';
+      return;
+    }
+
+    rows.innerHTML = `<table class="usage-table">
+      <thead><tr><th>When</th><th>User</th><th>Computer</th><th>Page</th></tr></thead>
+      <tbody>${entries.map(e => `
+        <tr>
+          <td class="usage-muted">${escHtml(String(e.timestamp || ''))}</td>
+          <td class="usage-user">${escHtml(String(e.windowsUser || ''))}</td>
+          <td>${escHtml(String(e.machine || ''))}</td>
+          <td class="usage-muted">${escHtml(String(e.page || ''))}</td>
+        </tr>
+      `).join('')}</tbody>
+    </table>`;
+  } catch (err) {
+    summary.innerHTML = '';
+    rows.innerHTML = `<div style="padding:18px;color:#ef4444;font-size:0.85rem">Could not load usage: ${escHtml(err.message)}</div>`;
+  }
+}
+
+function openUsageModal() {
+  usageOverlay.style.display = 'flex';
+  loadUsage();
+}
+
+adminUsageBtn.addEventListener('click', openUsageModal);
+document.getElementById('refreshUsageBtn').addEventListener('click', loadUsage);
+document.getElementById('closeUsageBtn').addEventListener('click', () => { usageOverlay.style.display = 'none'; });
+usageOverlay.addEventListener('click', e => { if (e.target === usageOverlay) usageOverlay.style.display = 'none'; });
+
 adminToggle.addEventListener('click', () => {
   if (document.body.classList.contains('is-admin')) { setAdmin(false); return; }
   adminOverlay.classList.add('open');
@@ -3179,13 +3333,32 @@ adminToggle.addEventListener('click', () => {
 document.getElementById('cancelAdminBtn').addEventListener('click', () => adminOverlay.classList.remove('open'));
 adminOverlay.addEventListener('click', e => { if (e.target === adminOverlay) adminOverlay.classList.remove('open'); });
 
+// Fire-and-forget — never block the login UI on the audit log.
+async function logAdminAttempt(success, detail) {
+  try {
+    const winUser = sessionStorage.getItem('winUser') || '';
+    await fetch(API_BASE + '/api/admin/log-attempt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        windowsUser: winUser,
+        success: !!success,
+        machine: '',           // server fills in its own COMPUTERNAME if blank
+        detail: detail || ''
+      })
+    });
+  } catch { /* logging failure must never break login */ }
+}
+
 async function tryAdminLogin() {
   const pw = document.getElementById('adminPw').value;
   const hash = await sha256(pw);
   if (hash === ADMIN_HASH) {
+    logAdminAttempt(true, '');
     adminOverlay.classList.remove('open');
     setAdmin(true);
   } else {
+    logAdminAttempt(false, 'wrong password');
     document.getElementById('adminErr').style.display = 'block';
     document.getElementById('adminPw').value = '';
     document.getElementById('adminPw').focus();
@@ -3203,6 +3376,7 @@ document.getElementById('adminPw').addEventListener('keydown', e => { if (e.key 
     if (u) sessionStorage.setItem('winUser', u);
   } catch(e) {}
 })();
+logUsageOpen();
 // Restore admin session if previously logged in
 if (sessionStorage.getItem('nmtAdmin') === '1') setAdmin(true);
 // Load data from server

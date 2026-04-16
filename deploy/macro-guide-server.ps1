@@ -9,10 +9,20 @@
     on the shared drive. Uses file locking for concurrent access.
     Runs on any Windows machine — no installs required.
 
+.PARAMETER PreferPort
+    If set, the server tries to bind THIS port first and retries it for a few
+    seconds before falling back to the candidate list. Used by /api/restart so
+    the browser (which is pinned to a specific localhost port) keeps working
+    after a restart instead of getting stranded on a now-free port.
+
 .NOTES
     Started automatically by "Open Macro Guide.vbs"
     Press Ctrl+C to stop manually.
 #>
+
+param(
+    [int]$PreferPort = 0
+)
 
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -61,6 +71,15 @@ $EmailTo      = 'dlebel@nmtech.com'
 $SharedErrorLog = 'Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\data\errors.log'
 $LocalErrorLog  = Join-Path $env:APPDATA 'MacroGuide\errors.log'
 
+# Admin access log — every login attempt (success + fail) lands here so Dylan
+# can see who's logging in (and who's trying to).
+$SharedAdminLog = 'Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\data\admin-access.log'
+$LocalAdminLog  = Join-Path $env:APPDATA 'MacroGuide\admin-access.log'
+
+# Usage log — every page open lands here so Dylan can see who viewed the guide.
+$SharedUsageLog = 'Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\data\usage.log'
+$LocalUsageLog  = Join-Path $env:APPDATA 'MacroGuide\usage.log'
+
 function Write-ErrorLog {
     param([string]$Context, [string]$Message, [string]$Detail = '')
     $ts   = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
@@ -81,6 +100,108 @@ function Write-ErrorLog {
             Add-Content -Path $LocalErrorLog -Value $line -Encoding UTF8 -ErrorAction SilentlyContinue
         } catch {}
     }
+}
+
+function Write-AdminAccessLog {
+    param(
+        [string]$Outcome,        # 'SUCCESS' or 'FAIL'
+        [string]$WindowsUser,    # from the browser (?user=... query param)
+        [string]$Machine,        # optional — server machine running this PS instance
+        [string]$Detail = ''
+    )
+    $ts = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+    # Prefer the user the browser reported; fall back to the PS-side $env:USERNAME
+    # so we never log a blank user line.
+    $who = if ($WindowsUser) { $WindowsUser } else { $env:USERNAME }
+    $mach = if ($Machine) { $Machine } else { $env:COMPUTERNAME }
+    $line = "[$ts] [$who@$mach] $Outcome"
+    if ($Detail) { $line += " — $Detail" }
+    $target = $SharedAdminLog
+    try {
+        $dir = Split-Path -Parent $target
+        if (-not (Test-Path $dir)) { throw "shared dir missing" }
+        Add-Content -Path $target -Value $line -Encoding UTF8 -ErrorAction Stop
+    } catch {
+        try {
+            $localDir = Split-Path -Parent $LocalAdminLog
+            if (-not (Test-Path $localDir)) { New-Item -ItemType Directory -Path $localDir -Force | Out-Null }
+            Add-Content -Path $LocalAdminLog -Value $line -Encoding UTF8 -ErrorAction SilentlyContinue
+        } catch {}
+    }
+}
+
+function Write-UsageLog {
+    param(
+        [string]$WindowsUser,
+        [string]$Action = 'OPEN',
+        [string]$Page = '',
+        [string]$UserAgent = ''
+    )
+    $who = if ($WindowsUser) { $WindowsUser } else { $env:USERNAME }
+    $entry = [ordered]@{
+        timestamp   = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+        windowsUser = $who
+        machine     = $env:COMPUTERNAME
+        action      = $Action
+        page        = $Page
+        userAgent   = $UserAgent
+    }
+    $line = $entry | ConvertTo-Json -Compress
+    $target = $SharedUsageLog
+    try {
+        $dir = Split-Path -Parent $target
+        if (-not (Test-Path $dir)) { throw "shared dir missing" }
+        Add-Content -Path $target -Value $line -Encoding UTF8 -ErrorAction Stop
+    } catch {
+        try {
+            $localDir = Split-Path -Parent $LocalUsageLog
+            if (-not (Test-Path $localDir)) { New-Item -ItemType Directory -Path $localDir -Force | Out-Null }
+            Add-Content -Path $LocalUsageLog -Value $line -Encoding UTF8 -ErrorAction SilentlyContinue
+        } catch {}
+    }
+}
+
+function Read-UsageLog {
+    param([int]$MaxEntries = 250)
+
+    $target = ''
+    if (Test-Path $SharedUsageLog) {
+        $target = $SharedUsageLog
+    } elseif (Test-Path $LocalUsageLog) {
+        $target = $LocalUsageLog
+    } else {
+        return @{ entries = @(); unique = @(); source = '' }
+    }
+
+    $lines = @()
+    try {
+        $lines = @(Get-Content -Path $target -Tail $MaxEntries -Encoding UTF8 -ErrorAction Stop)
+    } catch {}
+
+    $entries = @()
+    foreach ($line in $lines) {
+        if ([string]::IsNullOrWhiteSpace($line)) { continue }
+        try {
+            $entry = $line | ConvertFrom-Json
+            if ($entry) { $entries += $entry }
+        } catch {}
+    }
+    $entries = @($entries | Sort-Object timestamp -Descending)
+
+    $unique = @()
+    $groups = @($entries | Where-Object { $_.windowsUser } | Group-Object windowsUser)
+    foreach ($group in $groups) {
+        $latest = $group.Group | Sort-Object timestamp -Descending | Select-Object -First 1
+        $unique += [pscustomobject]@{
+            windowsUser = $group.Name
+            machine     = $latest.machine
+            lastSeen    = $latest.timestamp
+            count       = $group.Count
+        }
+    }
+    $unique = @($unique | Sort-Object lastSeen -Descending)
+
+    return @{ entries = @($entries); unique = @($unique); source = $target }
 }
 
 # ════════════════════════════════════════════════════════════════════════
@@ -1088,6 +1209,55 @@ function Handle-Request {
         return
     }
 
+    # ── POST /api/usage/open ─────────────────────────────
+    # Browser calls this once on page load so Dylan can see who viewed the guide.
+    # Body: { windowsUser: "dlebel", page: "tickets" }
+    if ($method -eq 'POST' -and $url -eq '/api/usage/open') {
+        $body = Read-RequestBody $req
+        $parsed = $null
+        try {
+            if ($body) { $parsed = $body | ConvertFrom-Json }
+        } catch {}
+        $who = ''
+        $page = ''
+        if ($parsed) {
+            if ($parsed.PSObject.Properties['windowsUser'] -and $parsed.windowsUser) { $who = [string]$parsed.windowsUser }
+            if ($parsed.PSObject.Properties['page'] -and $parsed.page) { $page = [string]$parsed.page }
+        }
+        Write-UsageLog -WindowsUser $who -Action 'OPEN' -Page $page -UserAgent $req.UserAgent
+        Send-JsonResponse $res 200 @{ ok = $true }
+        return
+    }
+
+    # ── GET /api/usage ───────────────────────────────────
+    # Returns recent usage rows and a unique-user summary for the admin panel.
+    if ($method -eq 'GET' -and $url -eq '/api/usage') {
+        $usage = Read-UsageLog -MaxEntries 300
+        Send-JsonResponse $res 200 $usage
+        return
+    }
+
+    # ── POST /api/admin/log-attempt ──────────────────────
+    # Browser calls this for every admin login attempt (success + fail) so
+    # there's a single shared audit trail of who logged in and who tried.
+    # Body: { windowsUser: "dlebel", success: true/false, machine?: "DLEBEL-PC", detail?: "..." }
+    if ($method -eq 'POST' -and $url -eq '/api/admin/log-attempt') {
+        $body = Read-RequestBody $req
+        try {
+            $parsed = $body | ConvertFrom-Json
+        } catch {
+            Send-JsonResponse $res 400 @{ error = 'Invalid JSON body.' }
+            return
+        }
+        $outcome = if ($parsed.success) { 'SUCCESS' } else { 'FAIL' }
+        $who     = if ($parsed.windowsUser) { [string]$parsed.windowsUser } else { '' }
+        $mach    = if ($parsed.PSObject.Properties['machine'] -and $parsed.machine) { [string]$parsed.machine } else { '' }
+        $detail  = if ($parsed.PSObject.Properties['detail']  -and $parsed.detail)  { [string]$parsed.detail }  else { '' }
+        Write-AdminAccessLog -Outcome $outcome -WindowsUser $who -Machine $mach -Detail $detail
+        Send-JsonResponse $res 200 @{ ok = $true }
+        return
+    }
+
     # ── GET /api/shutdown (localhost only) ───────────────
     if ($method -eq 'GET' -and $url -eq '/api/shutdown') {
         Send-JsonResponse $res 200 @{ ok = $true; message = 'Server shutting down.' }
@@ -1126,19 +1296,45 @@ function Start-Server {
 
     Initialize-DataFiles
 
-    # Try each candidate port in order — falls through if port is busy
+    # Build the port try-list. If a PreferPort was given (restart path), put it
+    # first AND retry it hard for a few seconds before falling back. The reason:
+    # the browser is pinned to whatever port loaded the page (window.location),
+    # so on /api/restart we MUST come back on the same port or the browser is
+    # stranded.
+    $tryList = @()
+    if ($PreferPort -gt 0) {
+        $tryList += $PreferPort
+        foreach ($p in $PortCandidates) { if ($p -ne $PreferPort) { $tryList += $p } }
+    } else {
+        $tryList = $PortCandidates
+    }
+
     $listener = $null
-    foreach ($candidate in $PortCandidates) {
-        $listener = New-Object System.Net.HttpListener
-        $listener.Prefixes.Add("http://localhost:${candidate}/")
-        try {
-            $listener.Start()
-            $script:Port = $candidate
-            break
-        } catch {
+    foreach ($candidate in $tryList) {
+        # First candidate (especially when it's the PreferPort) gets retries —
+        # Windows can hold the port for a moment after the previous listener
+        # closes, even though Stop()+Close() returned.
+        $maxRetries = if ($candidate -eq $PreferPort -and $PreferPort -gt 0) { 20 } else { 1 }
+        $bound = $false
+        for ($attempt = 0; $attempt -lt $maxRetries; $attempt++) {
+            $listener = New-Object System.Net.HttpListener
+            $listener.Prefixes.Add("http://localhost:${candidate}/")
+            try {
+                $listener.Start()
+                $script:Port = $candidate
+                $bound = $true
+                break
+            } catch {
+                try { $listener.Close() } catch {}
+                $listener = $null
+                if ($attempt -lt $maxRetries - 1) { Start-Sleep -Milliseconds 300 }
+            }
+        }
+        if ($bound) { break }
+        if ($maxRetries -gt 1) {
+            Write-Host "  Could not reclaim preferred port $candidate after $maxRetries tries — trying next..." -ForegroundColor Yellow
+        } else {
             Write-Host "  Port $candidate busy, trying next..." -ForegroundColor DarkGray
-            try { $listener.Close() } catch {}
-            $listener = $null
         }
     }
 
@@ -1190,19 +1386,29 @@ function Start-Server {
                 $running = $false
             }
             elseif ($result -eq 'RESTART') {
+                # Capture the port BEFORE we tear the listener down — we'll
+                # tell the child to grab it back so the browser (pinned to
+                # localhost:$Port) reconnects on the same URL.
+                $portToReclaim = $Port
                 # Stop listener FIRST so the port is freed before the child tries to bind it.
                 $listener.Stop()
                 $listener.Close()
-                # Small pause so Windows actually releases the port.
+                # Small pause so Windows actually releases the port. The child
+                # also retries the same port for a few seconds via -PreferPort,
+                # so this is just a head start.
                 Start-Sleep -Milliseconds 400
-                # Spawn replacement (detached, hidden) running this same script.
+                # Spawn replacement (detached, truly hidden — no console flash).
+                # Use WScript.Shell.Run with windowStyle=0 (SW_HIDE) instead of
+                # Start-Process. Start-Process -WindowStyle Hidden can briefly
+                # flash a console when launching powershell.exe; Run with 0 does
+                # not, and matches what "Open Macro Guide.vbs" uses on first launch.
                 try {
                     $scriptPath = $PSCommandPath
                     if (-not $scriptPath) { $scriptPath = $MyInvocation.MyCommand.Path }
-                    Start-Process -FilePath 'powershell.exe' `
-                        -ArgumentList @('-ExecutionPolicy','Bypass','-WindowStyle','Hidden','-File', $scriptPath) `
-                        -WindowStyle Hidden
-                    Write-Host "  Replacement server launched." -ForegroundColor Green
+                    $cmd = "powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$scriptPath`" -PreferPort $portToReclaim"
+                    $wsh = New-Object -ComObject WScript.Shell
+                    $null = $wsh.Run($cmd, 0, $false)
+                    Write-Host "  Replacement server launched (hidden, reclaiming port $portToReclaim)." -ForegroundColor Green
                 } catch {
                     Write-Host "  ERROR: Could not launch replacement: $($_.Exception.Message)" -ForegroundColor Red
                 }
