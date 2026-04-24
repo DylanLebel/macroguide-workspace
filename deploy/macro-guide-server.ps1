@@ -55,6 +55,8 @@ if (-not (Test-Path $HtmlFile)) {
 
 $ClFile = Join-Path $DataDir 'changelog.json'
 $TkFile = Join-Path $DataDir 'tickets.json'
+$CrFile = Join-Path $DataDir 'crashes.json'
+$CrashNotifyFile = Join-Path $DataDir 'crash-notifications.json'
 
 
 
@@ -202,6 +204,149 @@ function Read-UsageLog {
     $unique = @($unique | Sort-Object lastSeen -Descending)
 
     return @{ entries = @($entries); unique = @($unique); source = $target }
+}
+
+function Normalize-WindowsUser {
+    param([string]$WindowsUser)
+    if ([string]::IsNullOrWhiteSpace($WindowsUser)) { return '' }
+    return $WindowsUser.Trim().ToLowerInvariant()
+}
+
+function ConvertTo-PreferenceBool {
+    param($Value)
+    if ($Value -is [bool]) { return $Value }
+    if ($null -eq $Value) { return $false }
+    $s = ([string]$Value).Trim().ToLowerInvariant()
+    return @('1', 'true', 'yes', 'on', 'enabled') -contains $s
+}
+
+function Get-EmailForWindowsUser {
+    param([string]$WindowsUser)
+    $win = Normalize-WindowsUser $WindowsUser
+    if (-not $win) { return '' }
+    if ($win -notmatch '^[a-z0-9._-]+$') { return '' }
+    return "$win@nmtech.com"
+}
+
+function Get-CrashNotificationSubscribers {
+    $rows = @(Read-JsonFile $CrashNotifyFile)
+    $subscribers = @()
+    $seen = @{}
+    foreach ($row in $rows) {
+        $win = ''
+        if ($row.PSObject.Properties['windowsUser']) { $win = Normalize-WindowsUser ([string]$row.windowsUser) }
+        if (-not $win) { continue }
+
+        $enabled = $false
+        if ($row.PSObject.Properties['enabled']) { $enabled = ConvertTo-PreferenceBool $row.enabled }
+        if (-not $enabled) { continue }
+
+        $email = ''
+        if ($row.PSObject.Properties['email'] -and $row.email) { $email = ([string]$row.email).Trim() }
+        if (-not $email) { $email = Get-EmailForWindowsUser $win }
+        if (-not $email) { continue }
+
+        $key = $email.ToLowerInvariant()
+        if ($seen.ContainsKey($key)) { continue }
+        $seen[$key] = $true
+
+        $display = $win
+        if ($row.PSObject.Properties['displayName'] -and $row.displayName) { $display = [string]$row.displayName }
+        $updated = ''
+        if ($row.PSObject.Properties['updatedAt'] -and $row.updatedAt) { $updated = [string]$row.updatedAt }
+
+        $subscribers += [pscustomobject]@{
+            windowsUser = $win
+            displayName = $display
+            email       = $email
+            updatedAt   = $updated
+        }
+    }
+    return @($subscribers)
+}
+
+function Get-CrashNotificationState {
+    param([string]$WindowsUser, [string]$DisplayName = '')
+    $win = Normalize-WindowsUser $WindowsUser
+    $subscribers = @(Get-CrashNotificationSubscribers)
+    if (-not $win) {
+        return [pscustomobject]@{
+            ok          = $true
+            canToggle   = $false
+            enabled     = $false
+            windowsUser = ''
+            displayName = ''
+            email       = ''
+            subscribers = $subscribers.Count
+            message     = 'Open Macro Guide from the launcher to use crash alerts.'
+        }
+    }
+
+    $email = Get-EmailForWindowsUser $win
+    $display = if ($DisplayName) { $DisplayName.Trim() } else { $win }
+    $enabled = $false
+    $updated = ''
+    $rows = @(Read-JsonFile $CrashNotifyFile)
+    foreach ($row in $rows) {
+        if (-not $row.PSObject.Properties['windowsUser']) { continue }
+        if ((Normalize-WindowsUser ([string]$row.windowsUser)) -ne $win) { continue }
+        if ($row.PSObject.Properties['enabled']) { $enabled = ConvertTo-PreferenceBool $row.enabled }
+        if ($row.PSObject.Properties['displayName'] -and $row.displayName) { $display = [string]$row.displayName }
+        if ($row.PSObject.Properties['email'] -and $row.email) { $email = [string]$row.email }
+        if ($row.PSObject.Properties['updatedAt'] -and $row.updatedAt) { $updated = [string]$row.updatedAt }
+        break
+    }
+
+    return [pscustomobject]@{
+        ok          = $true
+        canToggle   = [bool]$email
+        enabled     = [bool]$enabled
+        windowsUser = $win
+        displayName = $display
+        email       = $email
+        subscribers = $subscribers.Count
+        updatedAt   = $updated
+        message     = ''
+    }
+}
+
+function Set-CrashNotificationState {
+    param([string]$WindowsUser, [string]$DisplayName = '', $Enabled)
+    $win = Normalize-WindowsUser $WindowsUser
+    if (-not $win) { throw 'Windows user is required.' }
+    $email = Get-EmailForWindowsUser $win
+    if (-not $email) { throw 'Could not build an email address for this Windows user.' }
+    $display = if ($DisplayName) { $DisplayName.Trim() } else { $win }
+    $enabledBool = ConvertTo-PreferenceBool $Enabled
+    $stamp = (Get-Date).ToUniversalTime().ToString('o')
+
+    Invoke-LockedMutate $CrashNotifyFile {
+        param($data)
+        $found = $false
+        foreach ($row in $data) {
+            if (-not $row.PSObject.Properties['windowsUser']) { continue }
+            if ((Normalize-WindowsUser ([string]$row.windowsUser)) -ne $win) { continue }
+            $found = $true
+            $row | Add-Member -NotePropertyName windowsUser -NotePropertyValue $win -Force
+            $row | Add-Member -NotePropertyName displayName -NotePropertyValue $display -Force
+            $row | Add-Member -NotePropertyName email -NotePropertyValue $email -Force
+            $row | Add-Member -NotePropertyName enabled -NotePropertyValue $enabledBool -Force
+            $row | Add-Member -NotePropertyName updatedAt -NotePropertyValue $stamp -Force
+            break
+        }
+        if (-not $found) {
+            $data += [pscustomobject]@{
+                windowsUser = $win
+                displayName = $display
+                email       = $email
+                enabled     = $enabledBool
+                updatedAt   = $stamp
+            }
+        }
+        return @($data | Sort-Object windowsUser)
+    } | Out-Null
+
+    return Get-CrashNotificationState -WindowsUser $win -DisplayName $display
 }
 
 # ════════════════════════════════════════════════════════════════════════
@@ -551,6 +696,70 @@ function Send-PokeEmail {
     Send-OutlookEmail -Subject $subject -HtmlBody $htmlBody
 }
 
+function Send-CrashNotification {
+    param($Crash)
+    $subscribers = @(Get-CrashNotificationSubscribers)
+    if ($subscribers.Count -eq 0) {
+        Write-Host "  No crash notification subscribers - skipping alert." -ForegroundColor DarkGray
+        return
+    }
+
+    $victim = if ($Crash.PSObject.Properties['user'] -and $Crash.user) { [string]$Crash.user } else { 'Unknown user' }
+    $severity = if ($Crash.PSObject.Properties['severity'] -and $Crash.severity) { ([string]$Crash.severity).ToLowerInvariant() } else { 'minor' }
+    switch ($severity) {
+        'major' {
+            $severityLabel = 'Major'
+            $badgeBg = '#fff4e5'
+            $badgeColor = '#b65d00'
+        }
+        'catastrophic' {
+            $severityLabel = 'Catastrophic'
+            $badgeBg = '#ffe8ef'
+            $badgeColor = '#c01845'
+        }
+        default {
+            $severityLabel = 'Minor'
+            $badgeBg = '#eef4ff'
+            $badgeColor = '#3d72c8'
+        }
+    }
+
+    $loggedBy = if ($Crash.PSObject.Properties['createdBy'] -and $Crash.createdBy) { [string]$Crash.createdBy } else { 'Unknown' }
+    $winUser = if ($Crash.PSObject.Properties['windowsUser'] -and $Crash.windowsUser) { [string]$Crash.windowsUser } else { '' }
+    $when = ''
+    try {
+        $when = ([datetime]$Crash.timestamp).ToLocalTime().ToString('yyyy-MM-dd h:mm tt')
+    } catch {
+        $when = (Get-Date).ToString('yyyy-MM-dd h:mm tt')
+    }
+
+    $tVictim = [System.Web.HttpUtility]::HtmlEncode($victim)
+    $tLoggedBy = [System.Web.HttpUtility]::HtmlEncode($loggedBy)
+    $tWinUser = [System.Web.HttpUtility]::HtmlEncode($winUser)
+    $tWhen = [System.Web.HttpUtility]::HtmlEncode($when)
+    $severityBadge = Get-EmailBadge $severityLabel $badgeBg $badgeColor
+
+    $rows = @(
+        (Get-EmailRow 'Who crashed' "<strong>$tVictim</strong>")
+        (Get-EmailRow 'Severity' $severityBadge)
+        (Get-EmailRow 'Logged by' $tLoggedBy)
+        (Get-EmailRow 'Windows user' $tWinUser)
+        (Get-EmailRow 'When' $tWhen)
+    ) -join "`n"
+    $link = Get-EmailLink
+    $detailLabel = Get-EmailSectionLabel 'Details'
+    $subject = "SolidWorks crash logged: $victim ($severityLabel)"
+    $inner = @"
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-size:14px;color:#666666;font-family:'Segoe UI',Arial,sans-serif;line-height:22px;padding-bottom:20px;">A SolidWorks crash was logged in the Macro Guide.</td></tr></table>
+    $detailLabel
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">$rows</table>
+    $link
+"@
+    $to = ($subscribers | ForEach-Object { $_.email }) -join '; '
+    $htmlBody = Get-EmailHtmlWrapper -Title "Crash Logged" -InnerHtml $inner
+    Send-OutlookEmail -Subject $subject -HtmlBody $htmlBody -To $to
+}
+
 # ════════════════════════════════════════════════════════════════════════
 #  ENSURE DATA FILES EXIST
 # ════════════════════════════════════════════════════════════════════════
@@ -575,6 +784,8 @@ function Initialize-DataFiles {
             $script:DataDir = $LocalDataDir
             $script:ClFile  = Join-Path $LocalDataDir 'changelog.json'
             $script:TkFile  = Join-Path $LocalDataDir 'tickets.json'
+            $script:CrFile  = Join-Path $LocalDataDir 'crashes.json'
+            $script:CrashNotifyFile = Join-Path $LocalDataDir 'crash-notifications.json'
             $script:DataSource = 'local'
         }
     }
@@ -591,6 +802,36 @@ function Initialize-DataFiles {
     if (-not (Test-Path $TkFile)) {
         [System.IO.File]::WriteAllText($TkFile, '[]', [System.Text.Encoding]::UTF8)
         Write-Host "  Created tickets.json (empty)"
+    }
+    if (-not (Test-Path $CrFile)) {
+        [System.IO.File]::WriteAllText($CrFile, '[]', [System.Text.Encoding]::UTF8)
+        Write-Host "  Created crashes.json (empty)"
+    }
+    if (-not (Test-Path $CrashNotifyFile)) {
+        [System.IO.File]::WriteAllText($CrashNotifyFile, '[]', [System.Text.Encoding]::UTF8)
+        Write-Host "  Created crash-notifications.json (empty)"
+    } else {
+        # Earlier preview builds seeded Dylan as enabled by default. Crash
+        # alerts must be explicit opt-in, so disable that single legacy seed.
+        try {
+            $prefs = @(Read-JsonFile $CrashNotifyFile)
+            $defaultEmail = ($EmailTo -split ';')[0].Trim()
+            $defaultUser = if ($defaultEmail -match '^([^@]+)@') { $matches[1].ToLowerInvariant() } else { 'dlebel' }
+            if ($prefs.Count -eq 1) {
+                $pref = $prefs[0]
+                $prefUser = if ($pref.PSObject.Properties['windowsUser']) { Normalize-WindowsUser ([string]$pref.windowsUser) } else { '' }
+                $prefEmail = if ($pref.PSObject.Properties['email'] -and $pref.email) { ([string]$pref.email).Trim().ToLowerInvariant() } else { '' }
+                $prefEnabled = if ($pref.PSObject.Properties['enabled']) { ConvertTo-PreferenceBool $pref.enabled } else { $false }
+                if ($prefEnabled -and $prefUser -eq $defaultUser -and $prefEmail -eq $defaultEmail.ToLowerInvariant()) {
+                    $pref | Add-Member -NotePropertyName enabled -NotePropertyValue $false -Force
+                    $pref | Add-Member -NotePropertyName updatedAt -NotePropertyValue ((Get-Date).ToUniversalTime().ToString('o')) -Force
+                    Write-JsonFile $CrashNotifyFile @($pref)
+                    Write-Host "  Disabled legacy default crash notification seed"
+                }
+            }
+        } catch {
+            Write-ErrorLog 'crash-notifications' 'Could not migrate legacy crash notification seed.' $_.Exception.Message
+        }
     }
     $attachDir = Join-Path $DataDir 'attachments'
     if (-not (Test-Path $attachDir)) {
@@ -673,6 +914,136 @@ function Handle-Request {
     if ($method -eq 'GET' -and $url -eq '/api/tickets') {
         $data = @(Read-JsonFile $TkFile)
         Send-JsonResponse $res 200 $data
+        return
+    }
+
+    # ── GET /api/crashes ────────────────────────────────
+    if ($method -eq 'GET' -and $url -eq '/api/crashes') {
+        $data = @(Read-JsonFile $CrFile)
+        Send-JsonResponse $res 200 $data
+        return
+    }
+
+    # ── GET /api/crash-notifications/me ────────────────
+    if ($method -eq 'GET' -and $url -eq '/api/crash-notifications/me') {
+        $who = [string]$req.QueryString['windowsUser']
+        $display = [string]$req.QueryString['displayName']
+        $state = Get-CrashNotificationState -WindowsUser $who -DisplayName $display
+        Send-JsonResponse $res 200 $state
+        return
+    }
+
+    # ── GET /api/admin/crash-notifications ─────────────
+    if ($method -eq 'GET' -and $url -eq '/api/admin/crash-notifications') {
+        $subscribers = @(Get-CrashNotificationSubscribers)
+        Send-JsonResponse $res 200 @{
+            subscribers = $subscribers
+            count       = $subscribers.Count
+        }
+        return
+    }
+
+    # ── PATCH /api/crash-notifications/me ──────────────
+    if ($method -eq 'PATCH' -and $url -eq '/api/crash-notifications/me') {
+        $body = Read-RequestBody $req
+        try {
+            $parsed = $body | ConvertFrom-Json
+        } catch {
+            Send-JsonResponse $res 400 @{ error = 'Invalid JSON body.' }
+            return
+        }
+        if (-not $parsed.PSObject.Properties['windowsUser'] -or -not $parsed.windowsUser) {
+            Send-JsonResponse $res 400 @{ error = 'Windows user is required.' }
+            return
+        }
+        $display = ''
+        if ($parsed.PSObject.Properties['displayName'] -and $parsed.displayName) { $display = [string]$parsed.displayName }
+        $enabled = $false
+        if ($parsed.PSObject.Properties['enabled']) { $enabled = $parsed.enabled }
+        try {
+            $state = Set-CrashNotificationState -WindowsUser ([string]$parsed.windowsUser) -DisplayName $display -Enabled $enabled
+            Send-JsonResponse $res 200 $state
+        } catch {
+            Send-JsonResponse $res 400 @{ error = $_.Exception.Message }
+        }
+        return
+    }
+
+    # ── POST /api/crashes/add ───────────────────────────
+    if ($method -eq 'POST' -and $url -eq '/api/crashes/add') {
+        $body = Read-RequestBody $req
+        $crash = $body | ConvertFrom-Json
+        if (-not $crash.user) {
+            Send-JsonResponse $res 400 @{ error = 'Missing required field (user).' }
+            return
+        }
+        $updated = Invoke-LockedMutate $CrFile {
+            param($data)
+            $maxId = 0
+            foreach ($c in $data) {
+                if ($c.PSObject.Properties['id'] -and [int]$c.id -gt $maxId) { $maxId = [int]$c.id }
+            }
+            $crash | Add-Member -NotePropertyName id -NotePropertyValue ($maxId + 1) -Force
+            if (-not $crash.timestamp) {
+                $crash | Add-Member -NotePropertyName timestamp -NotePropertyValue ((Get-Date).ToUniversalTime().ToString('o')) -Force
+            }
+            $data += $crash
+            return $data
+        }
+        try {
+            Send-CrashNotification $crash
+        } catch {
+            Write-ErrorLog 'crash-notification' 'Crash alert failed after crash was logged.' $_.Exception.Message
+        }
+        Send-JsonResponse $res 200 @{ ok = $true; count = $updated.Count; entries = @($updated) }
+        return
+    }
+
+    # ── DELETE /api/crashes/{id} ─────────────────────────
+    if ($method -eq 'DELETE' -and $url -match '^/api/crashes/(\d+)$') {
+        $crashId = [int]$matches[1]
+        $updated = Invoke-LockedMutate $CrFile {
+            param($data)
+            return @($data | Where-Object { [int]$_.id -ne $crashId })
+        }
+        Send-JsonResponse $res 200 @{ ok = $true; count = $updated.Count; entries = @($updated) }
+        return
+    }
+
+    # ── PATCH /api/crashes/{id} — admin edit (user, severity, timestamp) ──
+    if ($method -eq 'PATCH' -and $url -match '^/api/crashes/(\d+)$') {
+        $crashId = [int]$matches[1]
+        $body = Read-RequestBody $req
+        $patch = $body | ConvertFrom-Json
+        $updated = Invoke-LockedMutate $CrFile {
+            param($data)
+            $found = $false
+            foreach ($c in $data) {
+                if ($c.PSObject.Properties['id'] -and [int]$c.id -eq $crashId) {
+                    $found = $true
+                    # Only update whitelisted fields — never id
+                    if ($patch.PSObject.Properties['user']        -and $patch.user) {
+                        $c | Add-Member -NotePropertyName user -NotePropertyValue $patch.user -Force
+                    }
+                    if ($patch.PSObject.Properties['severity']    -and $patch.severity) {
+                        $c | Add-Member -NotePropertyName severity -NotePropertyValue $patch.severity -Force
+                    }
+                    if ($patch.PSObject.Properties['timestamp']   -and $patch.timestamp) {
+                        $c | Add-Member -NotePropertyName timestamp -NotePropertyValue $patch.timestamp -Force
+                    }
+                    if ($patch.PSObject.Properties['windowsUser']) {
+                        $c | Add-Member -NotePropertyName windowsUser -NotePropertyValue $patch.windowsUser -Force
+                    }
+                    if ($patch.PSObject.Properties['createdBy']   -and $patch.createdBy) {
+                        $c | Add-Member -NotePropertyName createdBy -NotePropertyValue $patch.createdBy -Force
+                    }
+                    break
+                }
+            }
+            if (-not $found) { throw "Crash id $crashId not found" }
+            return $data
+        }
+        Send-JsonResponse $res 200 @{ ok = $true; count = $updated.Count; entries = @($updated) }
         return
     }
 
@@ -1169,6 +1540,159 @@ function Handle-Request {
         return
     }
 
+    # ── GET /api/admin/users (admin) ─────────────────────
+    # Aggregates every windowsUser seen across tickets + comments + voters +
+    # pokers, along with the display names they've used. Lets the admin panel
+    # surface "jgagnon is posting as Mike Jackson" so Dylan can rename them.
+    if ($method -eq 'GET' -and $url -eq '/api/admin/users') {
+        $tickets = @(Read-JsonFile $TkFile)
+
+        $byUser = @{}
+        foreach ($tk in $tickets) {
+            $tkUser = $null
+            if ($tk.PSObject.Properties['windowsUser'] -and $tk.windowsUser) { $tkUser = [string]$tk.windowsUser }
+            $tkDate = ''
+            if ($tk.PSObject.Properties['date'] -and $tk.date) { $tkDate = [string]$tk.date }
+            $tkName = ''
+            if ($tk.PSObject.Properties['createdBy'] -and $tk.createdBy) { $tkName = [string]$tk.createdBy }
+
+            if ($tkUser) {
+                if (-not $byUser.ContainsKey($tkUser)) {
+                    $byUser[$tkUser] = [ordered]@{
+                        windowsUser    = $tkUser
+                        displayNames   = @()
+                        currentName    = ''
+                        ticketsCreated = 0
+                        commentsPosted = 0
+                        votes          = 0
+                        pokes          = 0
+                        lastSeen       = ''
+                    }
+                }
+                $entry = $byUser[$tkUser]
+                $entry.ticketsCreated = $entry.ticketsCreated + 1
+                if ($tkName -and ($entry.displayNames -notcontains $tkName)) { $entry.displayNames += $tkName }
+                if ($tkName) { $entry.currentName = $tkName }
+                if ($tkDate -and ($entry.lastSeen -lt $tkDate)) { $entry.lastSeen = $tkDate }
+            }
+
+            if ($tk.PSObject.Properties['voters'] -and $tk.voters) {
+                foreach ($v in @($tk.voters)) {
+                    if (-not $v) { continue }
+                    $vs = [string]$v
+                    if (-not $byUser.ContainsKey($vs)) {
+                        $byUser[$vs] = [ordered]@{ windowsUser=$vs; displayNames=@(); currentName=''; ticketsCreated=0; commentsPosted=0; votes=0; pokes=0; lastSeen='' }
+                    }
+                    $byUser[$vs].votes = $byUser[$vs].votes + 1
+                }
+            }
+
+            if ($tk.PSObject.Properties['pokes'] -and $tk.pokes) {
+                foreach ($p in @($tk.pokes)) {
+                    $pu = $null
+                    if ($p.PSObject.Properties['windowsUser'] -and $p.windowsUser) { $pu = [string]$p.windowsUser }
+                    if (-not $pu) { continue }
+                    if (-not $byUser.ContainsKey($pu)) {
+                        $byUser[$pu] = [ordered]@{ windowsUser=$pu; displayNames=@(); currentName=''; ticketsCreated=0; commentsPosted=0; votes=0; pokes=0; lastSeen='' }
+                    }
+                    $byUser[$pu].pokes = $byUser[$pu].pokes + 1
+                }
+            }
+
+            if ($tk.PSObject.Properties['comments'] -and $tk.comments) {
+                foreach ($c in @($tk.comments)) {
+                    $cu = $null
+                    if ($c.PSObject.Properties['windowsUser'] -and $c.windowsUser) { $cu = [string]$c.windowsUser }
+                    if (-not $cu) { continue }
+                    if (-not $byUser.ContainsKey($cu)) {
+                        $byUser[$cu] = [ordered]@{ windowsUser=$cu; displayNames=@(); currentName=''; ticketsCreated=0; commentsPosted=0; votes=0; pokes=0; lastSeen='' }
+                    }
+                    $entry = $byUser[$cu]
+                    $entry.commentsPosted = $entry.commentsPosted + 1
+                    $cn = ''
+                    if ($c.PSObject.Properties['displayName'] -and $c.displayName) { $cn = [string]$c.displayName }
+                    if ($cn -and ($entry.displayNames -notcontains $cn)) { $entry.displayNames += $cn }
+                    if ($cn) { $entry.currentName = $cn }
+                    $cd = ''
+                    if ($c.PSObject.Properties['date'] -and $c.date) { $cd = [string]$c.date }
+                    if ($cd -and ($entry.lastSeen -lt $cd)) { $entry.lastSeen = $cd }
+                }
+            }
+        }
+
+        $users = @()
+        foreach ($key in $byUser.Keys) {
+            $e = $byUser[$key]
+            $users += [pscustomobject]@{
+                windowsUser    = $e.windowsUser
+                displayNames   = @($e.displayNames)
+                currentName    = $e.currentName
+                ticketsCreated = $e.ticketsCreated
+                commentsPosted = $e.commentsPosted
+                votes          = $e.votes
+                pokes          = $e.pokes
+                lastSeen       = $e.lastSeen
+            }
+        }
+        $users = @($users | Sort-Object -Property @{ Expression = 'lastSeen'; Descending = $true })
+        Send-JsonResponse $res 200 @{ users = @($users); ticketsScanned = $tickets.Count }
+        return
+    }
+
+    # ── PATCH /api/admin/users/{winUser} (admin rename) ──
+    # Rewrites createdBy on every ticket and displayName on every comment where
+    # windowsUser matches. Historical data is updated in place so the new name
+    # shows for existing entries. New comments still use whatever the client
+    # types — admin can rename again if needed.
+    if ($method -eq 'PATCH' -and $url -match '^/api/admin/users/(.+)$') {
+        $targetUser = [System.Uri]::UnescapeDataString($Matches[1])
+        $body = Read-RequestBody $req
+        $parsed = $null
+        try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
+        $newName = ''
+        if ($parsed -and $parsed.PSObject.Properties['displayName']) {
+            $newName = [string]$parsed.displayName
+        }
+        $newName = $newName.Trim()
+        if ([string]::IsNullOrWhiteSpace($newName)) {
+            Send-JsonResponse $res 400 @{ error = 'displayName is required.' }
+            return
+        }
+        if ([string]::IsNullOrWhiteSpace($targetUser)) {
+            Send-JsonResponse $res 400 @{ error = 'Target user is required.' }
+            return
+        }
+        $ticketsTouched  = 0
+        $commentsTouched = 0
+        $updated = Invoke-LockedMutate $TkFile {
+            param($data)
+            foreach ($tk in $data) {
+                if ($tk.PSObject.Properties['windowsUser'] -and $tk.windowsUser -eq $targetUser) {
+                    $tk | Add-Member -NotePropertyName createdBy -NotePropertyValue $newName -Force
+                    Set-Variable -Name ticketsTouched -Value ($ticketsTouched + 1) -Scope 2
+                }
+                if ($tk.PSObject.Properties['comments'] -and $tk.comments) {
+                    foreach ($c in @($tk.comments)) {
+                        if ($c.PSObject.Properties['windowsUser'] -and $c.windowsUser -eq $targetUser) {
+                            $c | Add-Member -NotePropertyName displayName -NotePropertyValue $newName -Force
+                            Set-Variable -Name commentsTouched -Value ($commentsTouched + 1) -Scope 2
+                        }
+                    }
+                }
+            }
+            return $data
+        }
+        Send-JsonResponse $res 200 @{
+            ok              = $true
+            windowsUser     = $targetUser
+            displayName     = $newName
+            ticketsTouched  = $ticketsTouched
+            commentsTouched = $commentsTouched
+            entries         = @($updated)
+        }
+        return
+    }
+
     # ── PATCH /api/tickets/{id}/delete (admin) ──────────
     if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/delete$') {
         $id = [long]$Matches[1]
@@ -1360,6 +1884,10 @@ function Start-Server {
     } else {
         Write-Host "  Email alerts      : disabled"
     }
+    try {
+        $crashSubscriberCount = @(Get-CrashNotificationSubscribers).Count
+        Write-Host "  Crash alerts      : $crashSubscriberCount subscriber(s)"
+    } catch {}
     Write-Host ""
     Write-Host "  Press Ctrl+C to stop." -ForegroundColor DarkGray
     Write-Host ""

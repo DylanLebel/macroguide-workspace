@@ -660,6 +660,30 @@
     .admin-usage { right: 236px; }
     .admin-usage:hover { border-color: var(--accent); color: var(--accent); }
     .admin-usage:active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .admin-users { right: 368px; }
+    .admin-users:hover { border-color: var(--accent); color: var(--accent); }
+    .admin-users:active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .users-table td.users-names { max-width: 240px; }
+    .users-name-list { display: flex; flex-wrap: wrap; gap: 4px; }
+    .users-name-chip {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 999px; padding: 2px 8px; font-size: 0.72rem; color: var(--text);
+    }
+    .users-name-chip.current { background: rgba(79,142,247,0.18); border-color: var(--accent); color: var(--text); }
+    .users-rename-input {
+      width: 100%; padding: 5px 8px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 6px; color: var(--text);
+      font-size: 0.8rem;
+    }
+    .users-rename-input:focus { border-color: var(--accent); outline: none; }
+    .users-rename-btn {
+      padding: 6px 12px; background: var(--accent); color: #fff;
+      border: none; border-radius: 6px; font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+    }
+    .users-rename-btn:hover { filter: brightness(1.1); }
+    .users-rename-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .users-rename-cell { display: flex; gap: 6px; align-items: center; min-width: 240px; }
     .usage-panel {
       max-width: 820px; text-align: left;
     }
@@ -915,6 +939,26 @@
       position: relative;
     }
 
+    /* ── Poke spam lockout overlay ── */
+    .tk-poke-lockout {
+      position: fixed; inset: 0; z-index: 99999;
+      background: radial-gradient(circle at center, rgba(245,158,11,0.92), rgba(180,83,9,0.98));
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+      color: #fff; font-family: inherit;
+      animation: tkLockoutIn 260ms ease-out;
+    }
+    @keyframes tkLockoutIn { from { opacity: 0; transform: scale(1.05); } to { opacity: 1; transform: scale(1); } }
+    .tk-poke-lockout-emoji {
+      font-size: 5rem; animation: tkLockoutWag 900ms ease-in-out infinite;
+    }
+    @keyframes tkLockoutWag {
+      0%,100% { transform: rotate(-8deg); }
+      50%     { transform: rotate(8deg); }
+    }
+    .tk-poke-lockout-title { font-size: 2rem; font-weight: 700; margin: 16px 0 8px; text-align: center; }
+    .tk-poke-lockout-msg   { font-size: 1.05rem; opacity: 0.92; max-width: 520px; text-align: center; padding: 0 24px; }
+    .tk-poke-lockout-timer { margin-top: 22px; font-size: 3.5rem; font-weight: 800; letter-spacing: 2px; font-variant-numeric: tabular-nums; }
+
     /* ── Comment section ── */
     .tk-comments { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
     .tk-comments-toggle {
@@ -1126,6 +1170,1007 @@
       max-width: 90vw; max-height: 90vh; border-radius: 12px;
       box-shadow: 0 8px 48px rgba(0,0,0,0.6);
     }
+
+    /* ── Crashes tab ── */
+    .nav-tab-crashes { position: relative; }
+    .nav-tab-crashes.active { color: #ffb454; }
+    .nav-tab-crashes.active { border-color: #ff6b3d !important; }
+    .cr-section { max-width: 1100px; margin: 0 auto; padding: 0 4px 60px; }
+
+    .cr-hero {
+      position: relative;
+      border-radius: 20px;
+      padding: 34px 28px 30px;
+      overflow: hidden;
+      background:
+        radial-gradient(1200px 260px at 30% 0%, rgba(255,140,60,0.35), transparent 60%),
+        radial-gradient(900px 220px at 80% 100%, rgba(255,70,120,0.30), transparent 60%),
+        linear-gradient(135deg, #2a1530 0%, #3d1a22 50%, #4a1e12 100%);
+      border: 1px solid rgba(255,150,80,0.25);
+      box-shadow: 0 12px 40px rgba(255,90,40,0.12), inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+    .cr-hero-flames {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.6;
+      background:
+        radial-gradient(circle at 10% 90%, rgba(255,180,80,0.35) 0, transparent 40%),
+        radial-gradient(circle at 90% 10%, rgba(255,90,120,0.30) 0, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(255,120,40,0.12) 0, transparent 60%);
+      animation: crFlamesShift 8s ease-in-out infinite alternate;
+    }
+    @keyframes crFlamesShift {
+      from { transform: translate3d(0,0,0) scale(1); }
+      to   { transform: translate3d(-10px,6px,0) scale(1.05); }
+    }
+    .cr-hero-inner { position: relative; text-align: center; }
+    .cr-hero-label {
+      font-size: 0.78rem; letter-spacing: 2.4px; font-weight: 700;
+      color: #ffd9b4; text-transform: uppercase; margin-bottom: 18px;
+    }
+    .cr-hero-winner {
+      display: flex; align-items: center; justify-content: center;
+      gap: 22px; margin: 6px 0 22px;
+    }
+    .cr-donut {
+      font-size: 3.4rem; line-height: 1;
+      filter: drop-shadow(0 4px 10px rgba(255,150,80,0.5));
+      animation: crDonutSpin 6s linear infinite;
+    }
+    .cr-donut-mirror { animation-direction: reverse; }
+    @keyframes crDonutSpin { to { transform: rotate(360deg); } }
+    .cr-hero-text { min-width: 0; }
+    .cr-hero-name {
+      font-size: 2.1rem; font-weight: 800; color: #fff;
+      line-height: 1.1; letter-spacing: -0.5px;
+      text-shadow: 0 0 24px rgba(255,160,90,0.5);
+      animation: crNamePulse 2.8s ease-in-out infinite;
+      word-break: break-word;
+    }
+    @keyframes crNamePulse {
+      0%, 100% { text-shadow: 0 0 24px rgba(255,160,90,0.5); }
+      50%      { text-shadow: 0 0 38px rgba(255,200,120,0.85); }
+    }
+    .cr-hero-sub { color: #ffc9a0; font-size: 0.95rem; margin-top: 6px; }
+    .cr-countdown {
+      margin: 0 0 16px;
+      padding: 16px 14px 14px;
+      background: rgba(0,0,0,0.32);
+      border: 1px solid rgba(255,180,100,0.2);
+      border-radius: 14px;
+      text-align: center;
+    }
+    .cr-countdown.locked {
+      background: rgba(255,80,100,0.12);
+      border-color: rgba(255,120,120,0.4);
+    }
+    .cr-countdown-label {
+      font-size: 0.7rem; letter-spacing: 1.8px; font-weight: 700;
+      color: #ffd9b4; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .cr-countdown-clock {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+    .cr-cd-unit {
+      display: flex; flex-direction: column; align-items: center;
+      background: linear-gradient(180deg, rgba(255,150,80,0.12), rgba(255,80,100,0.08));
+      border: 1px solid rgba(255,180,100,0.22);
+      border-radius: 10px;
+      padding: 8px 14px; min-width: 62px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .cr-cd-num {
+      font-size: 1.9rem; font-weight: 800; color: #fff; line-height: 1;
+      font-family: 'SF Mono','Menlo','Consolas',monospace;
+      letter-spacing: 1px;
+    }
+    .cr-cd-lbl {
+      font-size: 0.62rem; letter-spacing: 1.4px;
+      text-transform: uppercase; color: #ffc9a0;
+      margin-top: 4px; font-weight: 600;
+    }
+    .cr-cd-sep {
+      font-size: 1.6rem; color: #ffb07a; font-weight: 800;
+      animation: crBlink 1s steps(2) infinite;
+      padding-bottom: 14px;
+    }
+    @keyframes crBlink { 50% { opacity: 0.25; } }
+    .cr-countdown-sub {
+      font-size: 0.82rem; color: #ffc9a0; margin-top: 10px;
+    }
+    .cr-countdown.urgent .cr-cd-num {
+      animation: crUrgentPulse 0.9s ease-in-out infinite;
+    }
+    @keyframes crUrgentPulse {
+      0%,100% { color: #fff; text-shadow: 0 0 0 transparent; }
+      50%     { color: #fff3b0; text-shadow: 0 0 20px rgba(255,180,80,0.85); }
+    }
+    .cr-countdown.final-day {
+      background: rgba(255,60,60,0.18);
+      border-color: rgba(255,140,140,0.55);
+    }
+    .cr-countdown-locked-text {
+      font-size: 1.1rem; font-weight: 700; color: #fff;
+      padding: 6px 0;
+    }
+
+    .cr-hero-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 10px; margin-top: 8px;
+    }
+    .cr-stat {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,180,100,0.18);
+      border-radius: 12px; padding: 12px 8px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .cr-stat-num {
+      font-size: 1.6rem; font-weight: 800; color: #fff;
+      font-variant-numeric: tabular-nums;
+    }
+    .cr-stat-lbl {
+      font-size: 0.7rem; letter-spacing: 1.2px;
+      color: #ffc9a0; text-transform: uppercase; margin-top: 2px;
+    }
+
+    .cr-log-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; margin: 24px 0; flex-wrap: wrap;
+    }
+    .cr-log-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: linear-gradient(135deg, #ff6b3d, #ff3d6b);
+      color: #fff; border: none; border-radius: 12px;
+      padding: 13px 22px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; letter-spacing: 0.3px;
+      box-shadow: 0 8px 22px rgba(255,90,50,0.35);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .cr-log-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(255,90,50,0.5);
+      animation: crShake 0.5s ease-in-out;
+    }
+    .cr-log-icon { font-size: 1.25rem; }
+    @keyframes crShake {
+      0%,100% { transform: translateY(-2px) rotate(0); }
+      25%     { transform: translateY(-2px) rotate(-3deg); }
+      75%     { transform: translateY(-2px) rotate(3deg); }
+    }
+    .cr-log-other {
+      background: transparent; border: none; color: var(--muted);
+      padding: 10px 14px; font-size: 0.88rem; font-weight: 500;
+      cursor: pointer; font-family: inherit; border-radius: 8px;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+    .cr-log-other:hover { color: var(--text); background: var(--surface2); }
+    .cr-hint {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-left: 10px; padding: 4px 10px; border-radius: 999px;
+      background: rgba(79,142,247,0.14); color: var(--accent);
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.4px;
+    }
+    .cr-month-tabs {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin: 0 0 22px; padding: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .cr-month-tab {
+      flex: 1; min-width: 110px;
+      background: transparent; border: none; color: var(--muted);
+      padding: 10px 14px; border-radius: 8px; font-weight: 600;
+      cursor: pointer; font-size: 0.9rem; font-family: inherit;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .cr-month-tab:hover { color: var(--text); }
+    .cr-month-tab .cr-month-count {
+      font-size: 0.72rem; color: var(--muted); font-weight: 500;
+    }
+    .cr-month-tab.active {
+      background: linear-gradient(135deg,#ff6b3d,#ff3d6b); color: #fff;
+      box-shadow: 0 4px 14px rgba(255,90,50,0.35);
+    }
+    .cr-month-tab.active .cr-month-count { color: rgba(255,255,255,0.85); }
+    .cr-month-tab.current::after {
+      content: '● LIVE'; font-size: 0.58rem; font-weight: 700;
+      letter-spacing: 0.8px; color: #ff6b3d; margin-top: 2px;
+    }
+    .cr-month-tab.current.active::after { color: #fff; }
+
+    .cr-podium {
+      display: grid; grid-template-columns: 1fr 1.15fr 1fr;
+      gap: 14px; align-items: end; margin-bottom: 28px;
+      min-height: 260px;
+    }
+    .cr-podium-slot {
+      position: relative;
+      background: linear-gradient(180deg, var(--surface) 0%, var(--surface2) 100%);
+      border: 1px solid var(--border); border-radius: 14px 14px 6px 6px;
+      padding: 18px 12px 14px; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      transition: transform 0.2s ease;
+    }
+    .cr-podium-slot:hover { transform: translateY(-3px); }
+    .cr-slot-1 {
+      min-height: 230px;
+      border-color: rgba(255,210,80,0.45);
+      box-shadow: 0 10px 30px rgba(255,200,80,0.18),
+                  inset 0 1px 0 rgba(255,220,120,0.3);
+      background: linear-gradient(180deg, #2a2410 0%, #3a2e14 100%);
+    }
+    .cr-slot-2 {
+      min-height: 190px;
+      border-color: rgba(200,210,220,0.35);
+      background: linear-gradient(180deg, #1e222a 0%, #2a2f3a 100%);
+    }
+    .cr-slot-3 {
+      min-height: 170px;
+      border-color: rgba(205,127,50,0.45);
+      background: linear-gradient(180deg, #2a1e14 0%, #3a2820 100%);
+    }
+    .cr-crown {
+      position: absolute; top: -26px; font-size: 1.8rem;
+      filter: drop-shadow(0 4px 10px rgba(255,200,80,0.6));
+      animation: crCrownBob 2.4s ease-in-out infinite;
+    }
+    @keyframes crCrownBob {
+      0%,100% { transform: translateY(0); }
+      50%     { transform: translateY(-4px); }
+    }
+    .cr-medal { font-size: 2.4rem; line-height: 1; }
+    .cr-podium-name {
+      font-size: 1.05rem; font-weight: 700; color: var(--text);
+      margin-top: 4px; word-break: break-word; line-height: 1.2;
+    }
+    .cr-slot-1 .cr-podium-name {
+      font-size: 1.2rem;
+      color: #ffe29a;
+      text-shadow: 0 0 16px rgba(255,210,100,0.4);
+    }
+    .cr-podium-count {
+      font-size: 0.85rem; color: var(--muted);
+    }
+    .cr-podium-count span {
+      color: var(--text); font-weight: 700; font-size: 1.1rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .cr-slot-1 .cr-podium-count span { color: #ffd56b; }
+    .cr-podium-bar {
+      width: 100%; margin-top: auto; border-radius: 4px 4px 0 0; height: 6px;
+    }
+    .cr-slot-1 .cr-podium-bar { background: linear-gradient(90deg,#ffd56b,#ff9a3c); }
+    .cr-slot-2 .cr-podium-bar { background: linear-gradient(90deg,#cfd6df,#8a95a5); }
+    .cr-slot-3 .cr-podium-bar { background: linear-gradient(90deg,#e8a066,#b8702e); }
+    .cr-podium-slot.empty { opacity: 0.55; }
+
+    .cr-board-wrap, .cr-feed-wrap { margin-bottom: 28px; }
+    .cr-board-head { margin-bottom: 14px; }
+    .cr-board-head h3 { font-size: 1.15rem; color: var(--text); margin: 0 0 4px; }
+    .cr-board-note { color: var(--muted); font-size: 0.88rem; margin: 0; }
+
+    .cr-board {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+    }
+    .cr-row {
+      display: grid;
+      grid-template-columns: 52px 1fr 110px 36px;
+      align-items: center; gap: 12px;
+      padding: 14px 16px; border-bottom: 1px solid var(--border);
+      transition: background 0.15s ease;
+    }
+    .cr-row:last-child { border-bottom: none; }
+    .cr-row:hover { background: var(--surface2); }
+    .cr-row.me { background: linear-gradient(90deg, rgba(79,142,247,0.12), transparent); }
+    .cr-rank {
+      font-size: 1.2rem; font-weight: 800; color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .cr-rank-1 { color: #ffd56b; }
+    .cr-rank-2 { color: #cfd6df; }
+    .cr-rank-3 { color: #e8a066; }
+    .cr-row-name { font-weight: 600; color: var(--text); word-break: break-word; }
+    .cr-row-meta { font-size: 0.76rem; color: var(--muted); margin-top: 2px; }
+    .cr-row-count {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 6px 10px; border-radius: 999px;
+      background: var(--surface2); font-weight: 700; font-size: 0.9rem;
+      color: var(--text); font-variant-numeric: tabular-nums;
+      border: 1px solid var(--border);
+    }
+    .cr-row-count.total { background: transparent; color: var(--muted); }
+    .cr-row-count.leading {
+      background: linear-gradient(135deg,#ff6b3d,#ff3d6b);
+      color: #fff; border-color: transparent;
+    }
+    .cr-col-head {
+      background: var(--surface2); padding: 10px 16px;
+      font-size: 0.72rem; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--muted);
+      display: grid;
+      grid-template-columns: 52px 1fr 110px 36px;
+      gap: 12px; border-bottom: 1px solid var(--border);
+    }
+    .cr-col-head span { text-align: center; }
+    .cr-col-head .cr-col-name { text-align: left; }
+
+    .cr-empty {
+      padding: 40px 20px; text-align: center; color: var(--muted);
+    }
+    .cr-empty span { font-size: 2rem; display: block; margin-bottom: 10px; }
+
+    .cr-feed {
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .cr-feed-item {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px;
+    }
+    .cr-feed-sev { font-size: 1.1rem; line-height: 1; }
+    .cr-feed-body { flex: 1; min-width: 0; }
+    .cr-feed-line { color: var(--text); font-size: 0.92rem; }
+    .cr-feed-line strong { color: #ffb454; }
+    .cr-feed-note { color: var(--muted); font-size: 0.82rem; margin-top: 2px; word-break: break-word; }
+    .cr-feed-time { color: var(--muted); font-size: 0.78rem; white-space: nowrap; }
+    .cr-feed-del, .cr-feed-edit {
+      background: transparent; border: none; color: var(--muted);
+      cursor: pointer; padding: 4px 6px; border-radius: 6px; font-size: 0.95rem;
+    }
+    .cr-feed-del:hover  { color: #ef4444; background: rgba(239,68,68,0.1); }
+    .cr-feed-edit:hover { color: #4f8ef7; background: rgba(79,142,247,0.12); }
+
+    /* Inline severity pill inside the feed line */
+    .cr-feed-sevlbl {
+      display: inline-block; padding: 1px 8px; border-radius: 999px;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.3px;
+      text-transform: uppercase; vertical-align: 1px;
+      border: 1px solid var(--border); background: var(--surface2);
+      color: var(--muted);
+    }
+    .cr-feed-sevlbl-minor        { border-color: rgba(79,142,247,0.40); color: #9abcf0; }
+    .cr-feed-sevlbl-major        { border-color: rgba(255,154,60,0.45); color: #ffb977;
+                                   background: rgba(255,154,60,0.08); }
+    .cr-feed-sevlbl-catastrophic { border-color: rgba(255,61,107,0.55); color: #ff98a8;
+                                   background: rgba(255,61,107,0.10); }
+
+    .cr-rules {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px; margin-top: 28px;
+    }
+    .cr-rule-item {
+      display: flex; gap: 12px; align-items: flex-start;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px;
+      color: var(--muted); font-size: 0.88rem; line-height: 1.45;
+    }
+    .cr-rule-item strong { color: var(--text); }
+    .cr-rule-icon { font-size: 1.6rem; line-height: 1; }
+
+    /* Log modal */
+    .cr-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+      display: none; z-index: 800; align-items: center; justify-content: center;
+      padding: 20px; backdrop-filter: blur(4px);
+    }
+    .cr-overlay.open { display: flex; }
+    .cr-modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; width: 100%; max-width: 480px;
+      overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+      animation: crModalIn 0.25s ease;
+    }
+    @keyframes crModalIn {
+      from { opacity: 0; transform: translateY(14px) scale(0.97); }
+      to   { opacity: 1; transform: none; }
+    }
+    .cr-modal-top {
+      height: 6px;
+      background: linear-gradient(90deg,#ff6b3d,#ff3d6b,#ffb454);
+    }
+    .cr-modal-head {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 18px; border-bottom: 1px solid var(--border);
+    }
+    .cr-modal-head h3 { margin: 0; flex: 1; font-size: 1.1rem; color: var(--text); }
+    .cr-modal-close {
+      background: transparent; border: none; color: var(--muted);
+      font-size: 1.4rem; cursor: pointer; padding: 0 4px; line-height: 1;
+    }
+    .cr-modal-close:hover { color: var(--text); }
+    .cr-modal-body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+    .cr-field { display: flex; flex-direction: column; gap: 6px; }
+    .cr-field > span {
+      font-size: 0.82rem; color: var(--muted);
+      font-weight: 600; letter-spacing: 0.3px;
+    }
+    .cr-field input[type="text"] {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      padding: 10px 12px; border-radius: 8px; font-size: 0.95rem;
+      font-family: inherit; outline: none;
+    }
+    .cr-field input[type="text"]:focus { border-color: var(--accent); }
+    .cr-severity { display: flex; gap: 8px; flex-wrap: wrap; }
+    .cr-sev-btn {
+      flex: 1; min-width: 100px;
+      background: var(--bg); border: 1px solid var(--border); color: var(--muted);
+      padding: 8px 10px; border-radius: 8px; cursor: pointer; font-weight: 600;
+      font-size: 0.85rem; transition: all 0.15s ease;
+    }
+    .cr-sev-btn:hover, .cr-esev-btn:hover { color: var(--text); border-color: var(--accent); }
+    .cr-sev-btn.active, .cr-esev-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .cr-esev-btn {
+      flex: 1; min-width: 100px;
+      background: var(--bg); border: 1px solid var(--border); color: var(--muted);
+      padding: 8px 10px; border-radius: 8px; cursor: pointer; font-weight: 600;
+      font-size: 0.85rem; transition: all 0.15s ease; font-family: inherit;
+    }
+    .cr-field input[type="datetime-local"] {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      padding: 10px 12px; border-radius: 8px; font-size: 0.95rem;
+      font-family: inherit; outline: none;
+    }
+    .cr-field input[type="datetime-local"]:focus { border-color: var(--accent); }
+    .cr-field input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.8);
+    }
+    .cr-modal-foot {
+      display: flex; justify-content: flex-end; gap: 10px;
+      padding: 14px 18px; border-top: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .cr-btn-secondary, .cr-btn-primary {
+      padding: 10px 18px; border-radius: 8px; font-weight: 600;
+      cursor: pointer; font-size: 0.92rem; border: 1px solid transparent;
+    }
+    .cr-btn-secondary {
+      background: transparent; color: var(--muted); border-color: var(--border);
+    }
+    .cr-btn-secondary:hover { color: var(--text); }
+    .cr-btn-primary {
+      background: linear-gradient(135deg,#ff6b3d,#ff3d6b); color: #fff; border: none;
+    }
+    .cr-btn-primary:hover { filter: brightness(1.1); }
+
+    /* Confetti on log */
+    .cr-confetti {
+      position: fixed; pointer-events: none; top: 0; left: 0;
+      width: 100vw; height: 100vh; overflow: hidden; z-index: 999;
+    }
+    .cr-confetti span {
+      position: absolute; top: -40px; font-size: 1.6rem;
+      animation: crFall linear forwards;
+    }
+    @keyframes crFall {
+      0%   { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+
+    @media (max-width: 720px) {
+      .cr-hero-winner { flex-direction: column; }
+      .cr-hero-name { font-size: 1.5rem; }
+      .cr-hero-stats { grid-template-columns: repeat(2, 1fr); }
+      .cr-podium { grid-template-columns: 1fr; min-height: auto; }
+      .cr-slot-1, .cr-slot-2, .cr-slot-3 { min-height: 130px; }
+      .cr-rules { grid-template-columns: 1fr; }
+      .cr-row, .cr-col-head { grid-template-columns: 40px 1fr 80px 36px; }
+      .cr-quicklog { grid-template-columns: 1fr; }
+    }
+
+    /* ── 4-slot hero-stats grid (was 3) ─────────────────────────────── */
+    .cr-hero-stats { grid-template-columns: repeat(4, 1fr) !important; }
+    @media (max-width: 720px) {
+      .cr-hero-stats { grid-template-columns: repeat(2, 1fr) !important; }
+    }
+
+    /* ── Severity quick-log buttons ─────────────────────────────────── */
+    .cr-quicklog {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 10px; width: 100%;
+    }
+    .cr-qlog-btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px; border-radius: 14px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); cursor: pointer; font-family: inherit;
+      text-align: left; transition: all 0.18s ease;
+      position: relative; overflow: hidden;
+    }
+    .cr-qlog-btn::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, transparent 0%, var(--sev-glow, transparent) 200%);
+      opacity: 0; transition: opacity 0.2s ease; pointer-events: none;
+    }
+    .cr-qlog-btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--sev-border, var(--accent));
+      box-shadow: 0 8px 22px var(--sev-shadow, rgba(79,142,247,0.25));
+    }
+    .cr-qlog-btn:hover::before { opacity: 1; }
+    .cr-qlog-btn:active { transform: translateY(0); }
+    .cr-qlog-btn.sev-minor {
+      --sev-border: #4f8ef7; --sev-shadow: rgba(79,142,247,0.28);
+      --sev-glow: rgba(79,142,247,0.12);
+    }
+    .cr-qlog-btn.sev-major {
+      --sev-border: #ff9a3c; --sev-shadow: rgba(255,154,60,0.30);
+      --sev-glow: rgba(255,154,60,0.14);
+    }
+    .cr-qlog-btn.sev-catastrophic {
+      --sev-border: #ff3d6b; --sev-shadow: rgba(255,61,107,0.40);
+      --sev-glow: rgba(255,61,107,0.16);
+      background: linear-gradient(135deg, rgba(255,61,107,0.08), rgba(255,107,61,0.06));
+      border-color: rgba(255,107,61,0.35);
+    }
+    .cr-qlog-btn.sev-catastrophic .cr-qlog-emoji { animation: crFlicker 1.4s ease-in-out infinite; }
+    @keyframes crFlicker {
+      0%,100% { filter: none; transform: scale(1); }
+      50%     { filter: drop-shadow(0 0 8px rgba(255,140,60,0.8)); transform: scale(1.08); }
+    }
+    .cr-qlog-emoji {
+      font-size: 1.7rem; line-height: 1;
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(0,0,0,0.25);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .cr-qlog-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .cr-qlog-lbl {
+      font-size: 0.95rem; font-weight: 700; color: var(--text);
+      letter-spacing: 0.2px;
+    }
+    .cr-qlog-sub {
+      font-size: 0.74rem; color: var(--muted); font-style: italic;
+    }
+    .cr-log-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; width: 100%; margin-top: 4px;
+    }
+    .cr-logas {
+      font-size: 0.82rem; color: var(--muted);
+    }
+    .cr-logas strong { color: #ffb454; }
+    .cr-alert-strip {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 14px; margin: -8px 0 22px; padding: 12px 14px;
+      background: linear-gradient(135deg, rgba(79,142,247,0.12), rgba(20,184,166,0.08));
+      border: 1px solid rgba(79,142,247,0.28);
+      border-radius: 12px;
+    }
+    .cr-alert-main { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .cr-alert-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: rgba(79,142,247,0.16); border: 1px solid rgba(79,142,247,0.32);
+      display: flex; align-items: center; justify-content: center;
+      color: #8ab4ff; font-size: 1rem; flex-shrink: 0;
+    }
+    .cr-alert-copy { min-width: 0; }
+    .cr-alert-title { font-size: 0.86rem; font-weight: 700; color: var(--text); }
+    .cr-alert-status {
+      font-size: 0.76rem; color: var(--muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .cr-alert-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .cr-alert-toggle, .cr-alert-admin {
+      height: 38px; min-width: 112px; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--muted); font-size: 0.8rem; font-weight: 700;
+      cursor: pointer; font-family: inherit; padding: 0 15px;
+      transition: all 0.18s ease; flex-shrink: 0;
+    }
+    .cr-alert-toggle:hover, .cr-alert-admin:hover { border-color: var(--accent); color: var(--text); }
+    .cr-alert-toggle.enabled {
+      background: #10b981; border-color: #10b981; color: #fff;
+      box-shadow: 0 6px 18px rgba(16,185,129,0.22);
+    }
+    .cr-alert-admin { min-width: 0; }
+    .cr-alert-toggle:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+    @media (max-width: 620px) {
+      .cr-alert-strip { align-items: stretch; flex-direction: column; }
+      .cr-alert-status { white-space: normal; }
+      .cr-alert-actions { width: 100%; flex-direction: column; align-items: stretch; }
+      .cr-alert-toggle { width: 100%; }
+      .cr-alert-admin { width: 100%; justify-content: center; }
+    }
+
+    /* Fade "someone else" link when no user is known */
+    body:not(.cr-has-user) .cr-logas { display: none; }
+
+    /* ── Rivalry callout ────────────────────────────────────────────── */
+    .cr-rivalry {
+      background: linear-gradient(90deg, rgba(255,107,61,0.14), rgba(255,61,107,0.14));
+      border: 1px solid rgba(255,107,61,0.35);
+      border-radius: 14px; padding: 12px 18px; margin: 0 0 18px;
+      display: flex; align-items: center; gap: 14px;
+      color: var(--text); font-size: 0.95rem;
+      animation: crRivalryPulse 2.4s ease-in-out infinite;
+    }
+    .cr-rivalry-icon {
+      font-size: 1.6rem; line-height: 1;
+      animation: crShake 0.7s ease-in-out infinite;
+    }
+    .cr-rivalry strong { color: #ffb454; }
+    @keyframes crRivalryPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(255,107,61,0.25); }
+      50%     { box-shadow: 0 0 28px -6px rgba(255,107,61,0.55); }
+    }
+
+    /* ── Severity pips on leaderboard rows ──────────────────────────── */
+    .cr-row { grid-template-columns: 52px 1fr 150px 36px !important; }
+    .cr-col-head { grid-template-columns: 52px 1fr 150px 36px !important; }
+    @media (max-width: 720px) {
+      .cr-row, .cr-col-head { grid-template-columns: 40px 1fr 110px 36px !important; }
+    }
+    .cr-sev-pips {
+      display: inline-flex; gap: 3px; margin-top: 4px;
+      flex-wrap: wrap; align-items: center;
+    }
+    .cr-sev-pip {
+      display: inline-flex; align-items: center; gap: 2px;
+      padding: 1px 6px; border-radius: 8px;
+      font-size: 0.68rem; font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .cr-sev-pip.minor          { border-color: rgba(79,142,247,0.40); color: #9abcf0; }
+    .cr-sev-pip.major          { border-color: rgba(255,154,60,0.45); color: #ffb977; }
+    .cr-sev-pip.catastrophic   { border-color: rgba(255,61,107,0.55); color: #ff98a8;
+                                 background: rgba(255,61,107,0.08); }
+
+    /* ── Achievement badges ─────────────────────────────────────────── */
+    .cr-achv-row {
+      display: inline-flex; gap: 4px; margin-left: 6px;
+      vertical-align: middle; flex-wrap: wrap;
+    }
+    .cr-achv {
+      display: inline-flex; align-items: center;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--surface2); border: 1px solid var(--border);
+      justify-content: center; font-size: 0.78rem; line-height: 1;
+      cursor: help; transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .cr-achv:hover { transform: scale(1.2) rotate(-5deg); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .cr-achv-gold {
+      background: linear-gradient(135deg,#ffd56b,#ff9a3c);
+      border-color: #ffc96b; box-shadow: 0 0 8px rgba(255,200,80,0.35);
+    }
+    .cr-achv-fire {
+      background: linear-gradient(135deg,#ff6b3d,#ff3d6b);
+      border-color: #ff6b3d; animation: crAchvFire 1.6s ease-in-out infinite;
+    }
+    @keyframes crAchvFire {
+      0%,100% { box-shadow: 0 0 6px rgba(255,107,61,0.4); }
+      50%     { box-shadow: 0 0 16px rgba(255,107,61,0.85); }
+    }
+
+    /* ── Konami crash-fest overlay ──────────────────────────────────── */
+    body.cr-konami {
+      animation: crKonamiShake 0.25s ease-in-out 3;
+    }
+    @keyframes crKonamiShake {
+      0%,100% { transform: translate(0,0); }
+      25%     { transform: translate(-4px, 2px); }
+      75%     { transform: translate(4px, -2px); }
+    }
+    .cr-konami-banner {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2000; pointer-events: none;
+      background: linear-gradient(135deg,#ff6b3d,#ff3d6b,#ffb454);
+      color: #fff; padding: 20px 40px; border-radius: 18px;
+      font-size: 1.8rem; font-weight: 900; letter-spacing: 2px;
+      box-shadow: 0 24px 60px rgba(255,60,100,0.5);
+      animation: crKonamiIn 0.5s ease, crKonamiOut 0.5s ease 2.5s forwards;
+    }
+    @keyframes crKonamiIn {
+      from { opacity: 0; transform: translate(-50%,-50%) scale(0.5) rotate(-10deg); }
+      to   { opacity: 1; transform: translate(-50%,-50%) scale(1) rotate(0); }
+    }
+    @keyframes crKonamiOut {
+      from { opacity: 1; }
+      to   { opacity: 0; transform: translate(-50%,-50%) scale(1.2); }
+    }
+
+    /* Clickable hero donut */
+    .cr-donut {
+      cursor: pointer; user-select: none;
+      transition: transform 0.1s ease;
+    }
+    .cr-donut:hover { transform: scale(1.08) rotate(-8deg); }
+    .cr-donut:active { transform: scale(0.95); }
+    body.cr-overload .cr-hero {
+      animation: crOverload 0.5s ease-in-out 4;
+    }
+    @keyframes crOverload {
+      0%,100% { transform: translate(0,0); }
+      20%     { transform: translate(-6px, 3px) rotate(-1deg); }
+      40%     { transform: translate(6px, -2px) rotate(1deg); }
+      60%     { transform: translate(-4px, 2px); }
+      80%     { transform: translate(3px, -3px); }
+    }
+
+    /* ── Stats analytics modal ──────────────────────────────────────── */
+    .cr-stats-modal { max-width: 640px !important; }
+    .cr-secret-tag {
+      font-size: 0.72rem; color: var(--muted);
+      font-weight: 500; margin-left: 6px; letter-spacing: 0.5px;
+    }
+    .cr-modal-hint {
+      font-size: 0.74rem; color: var(--muted); line-height: 1.4;
+    }
+    .cr-modal-hint kbd {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 4px; padding: 1px 5px; font-family: 'SF Mono','Menlo',monospace;
+      font-size: 0.72rem; color: var(--text);
+    }
+    .cr-stats-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 10px; margin-bottom: 18px;
+    }
+    .cr-stat-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 10px; text-align: center;
+    }
+    .cr-stat-card-num {
+      font-size: 1.4rem; font-weight: 800; color: #ffb454;
+      font-variant-numeric: tabular-nums;
+    }
+    .cr-stat-card-lbl {
+      font-size: 0.7rem; letter-spacing: 0.8px;
+      text-transform: uppercase; color: var(--muted); margin-top: 3px;
+    }
+    .cr-stats-section { margin-top: 16px; }
+    .cr-stats-section h4 {
+      font-size: 0.88rem; color: var(--text); margin: 0 0 8px;
+      letter-spacing: 0.4px;
+    }
+    .cr-histo {
+      display: grid; gap: 3px; align-items: end;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px;
+      height: 140px; grid-auto-flow: column;
+    }
+    .cr-histo-bar {
+      background: linear-gradient(180deg, #ff6b3d, #ff3d6b);
+      border-radius: 3px 3px 0 0; position: relative;
+      min-height: 2px; transition: opacity 0.15s ease;
+    }
+    .cr-histo-bar:hover { opacity: 0.8; }
+    .cr-histo-lbl {
+      position: absolute; bottom: -18px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.62rem; color: var(--muted); white-space: nowrap;
+    }
+    .cr-histo-wrap { margin-bottom: 24px; }
+    .cr-weekday-row {
+      display: grid; grid-template-columns: 60px 1fr 40px;
+      gap: 10px; align-items: center;
+      padding: 6px 0;
+    }
+    .cr-weekday-name { font-size: 0.82rem; color: var(--muted); }
+    .cr-weekday-bar-wrap {
+      height: 10px; background: var(--bg);
+      border-radius: 6px; overflow: hidden;
+    }
+    .cr-weekday-bar {
+      height: 100%; background: linear-gradient(90deg, #4f8ef7, #ff6b3d);
+      border-radius: 6px;
+    }
+    .cr-weekday-count {
+      font-size: 0.82rem; font-weight: 700; color: var(--text);
+      text-align: right; font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Easter-egg animations ──────────────────────────────────────── */
+    /* Rain of emoji (donut, coffee, fire, etc.) */
+    .egg-rain {
+      position: fixed; inset: 0; pointer-events: none; z-index: 1800;
+      overflow: hidden;
+    }
+    .egg-rain span {
+      position: absolute; top: -40px; font-size: 1.8rem;
+      animation: crFall linear forwards;
+      will-change: transform;
+    }
+    /* Rainbow party mode — hue-shifts the whole body */
+    body.egg-party {
+      animation: eggParty 3s linear;
+    }
+    @keyframes eggParty {
+      0%   { filter: hue-rotate(0deg); }
+      100% { filter: hue-rotate(360deg); }
+    }
+    /* Friday banner */
+    .egg-friday-banner {
+      position: fixed; top: 40%; left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2000; pointer-events: none;
+      background: linear-gradient(135deg, #fbbf24, #f97316, #ec4899);
+      color: #fff; padding: 24px 48px; border-radius: 20px;
+      font-size: 1.6rem; font-weight: 900; letter-spacing: 1px;
+      box-shadow: 0 24px 60px rgba(236,72,153,0.5);
+      animation: eggFridayBounce 3s ease forwards;
+    }
+    @keyframes eggFridayBounce {
+      0%,40% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+      45%    { transform: translate(-50%,-50%) scale(1.15) rotate(-2deg); }
+      55%    { transform: translate(-50%,-50%) scale(1.15) rotate(2deg); }
+      80%    { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+      100%   { transform: translate(-50%,-80%) scale(0.9); opacity: 0; }
+    }
+    /* Matrix rain — green falling characters */
+    .egg-matrix {
+      position: fixed; inset: 0; pointer-events: none; z-index: 1800;
+      overflow: hidden; background: rgba(0,0,0,0.25);
+    }
+    .egg-matrix span {
+      position: absolute; top: -20px;
+      color: #6aff88; font-family: 'SF Mono','Menlo','Consolas',monospace;
+      font-size: 1.1rem; text-shadow: 0 0 8px #6aff88;
+      animation: eggMatrixFall linear forwards;
+    }
+    @keyframes eggMatrixFall {
+      0%   { transform: translateY(0);     opacity: 1; }
+      90%  { opacity: 1; }
+      100% { transform: translateY(110vh); opacity: 0; }
+    }
+    /* Fake BSOD overlay triggered by typing "crash" */
+    .egg-bsod {
+      position: fixed; inset: 0; z-index: 2100;
+      background: #1e3a8a; color: #fff; padding: 40px 60px;
+      font-family: 'SF Mono','Menlo','Consolas',monospace;
+      font-size: 0.95rem; line-height: 1.5;
+      animation: eggBsodIn 0.1s ease, eggBsodOut 0.5s ease 2.5s forwards;
+    }
+    @keyframes eggBsodIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes eggBsodOut { from { opacity: 1; } to { opacity: 0; visibility: hidden; } }
+    .egg-bsod h1 { font-size: 3rem; margin: 0 0 20px; font-weight: 100; }
+    .egg-bsod .sad { font-size: 5rem; margin-bottom: 20px; line-height: 1; }
+
+    /* Logo backflip */
+    .egg-spin {
+      animation: eggSpin 1.4s cubic-bezier(0.3, 1.3, 0.6, 1) !important;
+    }
+    @keyframes eggSpin {
+      0%   { transform: rotate(0) scale(1); }
+      50%  { transform: rotate(360deg) scale(1.25); filter: drop-shadow(0 0 20px #fbbf24); }
+      100% { transform: rotate(720deg) scale(1); }
+    }
+
+    /* Cheatsheet modal — ? key */
+    .egg-cheat {
+      position: fixed; inset: 0; z-index: 2050;
+      background: rgba(0,0,0,0.72); backdrop-filter: blur(6px);
+      display: none; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .egg-cheat.open { display: flex; }
+    .egg-cheat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px 28px;
+      max-width: 560px; width: 100%;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+      animation: crModalIn 0.25s ease;
+    }
+    .egg-cheat-card h2 {
+      margin: 0 0 4px; font-size: 1.2rem; color: var(--text);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .egg-cheat-card p.sub {
+      margin: 0 0 16px; font-size: 0.85rem; color: var(--muted);
+    }
+    .egg-cheat-list {
+      display: grid; grid-template-columns: 1fr; gap: 8px;
+      margin-bottom: 12px;
+    }
+    .egg-cheat-item {
+      display: grid; grid-template-columns: 160px 1fr;
+      gap: 12px; padding: 10px 12px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.9rem; color: var(--text);
+    }
+    .egg-cheat-keys { display: flex; gap: 4px; flex-wrap: wrap; }
+    .egg-cheat-keys kbd {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 4px; padding: 2px 6px;
+      font-family: 'SF Mono','Menlo',monospace; font-size: 0.78rem;
+      color: #ffb454;
+    }
+    .egg-cheat-desc { color: var(--muted); font-size: 0.85rem; }
+    .egg-cheat-foot {
+      display: flex; justify-content: flex-end; gap: 10px;
+      margin-top: 14px; padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .egg-cheat-close {
+      background: var(--accent); color: #fff; border: none;
+      padding: 8px 18px; border-radius: 8px; cursor: pointer;
+      font-weight: 600; font-family: inherit; font-size: 0.9rem;
+    }
+    .egg-cheat-close:hover { filter: brightness(1.1); }
+
+    /* ── Boss key — fake Excel overlay (press Esc to dismiss) ───────── */
+    .egg-boss {
+      position: fixed; inset: 0; z-index: 2200;
+      background: #ffffff; color: #000; font-family: 'Calibri', sans-serif;
+      font-size: 12px; padding: 0; overflow: hidden;
+    }
+    .egg-boss-ribbon {
+      background: linear-gradient(180deg, #217346, #185c37);
+      color: #fff; padding: 4px 14px; font-weight: 600; font-size: 13px;
+      display: flex; align-items: center; gap: 16px;
+      border-bottom: 1px solid #154c2e;
+    }
+    .egg-boss-ribbon span:first-child { font-weight: 700; }
+    .egg-boss-tabs {
+      background: #f3f2f1; padding: 4px 14px;
+      border-bottom: 1px solid #d2d0ce; font-size: 12px;
+      display: flex; gap: 16px; color: #323130;
+    }
+    .egg-boss-tabs span { padding: 4px 8px; cursor: default; }
+    .egg-boss-tabs span.active { background: #fff; border: 1px solid #d2d0ce; border-bottom: 1px solid #fff; margin-bottom: -1px; }
+    .egg-boss-formula {
+      background: #fff; border-bottom: 1px solid #d2d0ce;
+      padding: 4px 14px; display: flex; gap: 10px; font-size: 12px;
+      color: #323130;
+    }
+    .egg-boss-cell {
+      padding: 2px 8px; border: 1px solid #d2d0ce; min-width: 60px;
+      font-family: 'Consolas', monospace;
+    }
+    .egg-boss-grid {
+      width: 100%; border-collapse: collapse;
+      font-family: 'Calibri', sans-serif; font-size: 12px;
+    }
+    .egg-boss-grid th {
+      background: #f3f2f1; border: 1px solid #d2d0ce;
+      padding: 2px 6px; font-weight: 500; color: #605e5c;
+      min-width: 70px; height: 20px;
+    }
+    .egg-boss-grid td {
+      border: 1px solid #d2d0ce; padding: 2px 6px; height: 18px;
+      text-align: right; color: #323130;
+    }
+    .egg-boss-grid td.txt { text-align: left; }
+    .egg-boss-status {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: #f3f2f1; color: #605e5c;
+      font-size: 11px; padding: 3px 14px;
+      border-top: 1px solid #d2d0ce;
+      display: flex; justify-content: space-between;
+    }
+
+    /* Subtle wobble on hover for hero podium slots */
+    .cr-podium-slot:hover .cr-medal {
+      animation: eggMedalWobble 0.5s ease-in-out;
+    }
+    @keyframes eggMedalWobble {
+      0%,100% { transform: rotate(0); }
+      25%     { transform: rotate(-10deg) scale(1.15); }
+      75%     { transform: rotate(10deg) scale(1.15); }
+    }
+
+    /* Sparkline */
+    .egg-sparkline {
+      display: block; width: 100%; height: 60px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 8px;
+    }
+    .egg-sparkline-wrap { margin-bottom: 18px; }
+
+    /* Tooltip for "last crash" on podium leader */
+    .cr-catking {
+      display: inline-block; margin-left: 6px;
+      font-size: 0.7rem; padding: 2px 8px; border-radius: 999px;
+      background: linear-gradient(135deg,#ff6b3d,#ff3d6b);
+      color: #fff; font-weight: 700; letter-spacing: 0.3px;
+      vertical-align: middle;
+    }
   </style>
 </head>
 <body>
@@ -1175,7 +2220,7 @@
     <img class="logo-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEIAAAA+CAMAAACoaj1gAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAGNQTFRFAHGkEyE+EHqqQJW7v9voxMfP3+307/b5f7jRYKbGMT1WTllu4ePnIIOvn8rd8PHziZCel52qIi9KbHWHpqu2tbnCj8HXMIy1r9Liz+TucK/MP0tiXWd709XbUJ7Be4OT////ECG7AAAAACF0Uk5T//////////////////////////////////////////8An8HQIQAAAe5JREFUeNrsl9uWgjAMRVOgFRAFFERRZ+b/v3IY5BJ6WlvGFx/c7+y1yAlJoJ+XoY/inRUq2a95VpaoiInCyFdQpUJIUHxRx5fyeD4vO4EQd1A01JNsHIKsOIgefBEaCOJnkuwoBq6giGgisNZV3sTEERR7YuyMda23glGAIqYFGE6VigUSFCFpJItwsoPQyEARENCyukrdcIDu3JCBIGYO7T22oIjIyG5vK8Y3KE5koZnrmhesICUoErISXmbJUQuEK0J6AgsnG5sLP3Z6Cm962TdYCgpFDoIT69J0CoQpzuSEh1Nua1DE5IFpItFy3nhIlF3RkCf6RCLPQGzhcEVEK1hMpP8punDOqFC7dQ66YC02cbBKoUzbbNOuKYdlp6rEWxFa13IUeiraJ5v97FfXEygyyfaJT10jUGzFVa4KB1urn8jZLHHVdQeKbFiSs0SFnoGMinHNHIrcL5wYFMW8okpWV3s4Z1CwjS/Smu2WwPWFTIrrctPxcFyBjAp9494cTd+A4q4rHofYwAXrmoCi0gRppX05jT2QQVEsS1HjpNfCiUDBL6ijNJ5py6ZXoJjPBtafIGkN82ZU5IbeNDGFE4Li0d5pmTsP56HpW1CUf5ds5Xe99xPpBIqa96OTbiJdXv6lUZ/fu7dW/AowAIXFO3LF1XQgAAAAAElFTkSuQmCC" alt="Nordic Minesteel" />
     <h1>Nordic Minesteel Macro Guide</h1>
   </div>
-  <p class="subtitle">Your reference for the SolidWorks PDM macros at Nordic Minesteel.</p>
+  <p class="subtitle" id="mgSubtitle">Your reference for the SolidWorks PDM macros at Nordic Minesteel.</p>
   <div class="badge-row">
     <div class="badge"><span>8</span> Macros</div>
     <div class="badge">SolidWorks Automation</div>
@@ -1200,6 +2245,10 @@
   </button>
   <button class="nav-tab" data-tab="start">
     🚀 Getting Started
+  </button>
+  <button class="nav-tab nav-tab-crashes" data-tab="crashes" id="crTab">
+    🔥 Crashes
+    <span class="tab-count" id="crCount">0</span>
   </button>
 </div>
 
@@ -1536,6 +2585,279 @@
   </div>
 </div><!-- /tab-start -->
 
+<!-- ══ CRASHES TAB ══ -->
+<div class="page-section" id="tab-crashes">
+  <div class="cr-section">
+    <div style="height:28px"></div>
+
+    <!-- Hero: donut duty winner -->
+    <div class="cr-hero" id="crHero">
+      <div class="cr-hero-flames"></div>
+      <div class="cr-hero-inner">
+        <div class="cr-hero-label">🍩 DONUT DUTY — <span id="crMonthLabel">this month</span></div>
+        <div class="cr-hero-winner">
+          <div class="cr-donut" aria-hidden="true">🍩</div>
+          <div class="cr-hero-text">
+            <div class="cr-hero-name" id="crWinnerName">No crashes yet</div>
+            <div class="cr-hero-sub" id="crWinnerSub">Be the first to tank SolidWorks 🎉</div>
+          </div>
+          <div class="cr-donut cr-donut-mirror" aria-hidden="true">🍩</div>
+        </div>
+        <!-- Countdown to last Friday of the month -->
+        <div class="cr-countdown" id="crCountdown">
+          <div class="cr-countdown-label">⏱ Lock-in countdown</div>
+          <div class="cr-countdown-clock" id="crCountdownClock">
+            <div class="cr-cd-unit"><span class="cr-cd-num" id="crCdDays">--</span><span class="cr-cd-lbl">days</span></div>
+            <div class="cr-cd-sep">:</div>
+            <div class="cr-cd-unit"><span class="cr-cd-num" id="crCdHours">--</span><span class="cr-cd-lbl">hrs</span></div>
+            <div class="cr-cd-sep">:</div>
+            <div class="cr-cd-unit"><span class="cr-cd-num" id="crCdMins">--</span><span class="cr-cd-lbl">min</span></div>
+          </div>
+          <div class="cr-countdown-sub" id="crCountdownSub">Last Friday of the month</div>
+        </div>
+
+        <div class="cr-hero-stats">
+          <div class="cr-stat" title="Total crashes logged this month"><span class="cr-stat-num" id="crStatMonth">0</span><span class="cr-stat-lbl">crashes</span></div>
+          <div class="cr-stat" title="Different people who crashed this month"><span class="cr-stat-num" id="crStatPeople">0</span><span class="cr-stat-lbl">victims</span></div>
+          <div class="cr-stat" title="Time since the team's last logged crash"><span class="cr-stat-num" id="crStatSince">—</span><span class="cr-stat-lbl">since last</span></div>
+          <div class="cr-stat" title="What's currently on the line"><span class="cr-stat-num" id="crStatPrize">🍩</span><span class="cr-stat-lbl" id="crStatPrizeLbl">on the line</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Log buttons -->
+    <div class="cr-log-bar">
+      <div class="cr-quicklog" id="crQuickLog">
+        <button class="cr-qlog-btn sev-minor" data-sev="minor" title="Minor — quick save-and-recover">
+          <span class="cr-qlog-emoji">😐</span>
+          <span class="cr-qlog-meta">
+            <span class="cr-qlog-lbl">Minor</span>
+            <span class="cr-qlog-sub">"ugh, save again"</span>
+          </span>
+        </button>
+        <button class="cr-qlog-btn sev-major" data-sev="major" title="Major — lost real work">
+          <span class="cr-qlog-emoji">😬</span>
+          <span class="cr-qlog-meta">
+            <span class="cr-qlog-lbl">Major</span>
+            <span class="cr-qlog-sub">"lost 10+ min"</span>
+          </span>
+        </button>
+        <button class="cr-qlog-btn sev-catastrophic" data-sev="catastrophic" title="Catastrophic — restart PC, the whole thing">
+          <span class="cr-qlog-emoji">🔥</span>
+          <span class="cr-qlog-meta">
+            <span class="cr-qlog-lbl">Catastrophic</span>
+            <span class="cr-qlog-sub">"reboot the PC"</span>
+          </span>
+        </button>
+      </div>
+      <div class="cr-log-meta">
+        <span class="cr-logas">Logging as <strong id="crLogBtnText">—</strong></span>
+        <button class="cr-log-other" id="crLogOther" title="Log a crash for a coworker">
+          Log for someone else →
+        </button>
+      </div>
+    </div>
+
+    <div class="cr-alert-strip" id="crAlertStrip">
+      <div class="cr-alert-main">
+        <div class="cr-alert-icon" aria-hidden="true">@</div>
+        <div class="cr-alert-copy">
+          <div class="cr-alert-title">Crash notifications</div>
+          <div class="cr-alert-status" id="crAlertStatus">Loading alert preference...</div>
+        </div>
+      </div>
+      <div class="cr-alert-actions">
+        <button class="cr-alert-admin admin-only" id="crAlertAdmin" type="button">Subscribers</button>
+        <button class="cr-alert-toggle" id="crAlertToggle" type="button" aria-pressed="false">Loading</button>
+      </div>
+    </div>
+
+    <!-- Rivalry callout (only visible when top 2 are tied/close) -->
+    <div class="cr-rivalry" id="crRivalry" style="display:none"></div>
+
+    <!-- Per-month tabs -->
+    <div class="cr-month-tabs" id="crMonthTabs"></div>
+
+    <!-- Podium (top 3) -->
+    <div class="cr-podium" id="crPodium">
+      <div class="cr-podium-slot cr-slot-2" data-rank="2">
+        <div class="cr-medal">🥈</div>
+        <div class="cr-podium-name">—</div>
+        <div class="cr-podium-count"><span>0</span> crashes</div>
+        <div class="cr-podium-bar"></div>
+      </div>
+      <div class="cr-podium-slot cr-slot-1" data-rank="1">
+        <div class="cr-crown">👑</div>
+        <div class="cr-medal">🥇</div>
+        <div class="cr-podium-name">—</div>
+        <div class="cr-podium-count"><span>0</span> crashes</div>
+        <div class="cr-podium-bar"></div>
+      </div>
+      <div class="cr-podium-slot cr-slot-3" data-rank="3">
+        <div class="cr-medal">🥉</div>
+        <div class="cr-podium-name">—</div>
+        <div class="cr-podium-count"><span>0</span> crashes</div>
+        <div class="cr-podium-bar"></div>
+      </div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="cr-board-wrap">
+      <div class="cr-board-head">
+        <h3>🏆 Leaderboard — <span id="crBoardMonth">—</span></h3>
+        <p class="cr-board-note">Highest count at end of month gets donut duty.</p>
+      </div>
+      <div class="cr-board" id="crBoard">
+        <div class="cr-col-head">
+          <span>#</span>
+          <span class="cr-col-name">Victim</span>
+          <span>Crashes</span>
+          <span></span>
+        </div>
+        <div class="cr-empty" id="crEmpty">
+          <span>💥</span>
+          No crashes logged yet. Hit <strong>Log a crash</strong> above.
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent crashes feed -->
+    <div class="cr-feed-wrap">
+      <div class="cr-board-head">
+        <h3>📜 Recent crashes — <span id="crFeedMonth">—</span></h3>
+        <p class="cr-board-note">Last 20 crashes for the selected month.</p>
+      </div>
+      <div class="cr-feed" id="crFeed"></div>
+    </div>
+
+    <div class="cr-rules">
+      <div class="cr-rule-item">
+        <div class="cr-rule-icon">📅</div>
+        <div><strong>Fresh every month</strong><br>Each month stands on its own — no carry-over, no grand totals. Past months stay visible so you can gloat.</div>
+      </div>
+      <div class="cr-rule-item">
+        <div class="cr-rule-icon">🍩</div>
+        <div><strong>Solo winner brings donuts</strong><br>Most crashes by the deadline → donuts for the team.</div>
+      </div>
+      <div class="cr-rule-item">
+        <div class="cr-rule-icon">🥕🍎</div>
+        <div><strong>Tie = split the snack duty</strong><br>2-way tie: one brings a 🥕 veggie tray, the other brings a 🍎 fruit tray. 3-way tie: add 🍩 donuts to the mix.</div>
+      </div>
+      <div class="cr-rule-item">
+        <div class="cr-rule-icon">⏱</div>
+        <div><strong>Deadline is the last Friday</strong><br>Standings lock at 5:00 PM on the last Friday of the month. Count at that moment wins.</div>
+      </div>
+      <div class="cr-rule-item">
+        <div class="cr-rule-icon">🙋</div>
+        <div><strong>Honor system</strong><br>Log your own crashes. Log someone else's if you see it. Admins can delete accidents.</div>
+      </div>
+    </div>
+  </div>
+</div><!-- /tab-crashes -->
+
+<!-- ══ CRASHES LOG MODAL ══ -->
+<div class="overlay cr-overlay" id="crOverlay">
+  <div class="cr-modal" id="crModal">
+    <div class="cr-modal-top"></div>
+    <div class="cr-modal-head">
+      <span style="font-size:1.6rem">💥</span>
+      <h3>Log a SolidWorks crash</h3>
+      <button class="cr-modal-close" id="crModalClose">&times;</button>
+    </div>
+    <div class="cr-modal-body">
+      <label class="cr-field">
+        <span>Who crashed?</span>
+        <input type="text" id="crUser" list="crUserList" placeholder="Your name (or a coworker's)" autocomplete="off" />
+        <datalist id="crUserList"></datalist>
+      </label>
+      <div class="cr-field">
+        <span>Severity</span>
+        <div class="cr-severity">
+          <button type="button" class="cr-sev-btn active" data-sev="minor">😐 Minor</button>
+          <button type="button" class="cr-sev-btn" data-sev="major">😬 Major</button>
+          <button type="button" class="cr-sev-btn" data-sev="catastrophic">🔥 Catastrophic</button>
+        </div>
+      </div>
+    </div>
+    <div class="cr-modal-foot">
+      <button class="cr-btn-secondary" id="crCancel">Cancel</button>
+      <button class="cr-btn-primary" id="crSubmit">💥 Log it</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CRASHES ADMIN EDIT MODAL (admin-only pencil button in feed) ══ -->
+<div class="overlay cr-overlay" id="crEditOverlay">
+  <div class="cr-modal">
+    <div class="cr-modal-top"></div>
+    <div class="cr-modal-head">
+      <span style="font-size:1.6rem">✏️</span>
+      <h3>Edit crash <span class="cr-secret-tag">· admin</span></h3>
+      <button class="cr-modal-close" id="crEditClose">&times;</button>
+    </div>
+    <div class="cr-modal-body">
+      <label class="cr-field">
+        <span>Who crashed?</span>
+        <input type="text" id="crEditUser" list="crUserList" placeholder="Name" autocomplete="off" />
+      </label>
+      <div class="cr-field">
+        <span>Severity</span>
+        <div class="cr-severity">
+          <button type="button" class="cr-esev-btn active" data-sev="minor">😐 Minor</button>
+          <button type="button" class="cr-esev-btn" data-sev="major">😬 Major</button>
+          <button type="button" class="cr-esev-btn" data-sev="catastrophic">🔥 Catastrophic</button>
+        </div>
+      </div>
+      <label class="cr-field">
+        <span>Timestamp</span>
+        <input type="datetime-local" id="crEditTime" step="60" />
+        <small style="color:var(--muted); font-size:0.74rem; margin-top:4px">
+          Stored as UTC. Leave as-is to keep the original moment.
+        </small>
+      </label>
+    </div>
+    <div class="cr-modal-foot" style="justify-content: space-between">
+      <button class="cr-btn-secondary" id="crEditDelete" style="color:#ef4444; border-color:rgba(239,68,68,0.4)">🗑 Delete</button>
+      <div style="display:flex; gap:10px">
+        <button class="cr-btn-secondary" id="crEditCancel">Cancel</button>
+        <button class="cr-btn-primary" id="crEditSave">💾 Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CRASHES ANALYTICS MODAL (hidden — type "stats" on the Crashes tab) ══ -->
+<div class="overlay cr-overlay" id="crStatsOverlay">
+  <div class="cr-modal cr-stats-modal">
+    <div class="cr-modal-top"></div>
+    <div class="cr-modal-head">
+      <span style="font-size:1.6rem">📊</span>
+      <h3>Crash analytics <span class="cr-secret-tag">· secret panel</span></h3>
+      <button class="cr-modal-close" id="crStatsClose">&times;</button>
+    </div>
+    <div class="cr-modal-body" id="crStatsBody">
+      <!-- populated by crRenderStats() -->
+    </div>
+    <div class="cr-modal-foot">
+      <span class="cr-modal-hint">Psst — type <kbd>stats</kbd> anywhere on this tab to reopen. Try <kbd>↑↑↓↓←→←→BA</kbd> too.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EASTER-EGG CHEATSHEET (press ?) ══ -->
+<div class="egg-cheat" id="eggCheat">
+  <div class="egg-cheat-card">
+    <h2>🥚 Easter eggs <span style="color:var(--muted); font-weight:500; font-size:0.85rem">· you found them</span></h2>
+    <p class="sub">A few hidden things scattered around. Mostly on the Crashes tab.</p>
+    <div class="egg-cheat-list" id="eggCheatList">
+      <!-- populated by JS so one source of truth -->
+    </div>
+    <div class="egg-cheat-foot">
+      <button class="egg-cheat-close" id="eggCheatClose">Got it</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ DETAIL MODAL ══ -->
 <div class="overlay" id="overlay">
   <div class="modal" id="modal">
@@ -1786,7 +3108,39 @@
   </div>
 </div>
 
+<!-- ══ USERS DIRECTORY MODAL ══ -->
+<div id="usersOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:275;align-items:center;justify-content:center;padding:24px">
+  <div class="admin-modal usage-panel" style="max-width:920px">
+    <h2>👥 Users</h2>
+    <p>Every Windows user seen in tickets and comments, with the display names they've used. Rename to rewrite their existing tickets and comments.</p>
+    <div class="usage-summary" id="usersSummary"></div>
+    <div class="usage-table-wrap" id="usersRows">
+      <div style="padding:18px;color:var(--muted);font-size:0.85rem">Loading...</div>
+    </div>
+    <div class="admin-actions" style="margin-top:16px">
+      <button class="btn-cancel" id="closeUsersBtn" style="flex:1">Close</button>
+      <button class="btn-save" id="refreshUsersBtn" style="flex:1">Refresh</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ ADMIN TOGGLE BUTTON ══ -->
+<button class="admin-restart admin-users admin-only" id="adminUsers" title="Manage display names">👥 Users</button>
+<div id="crAlertOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:275;align-items:center;justify-content:center;padding:24px">
+  <div class="admin-modal usage-panel">
+    <h2>Crash Notification Subscribers</h2>
+    <p>People who currently have crash notifications turned on.</p>
+    <div class="usage-summary" id="crAlertSummary"></div>
+    <div class="usage-table-wrap" id="crAlertRows">
+      <div style="padding:18px;color:var(--muted);font-size:0.85rem">Loading...</div>
+    </div>
+    <div class="admin-actions" style="margin-top:16px">
+      <button class="btn-cancel" id="closeCrAlertBtn" style="flex:1">Close</button>
+      <button class="btn-save" id="refreshCrAlertBtn" style="flex:1">Refresh</button>
+    </div>
+  </div>
+</div>
+
 <button class="admin-restart admin-usage admin-only" id="adminUsage" title="Show recent viewers">View Usage</button>
 <button class="admin-restart admin-only" id="adminRestart" title="Restart the server to apply changes">🔄 Restart Server</button>
 <button class="admin-toggle" id="adminToggle" title="Admin login">🔒</button>
@@ -2178,7 +3532,7 @@ function closeDetailModal() {
 
 document.getElementById('closeBtn').addEventListener('click', closeDetailModal);
 overlay.addEventListener('click', e => { if (e.target === overlay) closeDetailModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDetailModal(); closeAddModal(); closeTkModal(); closeCancelModal(); closeEditModal(); document.getElementById('adminOverlay').style.display='none'; document.getElementById('usageOverlay').style.display='none'; document.getElementById('lightbox').classList.remove('open'); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDetailModal(); closeAddModal(); closeTkModal(); closeCancelModal(); closeEditModal(); document.getElementById('adminOverlay').style.display='none'; document.getElementById('usageOverlay').style.display='none'; document.getElementById('usersOverlay').style.display='none'; document.getElementById('crAlertOverlay').style.display='none'; document.getElementById('lightbox').classList.remove('open'); } });
 document.addEventListener('click', e => {
   if (!e.target.closest('.emoji-picker') && !e.target.closest('.tk-comment-tool-btn')) {
     document.querySelectorAll('.emoji-picker.open').forEach(p => p.classList.remove('open'));
@@ -2542,15 +3896,150 @@ async function deleteTicket(id) {
   }
 }
 
+// Is the current user the one we've singled out for extra-annoying anti-spam?
+function pokeIsTargeted() {
+  const name = (localStorage.getItem('mgUserName') || '').trim().toLowerCase();
+  return name === 'dylan shank' || name === 'dylan lebel';
+}
+
+// On load: targeted user gets their daily per-ticket poke cap wiped EVERY
+// page load, so they can always hit the escalation ladder again.
+// (Escalation history persists — the annoying confirms/lockout still build up.)
+(function pokeResetTargetedDaily() {
+  if (!pokeIsTargeted()) return;
+  localStorage.removeItem('mgPoked');
+})();
+
+// Recent-poke history used for escalating anti-spam (global across tickets).
+function pokeRecentHistory() {
+  const raw = JSON.parse(localStorage.getItem('mgPokeHistory') || '[]');
+  const cutoff = Date.now() - 60 * 60 * 1000; // keep last hour
+  return raw.filter(ts => ts >= cutoff);
+}
+function pokeRecordPoke() {
+  const hist = pokeRecentHistory();
+  hist.push(Date.now());
+  localStorage.setItem('mgPokeHistory', JSON.stringify(hist));
+}
+function pokeCountSince(ms) {
+  const cutoff = Date.now() - ms;
+  return pokeRecentHistory().filter(ts => ts >= cutoff).length;
+}
+
+// Full-screen "calm down" lockout. Resolves after `seconds`.
+function pokeShowLockout(seconds, opts = {}) {
+  return new Promise(resolve => {
+    const o = document.createElement('div');
+    o.className = 'tk-poke-lockout';
+    const title = opts.title || 'Whoa — easy on the poke button.';
+    const msg   = opts.msg   || 'Take a breath. Dylan got the message. Several times, in fact.';
+    const emoji = opts.emoji || '☝️';
+    o.innerHTML = `
+      <div class="tk-poke-lockout-emoji">${emoji}</div>
+      <div class="tk-poke-lockout-title">${title}</div>
+      <div class="tk-poke-lockout-msg">${msg}</div>
+      <div class="tk-poke-lockout-timer" id="tkPokeLockoutTimer">${seconds}</div>
+    `;
+    document.body.appendChild(o);
+    let left = seconds;
+    const timerEl = o.querySelector('#tkPokeLockoutTimer');
+    const tick = setInterval(() => {
+      left -= 1;
+      if (timerEl) timerEl.textContent = left;
+      if (left <= 0) {
+        clearInterval(tick);
+        o.remove();
+        resolve();
+      }
+    }, 1000);
+  });
+}
+
 async function pokeTicket(id) {
   const poked = JSON.parse(localStorage.getItem('mgPoked') || '{}');
   const today = new Date().toISOString().split('T')[0];
   if (poked[id] === today) { showToast('Already poked today — try again tomorrow.', 'info'); return; }
+
+  const targeted = pokeIsTargeted();
+
+  // ── Anti-spam escalation (global across tickets) ───────────────────────
+  if (targeted) {
+    // Extra-annoying ladder for the designated spammer.
+    // 3+ pokes in 10 min → 3-minute full-screen lockout.
+    if (pokeCountSince(10 * 60 * 1000) >= 3) {
+      await pokeShowLockout(180, {
+        emoji: '☝️',
+        title: 'Nope. Sit down, Dylan Shank.',
+        msg: 'You poked. And poked. And poked. Enjoy three minutes of staring at this screen to reflect on your choices.'
+      });
+      return;
+    }
+    // Every poke gets an are-you-sure, even the first one.
+    if (!confirm('Dylan Shank — are you SURE you want to poke? (yes, we mean you)')) return;
+    // Require a typed reason — no poking "for no reason".
+    const reason = prompt('Dylan Shank, give a real reason to poke (minimum 25 characters):');
+    if (reason === null) return;
+    if (!reason || reason.trim().length < 25) {
+      alert('Not a good enough reason. Try again when you have one.');
+      return;
+    }
+    // Typed phrase gate — prevents mindless clicking-through.
+    const phrase = 'I PROMISE IT IS IMPORTANT';
+    const typed = prompt(`Type the following EXACTLY to continue:\n\n${phrase}`);
+    if (typed === null) return;
+    if (typed.trim() !== phrase) {
+      alert('Wrong. Typo? Whatever. Not poking.');
+      return;
+    }
+    // 2nd poke in 5 min → four more escalating confirms for a total of six.
+    if (pokeCountSince(5 * 60 * 1000) >= 1) {
+      if (!confirm('This is poke #2 recently. Are you REALLY sure?')) return;
+      if (!confirm('Dylan is already aware. Stop poking. Still want to?')) return;
+      if (!confirm('One more chance to back out. Last warning.')) return;
+      if (!confirm('Okay, final final confirmation. Proceed?')) return;
+    }
+    // Longer global cooldown (30s) for our friend.
+    const hist2 = pokeRecentHistory();
+    const lastPoke2 = hist2.length ? hist2[hist2.length - 1] : 0;
+    const sinceLast2 = Date.now() - lastPoke2;
+    if (sinceLast2 < 30000) {
+      const wait = Math.ceil((30000 - sinceLast2) / 1000);
+      showToast(`Dylan. No. Wait ${wait}s.`, 'info');
+      return;
+    }
+  } else {
+    // 4+ pokes in 10 min → 60s screen-cover lockout, no poke sent.
+    if (pokeCountSince(10 * 60 * 1000) >= 4) {
+      await pokeShowLockout(60);
+      return;
+    }
+    // 3+ pokes in 5 min → three escalating confirms.
+    if (pokeCountSince(5 * 60 * 1000) >= 3) {
+      if (!confirm('Are you sure you want to poke again?')) return;
+      if (!confirm('Really, really sure? Dylan is definitely aware.')) return;
+      if (!confirm('Last chance — this is the third confirmation. Still poke?')) return;
+    }
+    // 2+ pokes in 2 min → single "are you sure".
+    else if (pokeCountSince(2 * 60 * 1000) >= 2) {
+      if (!confirm('You just poked recently. Are you sure you want to poke again?')) return;
+    }
+    // Short global cooldown (10s) — prevents double-click spam.
+    const hist = pokeRecentHistory();
+    const lastPoke = hist.length ? hist[hist.length - 1] : 0;
+    const sinceLast = Date.now() - lastPoke;
+    if (sinceLast < 10000) {
+      const wait = Math.ceil((10000 - sinceLast) / 1000);
+      showToast(`Slow down — wait ${wait}s before poking again.`, 'info');
+      return;
+    }
+  }
+
   try {
     const result = await apiFetch(`/api/tickets/${id}/poke`, { method: 'PATCH', body: JSON.stringify({ windowsUser: sessionStorage.getItem('winUser') || '' }) });
     ticketEntries = result.entries;
     poked[id] = today;
     localStorage.setItem('mgPoked', JSON.stringify(poked));
+    pokeRecordPoke();
     renderTickets();
     showToast('Poke sent! Dylan has been reminded.', 'success');
   } catch (err) {
@@ -3177,30 +4666,1507 @@ async function deleteComment(ticketId, commentUser) {
   }
 }
 
+// ── Known users (Windows username → Display name) ──────────────────────
+// Add new users here as the team grows. Keys are lowercase Windows usernames
+// (the VBS launcher passes them in via ?user=USERNAME on page load).
+const KNOWN_USERS = {
+  'dlebel':      'Dylan Lebel',
+  'dshank':      'Dylan Shank',
+  'kpatel':      'Krupal Patel',
+  'barrowsmith': 'Brandon Arrowsmith',
+  'plemelin':    'Paul Lemelin'
+};
+
+function crWinUser() {
+  return (sessionStorage.getItem('winUser') || '').trim().toLowerCase();
+}
+function crKnownName() {
+  return KNOWN_USERS[crWinUser()] || null;
+}
+// Sync localStorage mgUserName from the Windows user map if we recognise
+// them. Safe to call repeatedly — only overwrites empty values or values
+// that are already one of our known mappings (so custom names survive).
+function crAutoIdentify() {
+  const known = crKnownName();
+  if (!known) return;
+  const existing = (localStorage.getItem('mgUserName') || '').trim();
+  const knownValues = Object.values(KNOWN_USERS);
+  if (!existing || knownValues.includes(existing)) {
+    localStorage.setItem('mgUserName', known);
+  }
+}
+
+// ── Crashes leaderboard ─────────────────────────────────────────────────
+// Crash email alerts are self-service. Each user toggles their own Windows
+// username, and the server stores the shared subscriber list.
+let crNotifyState = { canToggle: false, enabled: false, email: '', subscribers: 0, message: '' };
+
+function crNotifyDisplayName() {
+  return crKnownName() ||
+    (localStorage.getItem('mgUserName') || '').trim() ||
+    (sessionStorage.getItem('winUser') || '').trim();
+}
+
+function crRenderNotifyState() {
+  const status = document.getElementById('crAlertStatus');
+  const btn = document.getElementById('crAlertToggle');
+  if (!status || !btn) return;
+
+  const subscribers = Number(crNotifyState.subscribers || 0);
+  const subText = `${subscribers} subscriber${subscribers === 1 ? '' : 's'}`;
+  const canToggle = !!crNotifyState.canToggle;
+  const enabled = !!crNotifyState.enabled;
+
+  btn.disabled = !canToggle;
+  btn.classList.toggle('enabled', enabled);
+  btn.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+  btn.textContent = canToggle ? (enabled ? 'Turn off' : 'Turn on') : 'Unavailable';
+
+  if (!canToggle) {
+    status.textContent = crNotifyState.message || 'Open Macro Guide from the launcher to use alerts.';
+  } else if (enabled) {
+    status.textContent = `On for ${crNotifyState.email || crNotifyState.windowsUser} - ${subText}`;
+  } else {
+    status.textContent = `Off for you - ${subText}`;
+  }
+}
+
+async function crLoadNotifyState() {
+  const winUser = (sessionStorage.getItem('winUser') || '').trim();
+  if (!winUser) {
+    crNotifyState = {
+      canToggle: false,
+      enabled: false,
+      subscribers: 0,
+      message: 'Open Macro Guide from the launcher to use crash alerts.'
+    };
+    crRenderNotifyState();
+    return;
+  }
+  try {
+    const qs = new URLSearchParams({
+      windowsUser: winUser,
+      displayName: crNotifyDisplayName()
+    });
+    crNotifyState = await apiFetch('/api/crash-notifications/me?' + qs.toString());
+  } catch (err) {
+    crNotifyState = {
+      canToggle: false,
+      enabled: false,
+      subscribers: 0,
+      message: 'Could not load alert preference: ' + err.message
+    };
+  }
+  crRenderNotifyState();
+}
+
+async function crSetNotifyState(enabled) {
+  const btn = document.getElementById('crAlertToggle');
+  const winUser = (sessionStorage.getItem('winUser') || '').trim();
+  if (!winUser) {
+    showToast('Open Macro Guide from the launcher so alerts know your Windows user.', 'info');
+    return;
+  }
+
+  const previous = crNotifyState;
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Saving';
+  }
+  try {
+    crNotifyState = await apiFetch('/api/crash-notifications/me', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        windowsUser: winUser,
+        displayName: crNotifyDisplayName(),
+        enabled: !!enabled
+      })
+    });
+    crRenderNotifyState();
+    showToast(enabled ? 'Crash notifications turned on.' : 'Crash notifications turned off.', 'success');
+  } catch (err) {
+    crNotifyState = previous;
+    crRenderNotifyState();
+    showToast('Could not save alert preference: ' + err.message, 'error');
+  }
+}
+
+document.getElementById('crAlertToggle').addEventListener('click', () => {
+  crSetNotifyState(!crNotifyState.enabled);
+});
+
+let crashEntries = [];
+let crSelectedMonth = null;   // 'YYYY-MM' — null means pick default (current month or latest with data)
+let crSelectedSeverity = 'minor';
+const crSevEmoji = { minor: '😐', major: '😬', catastrophic: '🔥' };
+
+function crNormKey(name) {
+  return (name || '').trim().toLowerCase();
+}
+function crMonthKey(ts) {
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function crCurrentMonthKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function crMonthKeyToLabel(key, opts = {}) {
+  const [y, m] = key.split('-').map(Number);
+  const d = new Date(y, m - 1, 1);
+  return d.toLocaleString('default', { month: opts.short ? 'short' : 'long', year: 'numeric' });
+}
+// Compute the last Friday (local time) of a given month. Start at the last
+// day of the month and walk backwards until we hit a Friday (day-of-week 5).
+// Returns a Date set to 17:00 local time — when whoever loses calls it quits.
+function crLastFridayOfMonth(year, monthZeroBased) {
+  const d = new Date(year, monthZeroBased + 1, 0, 17, 0, 0, 0); // last day of month @ 5pm
+  while (d.getDay() !== 5) d.setDate(d.getDate() - 1);
+  return d;
+}
+function crCurrentLastFriday() {
+  const now = new Date();
+  return crLastFridayOfMonth(now.getFullYear(), now.getMonth());
+}
+// Describe a Date like "Friday, Apr 24" (no year)
+function crFriendlyDate(d) {
+  return d.toLocaleDateString('default', { weekday: 'long', month: 'short', day: 'numeric' });
+}
+
+// Given the tally for a month, return { winners: [names], prize: 'donut'|'split' }
+// Single leader → 🍩 donuts. Tie → spread the snack duty (veggies, fruit, donuts).
+function crResolvePrize(agg) {
+  if (!agg || agg.length === 0) return { winners: [], assignments: [] };
+  const top = agg.slice().sort((a,b) => b.count - a.count);
+  const leaderCount = top[0].count;
+  if (leaderCount === 0) return { winners: [], assignments: [] };
+  const tied = top.filter(r => r.count === leaderCount).map(r => r.name);
+  // Deterministic order so the assignment doesn't flip every refresh
+  tied.sort((a,b) => a.localeCompare(b));
+  // Prize pool grows with the tie:  1 winner = donuts only.
+  //  2-way tie = veggies + fruit. 3-way = veggies + fruit + donuts. 4+ = loop.
+  const pool2 = ['🥕 veggie tray', '🍎 fruit tray'];
+  const pool3 = ['🥕 veggie tray', '🍎 fruit tray', '🍩 donuts'];
+  let pool;
+  if (tied.length === 1)      pool = ['🍩 donuts'];
+  else if (tied.length === 2) pool = pool2;
+  else                        pool = pool3;
+  const assignments = tied.map((name, i) => ({ name, prize: pool[i % pool.length] }));
+  return { winners: tied, assignments, leaderCount };
+}
+function crRelTime(ts) {
+  const t = new Date(ts).getTime();
+  if (isNaN(t)) return '—';
+  const diff = (Date.now() - t) / 1000;
+  // Guard against bad/future timestamps — don't misreport as "just now".
+  if (diff < 0)      return new Date(ts).toLocaleDateString();
+  if (diff < 60)     return 'just now';
+  if (diff < 3600)   return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400)  return Math.floor(diff/3600) + 'h ago';
+  if (diff < 604800) return Math.floor(diff/86400) + 'd ago';
+  return new Date(ts).toLocaleDateString();
+}
+
+// Group entries by month, aggregate per person within each month.
+// Each row now carries a severity breakdown and the full entry list so we can
+// derive achievements (hat-tricks, back-to-back, early-bird, etc.).
+function crAggregateMonth(monthKey) {
+  const byKey = new Map();
+  for (const e of crashEntries) {
+    if (crMonthKey(e.timestamp) !== monthKey) continue;
+    const key = crNormKey(e.user);
+    if (!key) continue;
+    if (!byKey.has(key)) {
+      byKey.set(key, {
+        name: e.user.trim(), count: 0, lastTs: null,
+        sev: { minor: 0, major: 0, catastrophic: 0 },
+        entries: []
+      });
+    }
+    const row = byKey.get(key);
+    row.count += 1;
+    const sev = (e.severity || 'minor').toLowerCase();
+    if (row.sev[sev] === undefined) row.sev.minor += 1;
+    else row.sev[sev] += 1;
+    row.entries.push(e);
+    if (!row.lastTs || new Date(e.timestamp) > new Date(row.lastTs)) {
+      row.lastTs = e.timestamp;
+      row.name = e.user.trim();
+    }
+  }
+  return Array.from(byKey.values());
+}
+
+// ── Achievement detection ─────────────────────────────────────────────────
+// Given a person's entries for a month, return an array of achievement badges
+// they've earned. Each badge: { emoji, name, desc, cls? }.
+function crComputeAchievements(row, allMonthAgg, previousMonthKey) {
+  const out = [];
+  const entries = (row.entries || []).slice().sort(
+    (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+  );
+  if (entries.length === 0) return out;
+
+  // 🔥 Flamethrower — at least one catastrophic this month
+  if (row.sev.catastrophic > 0) {
+    out.push({
+      emoji: '🔥', name: 'Flamethrower',
+      desc: `${row.sev.catastrophic} catastrophic crash${row.sev.catastrophic === 1 ? '' : 'es'} this month`,
+      cls: 'cr-achv-fire'
+    });
+  }
+
+  // 🌅 Early Bird — crashed before 9am local time
+  if (entries.some(e => new Date(e.timestamp).getHours() < 9)) {
+    out.push({ emoji: '🌅', name: 'Early Bird', desc: 'Crashed before 9am — dedication.' });
+  }
+
+  // 🌙 Night Owl — crashed after 5pm local time
+  if (entries.some(e => new Date(e.timestamp).getHours() >= 17)) {
+    out.push({ emoji: '🌙', name: 'Night Owl', desc: 'Crashed after 5pm — still going.' });
+  }
+
+  // 🎯 Hat Trick — 3+ crashes in a single calendar day
+  const byDay = new Map();
+  for (const e of entries) {
+    const d = new Date(e.timestamp);
+    const k = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+    byDay.set(k, (byDay.get(k) || 0) + 1);
+  }
+  const maxDay = Math.max(...byDay.values());
+  if (maxDay >= 3) {
+    out.push({ emoji: '🎯', name: 'Hat Trick', desc: `${maxDay} crashes in one day` });
+  }
+
+  // 🥊 Back-to-Back — two crashes within 60 minutes
+  let b2b = false;
+  for (let i = 1; i < entries.length && !b2b; i++) {
+    const diff = new Date(entries[i].timestamp) - new Date(entries[i-1].timestamp);
+    if (diff >= 0 && diff <= 60 * 60 * 1000) b2b = true;
+  }
+  if (b2b) {
+    out.push({ emoji: '🥊', name: 'Back-to-Back', desc: 'Two crashes within an hour' });
+  }
+
+  // 👑 Repeat Offender — won donut duty last month too
+  if (previousMonthKey) {
+    const prevAgg = crAggregateMonth(previousMonthKey);
+    const prevWinners = crResolvePrize(prevAgg).winners;
+    if (prevWinners.includes(row.name)) {
+      out.push({
+        emoji: '👑', name: 'Repeat Offender',
+        desc: 'Donut duty last month too — rough.',
+        cls: 'cr-achv-gold'
+      });
+    }
+  }
+
+  // 💀 Solo Act — only person to crash this month (so far)
+  if (allMonthAgg.length === 1 && row.count >= 3) {
+    out.push({ emoji: '💀', name: 'Solo Act', desc: 'Only crasher this month so far.' });
+  }
+
+  return out;
+}
+
+// Get the previous month key relative to a given 'YYYY-MM' string
+function crPreviousMonthKey(monthKey) {
+  const [y, m] = monthKey.split('-').map(Number);
+  const d = new Date(y, m - 1, 1);
+  d.setMonth(d.getMonth() - 1);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+
+// Build severity pips HTML for a row
+function crSevPipsHtml(sev) {
+  const parts = [];
+  if (sev.minor)        parts.push(`<span class="cr-sev-pip minor" title="${sev.minor} minor">😐 ${sev.minor}</span>`);
+  if (sev.major)        parts.push(`<span class="cr-sev-pip major" title="${sev.major} major">😬 ${sev.major}</span>`);
+  if (sev.catastrophic) parts.push(`<span class="cr-sev-pip catastrophic" title="${sev.catastrophic} catastrophic">🔥 ${sev.catastrophic}</span>`);
+  return parts.length ? `<div class="cr-sev-pips">${parts.join('')}</div>` : '';
+}
+
+// Build achievement-badge HTML for a row
+function crAchvHtml(achvs) {
+  if (!achvs.length) return '';
+  return `<span class="cr-achv-row">` + achvs.map(a =>
+    `<span class="cr-achv ${a.cls || ''}" title="${escHtml(a.name)} — ${escHtml(a.desc)}">${a.emoji}</span>`
+  ).join('') + `</span>`;
+}
+
+// Human-friendly duration for "since last crash" (ms → "3d 4h", "42m", etc.)
+function crShortDuration(ms) {
+  if (ms < 0) return '—';
+  const mins = Math.floor(ms / 60000);
+  if (mins < 1)   return '<1m';
+  if (mins < 60)  return mins + 'm';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24)   return hrs + 'h';
+  const days = Math.floor(hrs / 24);
+  if (days < 60)  return days + 'd';
+  return Math.floor(days / 30) + 'mo';
+}
+
+function crAllMonthKeys() {
+  const set = new Set(crashEntries.map(c => crMonthKey(c.timestamp)));
+  set.add(crCurrentMonthKey()); // always show the current month even if no crashes yet
+  return Array.from(set).sort(); // ascending: oldest → newest
+}
+
+function renderMonthTabs() {
+  const tabs = document.getElementById('crMonthTabs');
+  const months = crAllMonthKeys();
+  const currentKey = crCurrentMonthKey();
+  if (crSelectedMonth === null || !months.includes(crSelectedMonth)) {
+    crSelectedMonth = currentKey;
+  }
+  tabs.innerHTML = months.map(k => {
+    const count = crashEntries.filter(c => crMonthKey(c.timestamp) === k).length;
+    const isCurrent = k === currentKey;
+    const isActive  = k === crSelectedMonth;
+    return `
+      <button class="cr-month-tab${isActive ? ' active' : ''}${isCurrent ? ' current' : ''}" data-month="${k}">
+        <span>${escHtml(crMonthKeyToLabel(k, { short: true }))}</span>
+        <span class="cr-month-count">${count} crash${count === 1 ? '' : 'es'}</span>
+      </button>
+    `;
+  }).join('');
+  tabs.querySelectorAll('.cr-month-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      crSelectedMonth = btn.dataset.month;
+      renderCrashes();
+    });
+  });
+}
+
+function renderCrashes() {
+  document.getElementById('crCount').textContent = crashEntries.length;
+
+  // Refresh the primary button label (auto-ID or remembered name)
+  crUpdateLogBtn();
+
+  // Build month tabs first (also resolves crSelectedMonth)
+  renderMonthTabs();
+
+  const monthKey = crSelectedMonth;
+  const isCurrent = monthKey === crCurrentMonthKey();
+  const monthLabel = crMonthKeyToLabel(monthKey);
+  document.getElementById('crMonthLabel').textContent = monthLabel;
+  document.getElementById('crBoardMonth').textContent = monthLabel;
+  document.getElementById('crFeedMonth').textContent = monthLabel;
+
+  const agg = crAggregateMonth(monthKey);
+  const total = crashEntries.filter(c => crMonthKey(c.timestamp) === monthKey).length;
+  const victims = agg.length;
+
+  document.getElementById('crStatMonth').textContent = total;
+  document.getElementById('crStatPeople').textContent = victims;
+
+  // "Since last team crash" stat — looks across ALL crashes (not just month).
+  // Skip future-dated entries (historical seed data can drift past "now") so
+  // a 2026-04-27 entry doesn't turn the delta negative and render as "—".
+  const sinceEl = document.getElementById('crStatSince');
+  if (sinceEl) {
+    const nowMs = Date.now();
+    const allTs = crashEntries
+      .map(c => new Date(c.timestamp).getTime())
+      .filter(t => !isNaN(t) && t <= nowMs);
+    if (allTs.length === 0) {
+      sinceEl.textContent = '—';
+    } else {
+      const lastGlobal = Math.max(...allTs);
+      sinceEl.textContent = crShortDuration(nowMs - lastGlobal);
+    }
+  }
+
+  // Hero winner + prize (handles ties → veggie + fruit etc.)
+  const prizeInfo = crResolvePrize(agg);
+  const winnerName = document.getElementById('crWinnerName');
+  const winnerSub  = document.getElementById('crWinnerSub');
+  const prizeStat  = document.getElementById('crStatPrize');
+  const prizeLbl   = document.getElementById('crStatPrizeLbl');
+
+  prizeStat.style.fontSize = ''; // reset — tie-mode inflates it
+
+  if (prizeInfo.assignments.length > 0) {
+    if (prizeInfo.assignments.length === 1) {
+      // Solo leader — donuts
+      const leaderName = prizeInfo.assignments[0].name;
+      const leaderRow = agg.find(r => crNormKey(r.name) === crNormKey(leaderName));
+      const hasCatastrophic = leaderRow && leaderRow.sev.catastrophic > 0;
+      winnerName.innerHTML = escHtml(leaderName) + (hasCatastrophic
+        ? ' <span class="cr-catking">🔥 CATASTROPHE KING</span>' : '');
+      winnerSub.textContent = isCurrent
+        ? `${prizeInfo.leaderCount} crash${prizeInfo.leaderCount === 1 ? '' : 'es'} — donuts are on you if nothing changes 🍩`
+        : `${prizeInfo.leaderCount} crashes — brought 🍩 donuts`;
+      prizeStat.textContent = '🍩';
+      prizeLbl.textContent = isCurrent ? 'on the line' : 'brought';
+    } else {
+      // Tie — spread the snack duty
+      winnerName.textContent = prizeInfo.assignments.map(a => a.name).join(' · ');
+      winnerSub.innerHTML = prizeInfo.assignments
+        .map(a => `<strong>${escHtml(a.name)}</strong> → ${escHtml(a.prize)}`)
+        .join(' &nbsp;·&nbsp; ');
+      // Show all prizes in the stat (emojis only, compact)
+      const emojis = prizeInfo.assignments.map(a => a.prize.split(' ')[0]).join(' ');
+      prizeStat.textContent = emojis;
+      prizeStat.style.fontSize = '1.3rem';
+      prizeLbl.textContent = isCurrent ? `${prizeInfo.assignments.length}-way tie` : `${prizeInfo.assignments.length}-way tie · brought`;
+    }
+  } else {
+    winnerName.textContent = 'No crashes yet';
+    winnerSub.textContent = isCurrent ? 'Be the first to tank SolidWorks 🎉' : 'Nothing logged for this month.';
+    prizeStat.textContent = '🍩';
+    prizeLbl.textContent = 'on the line';
+  }
+
+  // Show/hide countdown based on whether we're looking at the current month
+  const cd = document.getElementById('crCountdown');
+  cd.style.display = isCurrent ? '' : 'none';
+  if (isCurrent) crUpdateCountdown();
+
+  // Podium (top 3 for the selected month)
+  const podium = [...agg].sort((a,b) => b.count - a.count).slice(0, 3);
+  const slots = document.querySelectorAll('.cr-podium-slot');
+  const order = [1, 0, 2]; // slot-2 (rank 2), slot-1 (rank 1), slot-3 (rank 3)
+  slots.forEach((slot, i) => {
+    const entry = podium[order[i]];
+    const nameEl = slot.querySelector('.cr-podium-name');
+    const countEl = slot.querySelector('.cr-podium-count span');
+    if (entry && entry.count > 0) {
+      nameEl.textContent = entry.name;
+      countEl.textContent = entry.count;
+      slot.classList.remove('empty');
+    } else {
+      nameEl.textContent = '—';
+      countEl.textContent = '0';
+      slot.classList.add('empty');
+    }
+  });
+
+  // Leaderboard table (selected month)
+  const board = document.getElementById('crBoard');
+  const header = board.querySelector('.cr-col-head');
+  board.innerHTML = '';
+  board.appendChild(header);
+
+  const sorted = [...agg].sort((a,b) =>
+    b.count - a.count ||
+    (new Date(b.lastTs) - new Date(a.lastTs))
+  );
+  const leaderCount = sorted[0] ? sorted[0].count : 0;
+  const me = (localStorage.getItem('mgUserName') || '').trim().toLowerCase();
+  const prevMonthKey = crPreviousMonthKey(monthKey);
+
+  // ── Rivalry callout (only for current month, when top 2 are close) ──
+  const rivalry = document.getElementById('crRivalry');
+  if (isCurrent && sorted.length >= 2) {
+    const first = sorted[0], second = sorted[1];
+    const gap = first.count - second.count;
+    if (gap <= 1 && first.count > 0) {
+      const text = gap === 0
+        ? `<strong>${escHtml(first.name)}</strong> &amp; <strong>${escHtml(second.name)}</strong> tied at <strong>${first.count}</strong> — whoever crashes next takes the lead.`
+        : `<strong>${escHtml(first.name)}</strong> leads <strong>${escHtml(second.name)}</strong> by just <strong>1</strong> — one slip and they swap.`;
+      rivalry.innerHTML = `<span class="cr-rivalry-icon">🥊</span><span>Tight race — ${text}</span>`;
+      rivalry.style.display = '';
+    } else {
+      rivalry.style.display = 'none';
+    }
+  } else {
+    rivalry.style.display = 'none';
+  }
+
+  if (sorted.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'cr-empty';
+    empty.innerHTML = `<span>💥</span>No crashes for ${escHtml(monthLabel)}.${isCurrent ? ' Hit <strong>Log a crash</strong> above.' : ''}`;
+    board.appendChild(empty);
+  } else {
+    sorted.forEach((row, idx) => {
+      const rank = idx + 1;
+      const isMe = crNormKey(row.name) === me;
+      const countClass = row.count === leaderCount && leaderCount > 0 ? 'leading' : '';
+      const rankClass = rank <= 3 ? `cr-rank-${rank}` : '';
+      const achvs = crComputeAchievements(row, agg, prevMonthKey);
+      const sevHtml = crSevPipsHtml(row.sev);
+      const rowEl = document.createElement('div');
+      rowEl.className = 'cr-row' + (isMe ? ' me' : '');
+      rowEl.innerHTML = `
+        <div class="cr-rank ${rankClass}">${rank}</div>
+        <div>
+          <div class="cr-row-name">${escHtml(row.name)}${isMe ? ' <span style="color:var(--accent);font-size:0.75rem">(you)</span>' : ''}${crAchvHtml(achvs)}</div>
+          <div class="cr-row-meta">Last crash ${row.lastTs ? crRelTime(row.lastTs) : '—'}</div>
+          ${sevHtml}
+        </div>
+        <div style="text-align:center"><span class="cr-row-count ${countClass}">${row.count}</span></div>
+        <div></div>
+      `;
+      board.appendChild(rowEl);
+    });
+  }
+
+  // Recent feed (last 20 of the selected month, newest first)
+  const feed = document.getElementById('crFeed');
+  const recent = crashEntries
+    .filter(c => crMonthKey(c.timestamp) === monthKey)
+    .sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp))
+    .slice(0, 20);
+  const isAdmin = document.body.classList.contains('is-admin');
+  if (recent.length === 0) {
+    feed.innerHTML = `<div class="cr-empty" style="padding:20px"><span>📭</span>Nothing logged for ${escHtml(monthLabel)}.</div>`;
+  } else {
+    feed.innerHTML = recent.map(c => {
+      const sev = crSevEmoji[c.severity] || '😐';
+      const sevLbl = (c.severity || 'minor');
+      const adminBtns = isAdmin ? `
+        <button class="cr-feed-edit" onclick="crOpenEditModal(${c.id})" title="Edit (admin)">✏️</button>
+        <button class="cr-feed-del"  onclick="deleteCrash(${c.id})" title="Delete (admin)">🗑</button>
+      ` : '';
+      return `
+        <div class="cr-feed-item" data-sev="${escHtml(sevLbl)}">
+          <span class="cr-feed-sev">${sev}</span>
+          <div class="cr-feed-body">
+            <div class="cr-feed-line"><strong>${escHtml(c.user)}</strong> had a <span class="cr-feed-sevlbl cr-feed-sevlbl-${escHtml(sevLbl)}">${escHtml(sevLbl)}</span> crash</div>
+          </div>
+          <span class="cr-feed-time" title="${escHtml(new Date(c.timestamp).toLocaleString())}">${crRelTime(c.timestamp)}</span>
+          ${adminBtns}
+        </div>
+      `;
+    }).join('');
+  }
+
+  // User datalist for the log form (all known crashers across all months)
+  const dl = document.getElementById('crUserList');
+  if (dl) {
+    const names = Array.from(new Set(crashEntries.map(c => (c.user || '').trim()).filter(Boolean))).sort();
+    dl.innerHTML = names.map(n => `<option value="${escHtml(n)}">`).join('');
+  }
+}
+
+// Update the countdown clock — called from renderCrashes and on a 30s tick.
+function crUpdateCountdown() {
+  const cd = document.getElementById('crCountdown');
+  if (!cd) return;
+  const deadline = crCurrentLastFriday();
+  const now = new Date();
+  const ms = deadline.getTime() - now.getTime();
+
+  const dEl = document.getElementById('crCdDays');
+  const hEl = document.getElementById('crCdHours');
+  const mEl = document.getElementById('crCdMins');
+  const sub = document.getElementById('crCountdownSub');
+  const clock = document.getElementById('crCountdownClock');
+
+  cd.classList.remove('urgent', 'final-day', 'locked');
+
+  if (ms <= 0) {
+    // Deadline passed — winner locked in for the month
+    clock.innerHTML = '<div class="cr-countdown-locked-text">🔒 Locked in — winner decided</div>';
+    sub.textContent = `Deadline was ${crFriendlyDate(deadline)} · results final`;
+    cd.classList.add('locked');
+    return;
+  }
+
+  const days  = Math.floor(ms / 86400000);
+  const hours = Math.floor((ms % 86400000) / 3600000);
+  const mins  = Math.floor((ms % 3600000) / 60000);
+
+  // Restore the 3-cell clock if a previous render replaced it
+  if (!dEl) {
+    clock.innerHTML = `
+      <div class="cr-cd-unit"><span class="cr-cd-num" id="crCdDays">--</span><span class="cr-cd-lbl">days</span></div>
+      <div class="cr-cd-sep">:</div>
+      <div class="cr-cd-unit"><span class="cr-cd-num" id="crCdHours">--</span><span class="cr-cd-lbl">hrs</span></div>
+      <div class="cr-cd-sep">:</div>
+      <div class="cr-cd-unit"><span class="cr-cd-num" id="crCdMins">--</span><span class="cr-cd-lbl">min</span></div>
+    `;
+  }
+  document.getElementById('crCdDays').textContent  = String(days).padStart(2,'0');
+  document.getElementById('crCdHours').textContent = String(hours).padStart(2,'0');
+  document.getElementById('crCdMins').textContent  = String(mins).padStart(2,'0');
+
+  sub.textContent = `Deadline: ${crFriendlyDate(deadline)} at 5:00 PM`;
+
+  if (days === 0 && hours < 12) {
+    cd.classList.add('final-day', 'urgent');
+  } else if (days <= 1) {
+    cd.classList.add('urgent');
+  }
+}
+
+// Tick every 30 seconds so the clock feels live without hammering the CPU.
+setInterval(crUpdateCountdown, 30000);
+
+function crShowConfetti() {
+  const container = document.createElement('div');
+  container.className = 'cr-confetti';
+  const chars = ['🍩','💥','🔥','⭐','🎉','🍩','💫'];
+  for (let i = 0; i < 40; i++) {
+    const s = document.createElement('span');
+    s.textContent = chars[Math.floor(Math.random() * chars.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.animationDuration = (2 + Math.random() * 2) + 's';
+    s.style.animationDelay = (Math.random() * 0.4) + 's';
+    s.style.fontSize = (1 + Math.random() * 1.2) + 'rem';
+    container.appendChild(s);
+  }
+  document.body.appendChild(container);
+  setTimeout(() => container.remove(), 5000);
+}
+
+// Shared crash-submit routine. Sends to server, updates UI, shows confetti.
+async function crSubmitCrash({ user, severity }) {
+  try {
+    const payload = {
+      user,
+      severity: severity || 'minor',
+      windowsUser: sessionStorage.getItem('winUser') || '',
+      createdBy: localStorage.getItem('mgUserName') || user,
+      timestamp: new Date().toISOString()
+    };
+    const res = await apiFetch('/api/crashes/add', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    crashEntries = res.entries || [];
+    if (!localStorage.getItem('mgUserName')) {
+      localStorage.setItem('mgUserName', user);
+    }
+    renderCrashes();
+    crShowConfetti();
+    showToast(`💥 Crash logged for ${user}`, 'success');
+    return true;
+  } catch (err) {
+    showToast('Could not log crash: ' + err.message, 'error');
+    return false;
+  }
+}
+
+// Update the "Logging as X" label to reflect the known user (or hint at setup).
+function crUpdateLogBtn() {
+  const name = crKnownName() || (localStorage.getItem('mgUserName') || '').trim();
+  const text = document.getElementById('crLogBtnText');
+  if (!text) return;
+  if (name) {
+    text.textContent = name;
+    document.body.classList.add('cr-has-user');
+  } else {
+    text.textContent = 'unknown — click a button, we\'ll ask';
+    document.body.classList.remove('cr-has-user');
+  }
+}
+
+// Open the modal (used for "someone else" or first-time unknown users).
+function crOpenModal(prefill, severity) {
+  document.getElementById('crUser').value = prefill || '';
+  crSelectedSeverity = severity || 'minor';
+  document.querySelectorAll('.cr-sev-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.sev === crSelectedSeverity);
+  });
+  crOverlay.classList.add('open');
+  setTimeout(() => document.getElementById('crUser').focus(), 50);
+}
+
+// Severity quick-log buttons: if we know you, insta-log. Otherwise open modal
+// with that severity pre-selected so first-time users don't lose their tap.
+const crOverlay = document.getElementById('crOverlay');
+document.querySelectorAll('#crQuickLog .cr-qlog-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const sev = btn.dataset.sev || 'minor';
+    const me = crKnownName() || (localStorage.getItem('mgUserName') || '').trim();
+    // quick squish feedback
+    btn.animate(
+      [{ transform: 'scale(1)' }, { transform: 'scale(0.92)' }, { transform: 'scale(1)' }],
+      { duration: 180, easing: 'ease-out' }
+    );
+    if (me) {
+      crSubmitCrash({ user: me, severity: sev });
+    } else {
+      crOpenModal('', sev);
+    }
+  });
+});
+
+// "Log for someone else" always opens the modal blank so you type a coworker.
+document.getElementById('crLogOther').addEventListener('click', () => crOpenModal('', 'minor'));
+
+document.getElementById('crModalClose').addEventListener('click', () => crOverlay.classList.remove('open'));
+document.getElementById('crCancel').addEventListener('click', () => crOverlay.classList.remove('open'));
+crOverlay.addEventListener('click', (e) => { if (e.target === crOverlay) crOverlay.classList.remove('open'); });
+document.querySelectorAll('.cr-sev-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.cr-sev-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    crSelectedSeverity = btn.dataset.sev;
+  });
+});
+
+// Modal submit
+document.getElementById('crSubmit').addEventListener('click', async () => {
+  const user = document.getElementById('crUser').value.trim();
+  if (!user) {
+    showToast('Enter who crashed.', 'info');
+    document.getElementById('crUser').focus();
+    return;
+  }
+  const ok = await crSubmitCrash({ user, severity: crSelectedSeverity });
+  if (ok) crOverlay.classList.remove('open');
+});
+
+// ──────────────────────────────────────────────────────────────────────────
+// COOL STUFF — Easter eggs and hidden features (Konami, stats, donut overload)
+// ──────────────────────────────────────────────────────────────────────────
+
+// ── Konami code: ↑↑↓↓←→←→BA triggers crash-fest ────────────────────────
+const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+let crKonamiBuffer = [];
+document.addEventListener('keydown', (e) => {
+  // Skip if user is typing in a field
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+  const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  crKonamiBuffer.push(key);
+  if (crKonamiBuffer.length > KONAMI.length) crKonamiBuffer.shift();
+  if (crKonamiBuffer.length === KONAMI.length &&
+      crKonamiBuffer.every((k, i) => k === KONAMI[i])) {
+    crKonamiBuffer = [];
+    crTriggerKonami();
+  }
+});
+
+function crTriggerKonami() {
+  document.body.classList.add('cr-konami');
+  setTimeout(() => document.body.classList.remove('cr-konami'), 1200);
+  // Triple confetti burst
+  crShowConfetti();
+  setTimeout(crShowConfetti, 400);
+  setTimeout(crShowConfetti, 800);
+  // Banner
+  const banner = document.createElement('div');
+  banner.className = 'cr-konami-banner';
+  banner.textContent = '🔥 CRASH FEST UNLOCKED 🔥';
+  document.body.appendChild(banner);
+  setTimeout(() => banner.remove(), 3200);
+  try { showToast('You found the easter egg! 🎉', 'success'); } catch {}
+}
+
+// ── "stats" typed on the page opens the analytics modal ────────────────
+let crStatsBuffer = '';
+document.addEventListener('keydown', (e) => {
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+  if (e.key.length !== 1) return;
+  crStatsBuffer = (crStatsBuffer + e.key.toLowerCase()).slice(-6);
+  if (crStatsBuffer.endsWith('stats')) {
+    crStatsBuffer = '';
+    crOpenStats();
+  }
+});
+
+function crOpenStats() {
+  crRenderStats();
+  document.getElementById('crStatsOverlay').classList.add('open');
+}
+document.getElementById('crStatsClose').addEventListener('click',
+  () => document.getElementById('crStatsOverlay').classList.remove('open'));
+document.getElementById('crStatsOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'crStatsOverlay') e.target.classList.remove('open');
+});
+
+function crRenderStats() {
+  const body = document.getElementById('crStatsBody');
+  const all = crashEntries;
+  if (all.length === 0) {
+    body.innerHTML = `<div class="cr-empty"><span>📭</span>No data yet — go crash something.</div>`;
+    return;
+  }
+
+  // Top-row stat cards
+  const total = all.length;
+  const catas = all.filter(c => c.severity === 'catastrophic').length;
+  const majors = all.filter(c => c.severity === 'major').length;
+  const uniqUsers = new Set(all.map(c => crNormKey(c.user))).size;
+  const monthsTracked = new Set(all.map(c => crMonthKey(c.timestamp))).size;
+
+  // Hour-of-day histogram (0-23)
+  const hours = Array(24).fill(0);
+  for (const c of all) hours[new Date(c.timestamp).getHours()]++;
+  const maxH = Math.max(...hours, 1);
+
+  // Day-of-week (Mon=0 .. Sun=6)
+  const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const days = Array(7).fill(0);
+  for (const c of all) {
+    const d = new Date(c.timestamp).getDay(); // 0=Sun
+    const idx = d === 0 ? 6 : d - 1;
+    days[idx]++;
+  }
+  const maxD = Math.max(...days, 1);
+
+  // Biggest single-day pileup
+  const byDay = new Map();
+  for (const c of all) {
+    const d = new Date(c.timestamp);
+    const k = d.toLocaleDateString('default', { month: 'short', day: 'numeric', year: 'numeric' });
+    byDay.set(k, (byDay.get(k) || 0) + 1);
+  }
+  let worstDay = null, worstCount = 0;
+  byDay.forEach((n, k) => { if (n > worstCount) { worstCount = n; worstDay = k; } });
+
+  // Longest streak of consecutive days with crashes
+  const dayKeys = Array.from(new Set(all.map(c => {
+    const d = new Date(c.timestamp);
+    return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+  }))).sort((a,b) => {
+    const [ya,ma,da] = a.split('-').map(Number);
+    const [yb,mb,db] = b.split('-').map(Number);
+    return new Date(ya,ma,da) - new Date(yb,mb,db);
+  });
+  let longestStreak = 1, curStreak = 1;
+  for (let i = 1; i < dayKeys.length; i++) {
+    const [yp,mp,dp] = dayKeys[i-1].split('-').map(Number);
+    const [yc,mc,dc] = dayKeys[i].split('-').map(Number);
+    const prev = new Date(yp,mp,dp);
+    const cur  = new Date(yc,mc,dc);
+    const diff = Math.round((cur - prev) / 86400000);
+    if (diff === 1) { curStreak++; longestStreak = Math.max(longestStreak, curStreak); }
+    else curStreak = 1;
+  }
+  if (dayKeys.length === 0) longestStreak = 0;
+
+  // Last 30 days sparkline
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const spark = Array(30).fill(0);
+  const sparkLabels = [];
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - (29 - i));
+    sparkLabels.push(d);
+  }
+  for (const c of all) {
+    const d = new Date(c.timestamp);
+    d.setHours(0,0,0,0);
+    const diff = Math.round((today - d) / 86400000);
+    if (diff >= 0 && diff < 30) spark[29 - diff]++;
+  }
+  const maxS = Math.max(...spark, 1);
+  // Build an SVG path + area fill
+  const W = 560, H = 60, PAD = 4;
+  const stepX = (W - PAD*2) / 29;
+  const points = spark.map((v, i) => {
+    const x = PAD + i * stepX;
+    const y = PAD + (H - PAD*2) * (1 - v / maxS);
+    return [x, y];
+  });
+  const line = points.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  const area = line + ` L${points[points.length-1][0].toFixed(1)} ${H-PAD} L${points[0][0].toFixed(1)} ${H-PAD} Z`;
+  const sparkTotal = spark.reduce((a,b)=>a+b,0);
+  const sparkPeakIdx = spark.indexOf(maxS);
+  const peakDate = sparkLabels[sparkPeakIdx].toLocaleDateString('default',{month:'short',day:'numeric'});
+  const sparkMarker = spark[sparkPeakIdx] > 0
+    ? `<circle cx="${points[sparkPeakIdx][0].toFixed(1)}" cy="${points[sparkPeakIdx][1].toFixed(1)}" r="3.5" fill="#ef4444" stroke="#fff" stroke-width="1.5"><title>Peak: ${spark[sparkPeakIdx]} on ${peakDate}</title></circle>`
+    : '';
+
+  body.innerHTML = `
+    <div class="cr-stats-grid">
+      <div class="cr-stat-card"><div class="cr-stat-card-num">${total}</div><div class="cr-stat-card-lbl">Total crashes</div></div>
+      <div class="cr-stat-card"><div class="cr-stat-card-num">${uniqUsers}</div><div class="cr-stat-card-lbl">Unique victims</div></div>
+      <div class="cr-stat-card"><div class="cr-stat-card-num">${monthsTracked}</div><div class="cr-stat-card-lbl">Months tracked</div></div>
+      <div class="cr-stat-card"><div class="cr-stat-card-num">${majors}</div><div class="cr-stat-card-lbl">Major 😬</div></div>
+      <div class="cr-stat-card"><div class="cr-stat-card-num">${catas}</div><div class="cr-stat-card-lbl">Catastrophic 🔥</div></div>
+      <div class="cr-stat-card"><div class="cr-stat-card-num">${longestStreak}d</div><div class="cr-stat-card-lbl">Longest streak</div></div>
+    </div>
+
+    <div class="cr-stats-section egg-sparkline-wrap">
+      <h4>📈 Last 30 days — ${sparkTotal} crash${sparkTotal===1?'':'es'}${spark[sparkPeakIdx] > 0 ? `  ·  peak ${spark[sparkPeakIdx]} on ${escHtml(peakDate)}` : ''}</h4>
+      <svg class="egg-sparkline" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="30-day crash sparkline">
+        <defs>
+          <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#6366f1" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#6366f1" stop-opacity="0.02"/>
+          </linearGradient>
+        </defs>
+        <path d="${area}" fill="url(#sparkGrad)" stroke="none"/>
+        <path d="${line}" fill="none" stroke="#6366f1" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+        ${sparkMarker}
+      </svg>
+    </div>
+
+    <div class="cr-stats-section">
+      <h4>⏰ Crashes by hour of day</h4>
+      <div class="cr-histo-wrap">
+        <div class="cr-histo" style="grid-template-columns: repeat(24, 1fr);">
+          ${hours.map((v, i) => {
+            const pct = Math.round((v / maxH) * 100);
+            const lbl = (i % 3 === 0) ? `<span class="cr-histo-lbl">${i}</span>` : '';
+            return `<div class="cr-histo-bar" style="height:${Math.max(pct, 2)}%" title="${i}:00 — ${v} crash${v===1?'':'es'}">${lbl}</div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="cr-stats-section">
+      <h4>📅 Crashes by weekday</h4>
+      ${dayNames.map((n, i) => `
+        <div class="cr-weekday-row">
+          <div class="cr-weekday-name">${n}</div>
+          <div class="cr-weekday-bar-wrap"><div class="cr-weekday-bar" style="width:${(days[i]/maxD)*100}%"></div></div>
+          <div class="cr-weekday-count">${days[i]}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    ${worstDay ? `
+      <div class="cr-stats-section">
+        <h4>💥 Biggest single-day pileup</h4>
+        <div style="font-size:0.95rem; color:var(--text);">
+          <strong>${escHtml(worstDay)}</strong> — ${worstCount} crash${worstCount===1?'':'es'} in one day.
+        </div>
+      </div>
+    ` : ''}
+  `;
+}
+
+// ── Click the hero donut 8 times for CRASH OVERLOAD ─────────────────────
+let crDonutClicks = 0;
+let crDonutTimer = null;
+document.querySelectorAll('.cr-hero .cr-donut').forEach(d => {
+  d.addEventListener('click', () => {
+    crDonutClicks++;
+    if (crDonutTimer) clearTimeout(crDonutTimer);
+    crDonutTimer = setTimeout(() => { crDonutClicks = 0; }, 2000);
+    // gentle shake per click
+    d.animate(
+      [{ transform: 'scale(1) rotate(0)' }, { transform: 'scale(1.2) rotate(-12deg)' }, { transform: 'scale(1) rotate(0)' }],
+      { duration: 280, easing: 'ease-out' }
+    );
+    if (crDonutClicks >= 8) {
+      crDonutClicks = 0;
+      document.body.classList.add('cr-overload');
+      crShowConfetti();
+      setTimeout(() => document.body.classList.remove('cr-overload'), 2500);
+      try { showToast('🍩 CRASH OVERLOAD 🍩', 'success'); } catch {}
+    }
+  });
+  // Right-click → emoji explosion from donut center
+  d.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    const rect = d.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const emojis = ['🍩','💥','🔥','✨','🎉','🍪','🧁','⭐','💫','🍰'];
+    const host = document.createElement('div');
+    host.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2100;overflow:hidden;';
+    document.body.appendChild(host);
+    for (let i = 0; i < 28; i++) {
+      const s = document.createElement('span');
+      s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      s.style.cssText = `position:absolute;left:${cx}px;top:${cy}px;font-size:${22 + Math.random()*22}px;transform:translate(-50%,-50%);will-change:transform,opacity;`;
+      host.appendChild(s);
+      const angle = (Math.PI * 2) * (i / 28) + Math.random() * 0.3;
+      const dist = 180 + Math.random() * 220;
+      const dx = Math.cos(angle) * dist;
+      const dy = Math.sin(angle) * dist;
+      s.animate(
+        [
+          { transform: 'translate(-50%,-50%) scale(0.4) rotate(0)', opacity: 1 },
+          { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1.2) rotate(${(Math.random()*720-360)|0}deg)`, opacity: 0 }
+        ],
+        { duration: 900 + Math.random() * 400, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards' }
+      );
+    }
+    setTimeout(() => host.remove(), 1500);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// EASTER EGGS — a small collection of hidden fun. Safe to extend.
+// ══════════════════════════════════════════════════════════════════════════
+
+// Generic "rain emoji from the top of the screen" helper
+function eggRain(chars, count = 60, duration = 4000) {
+  const host = document.createElement('div');
+  host.className = 'egg-rain';
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement('span');
+    s.textContent = chars[Math.floor(Math.random() * chars.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.animationDuration = (2 + Math.random() * 2) + 's';
+    s.style.animationDelay = (Math.random() * 0.6) + 's';
+    s.style.fontSize = (1 + Math.random() * 1.4) + 'rem';
+    host.appendChild(s);
+  }
+  document.body.appendChild(host);
+  setTimeout(() => host.remove(), duration + 1000);
+}
+
+// Matrix-style green rain of crash-themed glyphs
+function eggMatrixRain(duration = 9000) {
+  const host = document.createElement('div');
+  host.className = 'egg-matrix';
+  const chars = '💥🍩🔥⚙️🥊💀⚡🖥️❌'.split('').concat(
+    '0 1 X A B D Y L S W'.split(' ')
+  );
+  const cols = Math.floor(window.innerWidth / 22);
+  for (let i = 0; i < cols * 6; i++) {
+    const s = document.createElement('span');
+    s.textContent = chars[Math.floor(Math.random() * chars.length)];
+    s.style.left = (Math.random() * 100) + 'vw';
+    s.style.animationDuration = (1.8 + Math.random() * 2.8) + 's';
+    s.style.animationDelay = (Math.random() * duration / 1000) + 's';
+    host.appendChild(s);
+  }
+  document.body.appendChild(host);
+  setTimeout(() => host.remove(), duration + 2500);
+}
+
+// Fake Blue-Screen-of-Death for a couple seconds (pure visual joke)
+function eggBsod() {
+  const div = document.createElement('div');
+  div.className = 'egg-bsod';
+  div.innerHTML = `
+    <div class="sad">:(</div>
+    <h1>SolidWorks ran into a problem and needs to restart.</h1>
+    <p>Just kidding — the Macro Guide is fine. Log it under Crashes 🔥</p>
+    <p style="margin-top:24px; opacity:0.7; font-size:0.82rem">
+      Stop code: <strong>NORDIC_KERNEL_OOPS</strong><br>
+      What failed: your-cad-file.sldprt<br>
+      Estimated donuts owed: 1
+    </p>
+  `;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 3200);
+}
+
+// Friday celebration banner
+function eggFriday() {
+  const b = document.createElement('div');
+  b.className = 'egg-friday-banner';
+  b.textContent = '🎉 WEEKEND INCOMING 🎉';
+  document.body.appendChild(b);
+  setTimeout(() => b.remove(), 3200);
+  eggRain(['🎉','🎊','🍻','🥂'], 40, 3500);
+}
+
+// Boss key — fake Excel overlay (type "boss", dismiss with Esc)
+function eggOpenBoss() {
+  // Don't stack overlays if one is already up
+  if (document.querySelector('.egg-boss')) return;
+  const div = document.createElement('div');
+  div.className = 'egg-boss';
+  const cols = ['A','B','C','D','E','F','G'];
+  const rowData = [
+    ['Q1 Variance Analysis',                '', '', '', '', '', ''],
+    ['Cost Center',     'Budget',   'Actual', 'Variance', '% Var', 'YTD',     'Forecast'],
+    ['Operations',      '125,400',  '118,922',  '6,478',  '5.2%',  '342,110', '471,200'],
+    ['Maintenance',     '82,000',   '91,145',  '-9,145', '-11.2%', '271,400', '368,000'],
+    ['Engineering',     '210,500',  '198,300', '12,200',  '5.8%',  '612,900', '842,000'],
+    ['Drafting',        '64,200',   '68,775',  '-4,575', '-7.1%',  '201,440', '275,000'],
+    ['Fabrication',     '305,000',  '292,118', '12,882',  '4.2%',  '864,200','1,210,000'],
+    ['Procurement',     '48,600',   '51,039',  '-2,439', '-5.0%',  '152,900', '205,000'],
+    ['Quality',         '38,400',   '35,210',   '3,190',  '8.3%',  '112,000', '154,000'],
+    ['Safety',          '22,100',   '19,850',   '2,250', '10.2%',   '65,400',  '89,000'],
+    ['Training',        '15,000',   '18,200',  '-3,200', '-21.3%',  '48,900',  '62,000'],
+    ['Total',           '911,200',  '893,559', '17,641',  '1.9%','2,671,250','3,676,200'],
+  ];
+  const headerRow = '<tr><th>&nbsp;</th>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr>';
+  const bodyRows = rowData.map((r, i) => {
+    const cells = r.map((v, j) => `<td class="${j === 0 ? 'txt' : ''}">${escHtml(v)}</td>`).join('');
+    return `<tr><th>${i + 1}</th>${cells}</tr>`;
+  }).join('');
+  // Pad with empty rows for realism
+  const pad = Array.from({ length: 18 }, (_, k) => {
+    const n = rowData.length + k + 1;
+    const empties = cols.map(() => '<td>&nbsp;</td>').join('');
+    return `<tr><th>${n}</th>${empties}</tr>`;
+  }).join('');
+  div.innerHTML = `
+    <div class="egg-boss-ribbon">
+      <span>📊 Book1 - Excel</span>
+      <span style="opacity:0.85">File  Home  Insert  Page Layout  Formulas  Data  Review  View</span>
+      <span style="margin-left:auto; font-size:11px; opacity:0.85">Esc to return</span>
+    </div>
+    <div class="egg-boss-tabs">
+      <span class="active">Sheet1</span><span>Sheet2</span><span>Sheet3</span><span>Summary</span><span>+</span>
+    </div>
+    <div class="egg-boss-formula">
+      <div class="egg-boss-cell">A1</div>
+      <div style="color:#999">fx</div>
+      <div style="flex:1; color:#323130">Q1 Variance Analysis</div>
+    </div>
+    <div style="height: calc(100vh - 110px); overflow:auto">
+      <table class="egg-boss-grid">
+        <thead>${headerRow}</thead>
+        <tbody>${bodyRows}${pad}</tbody>
+      </table>
+    </div>
+    <div class="egg-boss-status">
+      <span>Ready</span>
+      <span>Sum: 893,559  ·  Avg: 81,232  ·  Count: 11</span>
+    </div>
+  `;
+  document.body.appendChild(div);
+  const close = (e) => {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+      div.remove();
+      document.removeEventListener('keydown', close, true);
+    }
+  };
+  document.addEventListener('keydown', close, true);
+  // Clicking also dismisses (you panicked, it's ok)
+  div.addEventListener('click', () => { div.remove(); document.removeEventListener('keydown', close, true); });
+}
+
+// Keyword dispatcher — tracks a rolling buffer of recent keystrokes and fires
+// registered callbacks when their trigger word appears at the tail.
+const EGG_FORTUNES = [
+  'The crash you prevent today is a donut you save tomorrow.',
+  'Save early. Save often. Save your lunch.',
+  'A file not opened cannot crash. Zen.',
+  'Today\'s forecast: 70% chance of "not responding".',
+  'The mate fails only those who fail to mate.',
+  'Behind every crash is a parametric equation that hates you.',
+  'Assemblies have feelings too. They\'re mostly sad.',
+  'Your next crash will happen at the worst possible moment. It\'s tradition.',
+  'The rebuild that takes 3 minutes is faster than the one that never finishes.',
+  'If the drawing sheet is red, close it and don\'t make eye contact.'
+];
+
+const EGG_WORDS = {
+  donut:   () => { eggRain(['🍩','🍩','🍩','🎉'], 60); try { showToast('🍩 donut time', 'success'); } catch {} },
+  coffee:  () => { eggRain(['☕','☕','☕','🥐'], 40); try { showToast('☕ fuel up', 'success'); } catch {} },
+  fire:    () => { eggRain(['🔥','🔥','💥'], 50); document.body.classList.add('cr-overload'); setTimeout(()=>document.body.classList.remove('cr-overload'), 1500); },
+  crash:   () => { eggBsod(); },
+  friday:  () => { eggFriday(); },
+  matrix:  () => { eggMatrixRain(); try { showToast('> system breach: wake up, Neo', 'info'); } catch {} },
+  party:   () => { document.body.classList.add('egg-party'); crShowConfetti(); eggRain(['🎉','🎊','🎈','🪩'], 60); setTimeout(()=>document.body.classList.remove('egg-party'), 3200); },
+  dylan:   () => { try { showToast('👋 hi from Dylan', 'info'); } catch {} eggRain(['👋','🛠️'], 20, 2500); },
+  oops:    () => { try { showToast('it\'s fine, we\'ve all been there 🙃', 'info'); } catch {} },
+  donuts:  () => EGG_WORDS.donut(),
+  boss:    () => eggOpenBoss(),
+  save:    () => { try { showToast('💾 Ctrl+S. Right now. Do it.', 'info'); } catch {} },
+  undo:    () => { try { showToast('↩️ Ctrl+Z engaged. Good luck.', 'info'); } catch {} },
+  yolo:    () => { try { showToast('🚢 ship it. We believe in you.', 'success'); } catch {} crShowConfetti(); },
+  ship:    () => EGG_WORDS.yolo(),
+  bagel:   () => { eggRain(['🥯','🥯','🥯'], 30); try { showToast('bagel? bold choice.', 'info'); } catch {} },
+  cookie:  () => { const f = EGG_FORTUNES[Math.floor(Math.random()*EGG_FORTUNES.length)]; try { showToast('🥠 ' + f, 'info'); } catch {} },
+  nope:    () => { try { showToast('same. 😤', 'info'); } catch {} eggRain(['🙅'], 12, 2000); },
+  pizza:   () => { eggRain(['🍕'], 30); try { showToast('pizza > donuts. fight me.', 'info'); } catch {} },
+  help:    () => { eggRenderCheat(); document.getElementById('eggCheat').classList.add('open'); },
+};
+let eggBuffer = '';
+document.addEventListener('keydown', (e) => {
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+  if (e.key.length !== 1) return;
+  eggBuffer = (eggBuffer + e.key.toLowerCase()).slice(-16);
+  for (const word of Object.keys(EGG_WORDS)) {
+    if (eggBuffer.endsWith(word)) {
+      eggBuffer = '';
+      EGG_WORDS[word]();
+      break;
+    }
+  }
+});
+
+// Click the header logo 7 times → backflip
+let eggLogoClicks = 0;
+let eggLogoTimer = null;
+(function setupLogoSpin() {
+  const logo = document.querySelector('.logo-icon');
+  if (!logo) return;
+  logo.style.cursor = 'pointer';
+  logo.addEventListener('click', () => {
+    eggLogoClicks++;
+    if (eggLogoTimer) clearTimeout(eggLogoTimer);
+    eggLogoTimer = setTimeout(() => { eggLogoClicks = 0; }, 1600);
+    if (eggLogoClicks >= 7) {
+      eggLogoClicks = 0;
+      logo.classList.remove('egg-spin');
+      void logo.offsetWidth; // restart animation
+      logo.classList.add('egg-spin');
+      setTimeout(() => logo.classList.remove('egg-spin'), 1500);
+      try { showToast('You found the spin 🎡', 'success'); } catch {}
+    }
+  });
+})();
+
+// Click the "🍩 DONUT DUTY" label → donut does one spin
+(function setupDonutDutySpin() {
+  const el = document.querySelector('.cr-hero-label');
+  if (!el) return;
+  el.style.cursor = 'pointer';
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.cr-hero .cr-donut').forEach(d => {
+      d.animate(
+        [{ transform: 'rotate(0)' }, { transform: 'rotate(360deg)' }],
+        { duration: 700, easing: 'ease-in-out' }
+      );
+    });
+  });
+})();
+
+// Double-click the countdown → show the "lost productivity" fake-math toast
+(function setupCountdownDblclick() {
+  const cd = document.getElementById('crCountdown');
+  if (!cd) return;
+  cd.style.cursor = 'pointer';
+  cd.addEventListener('dblclick', () => {
+    const n = crashEntries.length;
+    const mins = n * 12; // pretend every crash is 12 minutes of lost work
+    const hrs  = (mins / 60).toFixed(1);
+    try {
+      showToast(`🧮 ${n} crashes × ~12 min = ${hrs}h of productivity donated to the void.`, 'info');
+    } catch {}
+  });
+})();
+
+// Click a leaderboard rank number → flash a tongue-in-cheek fact for that row
+const EGG_FACTS = [
+  '{name} has personally contributed to the donut economy.',
+  '{name}\'s keyboard files a weekly incident report.',
+  'Sources say {name}\'s crash pattern is now considered an art form.',
+  '{name} once asked SolidWorks nicely. It crashed anyway.',
+  '{name} is single-handedly keeping the IT tickets queue warm.',
+  '{name}\'s autosave has PTSD.',
+  'A brief moment of silence for {name}\'s unsaved work.',
+  'Rumor: {name} has a "crash face" reserved for Mondays.',
+  '{name}\'s mouse has started crossing itself before big assemblies.',
+  '{name}\'s undo stack has achieved sentience.'
+];
+document.addEventListener('click', (e) => {
+  const rank = e.target.closest('.cr-rank');
+  if (!rank) return;
+  const row = rank.closest('.cr-row');
+  if (!row) return;
+  const nameEl = row.querySelector('.cr-row-name');
+  const name = (nameEl ? nameEl.textContent : '').replace(/\s*\(you\)\s*$/, '').trim().split('\n')[0].trim();
+  if (!name) return;
+  const fact = EGG_FACTS[Math.floor(Math.random() * EGG_FACTS.length)].replace(/\{name\}/g, name);
+  try { showToast('💡 ' + fact, 'info'); } catch {}
+});
+
+// ? key → cheatsheet of all easter eggs
+const eggCheat = document.getElementById('eggCheat');
+const EGG_CHEAT_ROWS = [
+  { keys: ['stats'],           desc: 'Open the secret crash analytics (hour-of-day, weekdays, biggest pileup).' },
+  { keys: ['↑','↑','↓','↓','←','→','←','→','B','A'], desc: 'Konami code — crash-fest confetti storm.' },
+  { keys: ['boss'],            desc: 'Boss key — fake Excel overlay. Esc or click to dismiss.' },
+  { keys: ['donut'],           desc: 'Rain of donuts.' },
+  { keys: ['coffee'],          desc: 'Rain of coffee cups.' },
+  { keys: ['fire'],            desc: 'Rain of flames + screen shake.' },
+  { keys: ['crash'],           desc: 'Fake blue-screen joke (harmless).' },
+  { keys: ['friday'],          desc: '🎉 weekend-incoming banner.' },
+  { keys: ['matrix'],          desc: 'Green digital rain of crash glyphs.' },
+  { keys: ['party'],           desc: 'Rainbow hue shift + confetti.' },
+  { keys: ['pizza'],           desc: 'Rain of pizza.' },
+  { keys: ['bagel'],           desc: 'Rain of bagels. We don\'t judge.' },
+  { keys: ['cookie'],          desc: 'Draw a random SolidWorks fortune.' },
+  { keys: ['yolo','ship'],     desc: 'Confetti + unsolicited encouragement.' },
+  { keys: ['save'],            desc: 'A reminder. You need it.' },
+  { keys: ['undo'],            desc: 'Hope.' },
+  { keys: ['nope'],            desc: 'Solidarity.' },
+  { keys: ['oops'],            desc: 'Gentle reassurance.' },
+  { keys: ['dylan'],           desc: '👋' },
+  { keys: ['help'],            desc: 'Opens this cheatsheet.' },
+  { keys: ['click 🍩 ×8'],     desc: 'Click the hero donut 8 times for CRASH OVERLOAD.' },
+  { keys: ['right-click 🍩'],  desc: 'Right-click the hero donut for an emoji explosion.' },
+  { keys: ['click logo ×7'],   desc: 'Click the Nordic logo 7 times for a backflip.' },
+  { keys: ['click rank #'],    desc: 'Click a leaderboard rank number for a snarky fact.' },
+  { keys: ['dblclick ⏱'],      desc: 'Double-click the countdown to see "lost productivity" math.' },
+  { keys: ['?'],               desc: 'Open this cheatsheet.' },
+];
+function eggRenderCheat() {
+  const list = document.getElementById('eggCheatList');
+  if (!list) return;
+  list.innerHTML = EGG_CHEAT_ROWS.map(r => `
+    <div class="egg-cheat-item">
+      <div class="egg-cheat-keys">${r.keys.map(k => `<kbd>${escHtml(k)}</kbd>`).join('')}</div>
+      <div class="egg-cheat-desc">${escHtml(r.desc)}</div>
+    </div>
+  `).join('');
+}
+document.addEventListener('keydown', (e) => {
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+  // "?" is Shift+/ — catch both so Mac/Windows layouts work
+  if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+    e.preventDefault();
+    eggRenderCheat();
+    eggCheat.classList.add('open');
+  } else if (e.key === 'Escape' && eggCheat.classList.contains('open')) {
+    eggCheat.classList.remove('open');
+  }
+});
+document.getElementById('eggCheatClose').addEventListener('click',
+  () => eggCheat.classList.remove('open'));
+eggCheat.addEventListener('click', (e) => {
+  if (e.target === eggCheat) eggCheat.classList.remove('open');
+});
+
+// Admin delete
+async function deleteCrash(id) {
+  if (!confirm('Delete this crash entry?')) return;
+  try {
+    const res = await apiFetch('/api/crashes/' + id, { method: 'DELETE' });
+    crashEntries = res.entries || [];
+    renderCrashes();
+    showToast('Crash deleted.', 'success');
+  } catch (err) {
+    showToast('Could not delete: ' + err.message, 'error');
+  }
+}
+
+// ── Admin: edit a crash entry ────────────────────────────────────────────
+let crEditingId = null;
+const crEditOverlay = document.getElementById('crEditOverlay');
+
+// Convert an ISO/UTC timestamp to a value for <input type="datetime-local">
+// (which expects local time in 'YYYY-MM-DDTHH:MM' form — no seconds, no TZ).
+function crIsoToLocalInput(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// Open the admin edit modal pre-filled with the crash's current values
+window.crOpenEditModal = function crOpenEditModal(id) {
+  const c = crashEntries.find(e => Number(e.id) === Number(id));
+  if (!c) { showToast('Crash not found.', 'error'); return; }
+  crEditingId = id;
+  document.getElementById('crEditUser').value = c.user || '';
+  const sev = (c.severity || 'minor').toLowerCase();
+  document.querySelectorAll('.cr-esev-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.sev === sev);
+  });
+  document.getElementById('crEditTime').value = crIsoToLocalInput(c.timestamp);
+  crEditOverlay.classList.add('open');
+  setTimeout(() => document.getElementById('crEditUser').focus(), 50);
+};
+
+// Severity picker in the edit modal
+document.querySelectorAll('.cr-esev-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.cr-esev-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// Close/cancel the edit modal
+document.getElementById('crEditClose').addEventListener('click',
+  () => crEditOverlay.classList.remove('open'));
+document.getElementById('crEditCancel').addEventListener('click',
+  () => crEditOverlay.classList.remove('open'));
+crEditOverlay.addEventListener('click', (e) => {
+  if (e.target === crEditOverlay) crEditOverlay.classList.remove('open');
+});
+
+// Delete from inside the edit modal
+document.getElementById('crEditDelete').addEventListener('click', async () => {
+  if (crEditingId == null) return;
+  if (!confirm('Delete this crash entry?')) return;
+  const id = crEditingId;
+  crEditOverlay.classList.remove('open');
+  await deleteCrash(id);
+});
+
+// Save edits — PATCH /api/crashes/{id}
+document.getElementById('crEditSave').addEventListener('click', async () => {
+  if (crEditingId == null) return;
+  const user = document.getElementById('crEditUser').value.trim();
+  if (!user) { showToast('Name can\'t be empty.', 'info'); return; }
+  const sevBtn = document.querySelector('.cr-esev-btn.active');
+  const severity = sevBtn ? sevBtn.dataset.sev : 'minor';
+  const timeStr = document.getElementById('crEditTime').value;
+  let timestamp = null;
+  if (timeStr) {
+    // The input is in local time — convert to ISO (UTC) for storage
+    const d = new Date(timeStr);
+    if (!isNaN(d)) timestamp = d.toISOString();
+  }
+  const payload = { user, severity };
+  if (timestamp) payload.timestamp = timestamp;
+  try {
+    const res = await apiFetch('/api/crashes/' + crEditingId, {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    });
+    crashEntries = res.entries || [];
+    renderCrashes();
+    crEditOverlay.classList.remove('open');
+    showToast('Crash updated.', 'success');
+  } catch (err) {
+    showToast('Could not save: ' + err.message, 'error');
+  }
+});
+
+// Month/all toggle
+document.querySelectorAll('.cr-month-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.cr-month-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    crViewMode = btn.dataset.crmonth;
+    renderCrashes();
+  });
+});
+
 // ── Data loading from server ─────────────────────────────────────────────
 async function loadData() {
   try {
-    const [clData, tkData] = await Promise.all([
+    const [clData, tkData, crData] = await Promise.all([
       apiFetch('/api/changelog'),
-      apiFetch('/api/tickets')
+      apiFetch('/api/tickets'),
+      apiFetch('/api/crashes')
     ]);
     changelogEntries = clData;
     ticketEntries = tkData;
+    crashEntries = crData;
     renderChangelog();
     renderTickets();
+    renderCrashes();
   } catch (err) {
     showToast('Could not load data from server: ' + err.message, 'error');
   }
 }
 
-// Auto-refresh every 30s so everyone sees updates without reloading
-setInterval(async () => {
+// Cheap fingerprint of a crash list — catches edits (severity, user, timestamp
+// changes on existing ids) as well as adds/deletes. Much cheaper than a full
+// JSON.stringify and tolerant to field reorderings from the PS server.
+function crFingerprint(list) {
+  if (!list || list.length === 0) return '0';
+  let fp = list.length + '|';
+  for (const c of list) {
+    fp += (c.id ?? '?') + ':' + (c.user || '') + ':' + (c.severity || '') + ':' + (c.timestamp || '') + ';';
+  }
+  return fp;
+}
+let __crLastFp = '';
+
+// Also tick "since last" every minute so it ages in real-time even when
+// nothing new comes in (no server round-trip).
+setInterval(() => {
+  const sinceEl = document.getElementById('crStatSince');
+  if (!sinceEl || crashEntries.length === 0) return;
+  const nowMs = Date.now();
+  const allTs = crashEntries
+    .map(c => new Date(c.timestamp).getTime())
+    .filter(t => !isNaN(t) && t <= nowMs);
+  if (allTs.length === 0) { sinceEl.textContent = '—'; return; }
+  sinceEl.textContent = crShortDuration(nowMs - Math.max(...allTs));
+}, 60000);
+
+// Auto-refresh every 15s so everyone sees updates quickly. When the tab is
+// backgrounded, most browsers throttle setInterval — we add a visibilitychange
+// handler below that pokes the server the moment focus returns.
+async function refreshNow() {
   try {
-    const [clData, tkData] = await Promise.all([
+    const [clData, tkData, crData] = await Promise.all([
       apiFetch('/api/changelog'),
-      apiFetch('/api/tickets')
+      apiFetch('/api/tickets'),
+      apiFetch('/api/crashes')
     ]);
-    // Only re-render if data actually changed (by length or last entry)
     if (clData.length !== changelogEntries.length) {
       changelogEntries = clData;
       renderChangelog();
@@ -3210,8 +6176,23 @@ setInterval(async () => {
       ticketEntries = tkData;
       renderTickets();
     }
+    // Catch adds AND edits — compare a full fingerprint, not just length.
+    const fp = crFingerprint(crData);
+    if (fp !== __crLastFp) {
+      __crLastFp = fp;
+      crashEntries = crData;
+      renderCrashes();
+    }
   } catch { /* silent — will retry next interval */ }
-}, 30000);
+}
+setInterval(refreshNow, 15000);
+
+// Pull fresh data the instant the tab regains focus, so users who switch back
+// to the guide see a near-live view without having to wait for the interval.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') refreshNow();
+});
+window.addEventListener('focus', refreshNow);
 
 // ── Version check: detect new deploys and prompt refresh ────────────────
 // Server returns the HTML file's last-write-time ticks. If it changes after
@@ -3253,6 +6234,7 @@ function setAdmin(on) {
   else sessionStorage.removeItem('nmtAdmin');
   renderChangelog();
   renderTickets();
+  renderCrashes();
 }
 
 document.getElementById('adminRestart').addEventListener('click', async () => {
@@ -3322,6 +6304,155 @@ document.getElementById('refreshUsageBtn').addEventListener('click', loadUsage);
 document.getElementById('closeUsageBtn').addEventListener('click', () => { usageOverlay.style.display = 'none'; });
 usageOverlay.addEventListener('click', e => { if (e.target === usageOverlay) usageOverlay.style.display = 'none'; });
 
+// ── Users directory (admin) ──────────────────────────────────────────
+// Crash notification subscribers (admin)
+const crAlertOverlay = document.getElementById('crAlertOverlay');
+const crAlertAdminBtn = document.getElementById('crAlertAdmin');
+
+async function loadCrashAlertSubscribers() {
+  const summary = document.getElementById('crAlertSummary');
+  const rows = document.getElementById('crAlertRows');
+  summary.innerHTML = '<span class="usage-pill">Loading...</span>';
+  rows.innerHTML = '<div style="padding:18px;color:var(--muted);font-size:0.85rem">Loading...</div>';
+
+  try {
+    const data = await apiFetch('/api/admin/crash-notifications');
+    const subscribers = data.subscribers || [];
+    summary.innerHTML = `<span class="usage-pill">${subscribers.length} enabled subscriber${subscribers.length === 1 ? '' : 's'}</span>`;
+
+    if (subscribers.length === 0) {
+      rows.innerHTML = '<div style="padding:18px;color:var(--muted);font-size:0.85rem">No one has crash notifications turned on.</div>';
+      return;
+    }
+
+    rows.innerHTML = `<table class="usage-table">
+      <thead><tr><th>Display Name</th><th>Windows User</th><th>Email</th><th>Updated</th></tr></thead>
+      <tbody>${subscribers.map(s => `
+        <tr>
+          <td class="usage-user">${escHtml(String(s.displayName || ''))}</td>
+          <td>${escHtml(String(s.windowsUser || ''))}</td>
+          <td>${escHtml(String(s.email || ''))}</td>
+          <td class="usage-muted">${escHtml(String(s.updatedAt || ''))}</td>
+        </tr>
+      `).join('')}</tbody>
+    </table>`;
+  } catch (err) {
+    summary.innerHTML = '';
+    rows.innerHTML = `<div style="padding:18px;color:#ef4444;font-size:0.85rem">Could not load crash notification subscribers: ${escHtml(err.message)}</div>`;
+  }
+}
+
+function openCrashAlertModal() {
+  crAlertOverlay.style.display = 'flex';
+  loadCrashAlertSubscribers();
+}
+
+crAlertAdminBtn.addEventListener('click', openCrashAlertModal);
+document.getElementById('refreshCrAlertBtn').addEventListener('click', loadCrashAlertSubscribers);
+document.getElementById('closeCrAlertBtn').addEventListener('click', () => { crAlertOverlay.style.display = 'none'; });
+crAlertOverlay.addEventListener('click', e => { if (e.target === crAlertOverlay) crAlertOverlay.style.display = 'none'; });
+
+const usersOverlay = document.getElementById('usersOverlay');
+const adminUsersBtn = document.getElementById('adminUsers');
+
+async function loadUsers() {
+  const summary = document.getElementById('usersSummary');
+  const rows = document.getElementById('usersRows');
+  summary.innerHTML = '<span class="usage-pill">Loading...</span>';
+  rows.innerHTML = '<div style="padding:18px;color:var(--muted);font-size:0.85rem">Loading...</div>';
+
+  try {
+    const data = await apiFetch('/api/admin/users');
+    const users = data.users || [];
+    const multiName = users.filter(u => (u.displayNames || []).length > 1).length;
+    summary.innerHTML = `
+      <span class="usage-pill">${users.length} user${users.length === 1 ? '' : 's'}</span>
+      <span class="usage-pill">${multiName} with multiple names</span>
+      <span class="usage-pill">${data.ticketsScanned ?? '?'} ticket${data.ticketsScanned === 1 ? '' : 's'} scanned</span>
+    `;
+
+    if (users.length === 0) {
+      rows.innerHTML = '<div style="padding:18px;color:var(--muted);font-size:0.85rem">No users found yet.</div>';
+      return;
+    }
+
+    rows.innerHTML = `<table class="usage-table users-table">
+      <thead><tr>
+        <th>Windows User</th>
+        <th>Names Used</th>
+        <th>Tickets</th>
+        <th>Comments</th>
+        <th>Votes</th>
+        <th>Last Seen</th>
+        <th>Rename To</th>
+      </tr></thead>
+      <tbody>${users.map(u => {
+        const winUser = String(u.windowsUser || '');
+        const winUserEsc = escHtml(winUser);
+        const current = String(u.currentName || '');
+        const names = (u.displayNames || []).map(n => {
+          const isCurrent = n === current;
+          return `<span class="users-name-chip${isCurrent ? ' current' : ''}">${escHtml(String(n))}</span>`;
+        }).join('');
+        const namesHtml = names || '<span class="usage-muted" style="font-size:0.75rem">(none)</span>';
+        return `<tr data-win-user="${winUserEsc}">
+          <td class="usage-user">${winUserEsc}</td>
+          <td class="users-names"><div class="users-name-list">${namesHtml}</div></td>
+          <td>${u.ticketsCreated || 0}</td>
+          <td>${u.commentsPosted || 0}</td>
+          <td>${u.votes || 0}</td>
+          <td class="usage-muted">${escHtml(String(u.lastSeen || ''))}</td>
+          <td>
+            <div class="users-rename-cell">
+              <input type="text" class="users-rename-input" value="${escHtml(current)}" placeholder="New display name" />
+              <button class="users-rename-btn" onclick="renameUser('${winUserEsc}', this)">Save</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  } catch (err) {
+    summary.innerHTML = '';
+    rows.innerHTML = `<div style="padding:18px;color:#ef4444;font-size:0.85rem">Could not load users: ${escHtml(err.message)}</div>`;
+  }
+}
+
+async function renameUser(winUser, btn) {
+  const row = btn.closest('tr');
+  const input = row.querySelector('.users-rename-input');
+  const newName = input.value.trim();
+  if (!newName) { showToast('Enter a display name.', 'info'); input.focus(); return; }
+  if (!confirm(`Rename "${winUser}" to "${newName}"?\n\nThis will update their existing tickets and comments.`)) return;
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  try {
+    const result = await apiFetch(`/api/admin/users/${encodeURIComponent(winUser)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ displayName: newName })
+    });
+    if (result.entries) {
+      ticketEntries = result.entries;
+      renderTickets();
+    }
+    showToast(`Renamed ${winUser} → ${newName} (${result.ticketsTouched || 0} ticket(s), ${result.commentsTouched || 0} comment(s))`, 'success');
+    loadUsers();
+  } catch (err) {
+    showToast(`Rename failed: ${err.message}`, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Save';
+  }
+}
+
+function openUsersModal() {
+  usersOverlay.style.display = 'flex';
+  loadUsers();
+}
+
+adminUsersBtn.addEventListener('click', openUsersModal);
+document.getElementById('refreshUsersBtn').addEventListener('click', loadUsers);
+document.getElementById('closeUsersBtn').addEventListener('click', () => { usersOverlay.style.display = 'none'; });
+usersOverlay.addEventListener('click', e => { if (e.target === usersOverlay) usersOverlay.style.display = 'none'; });
+
 adminToggle.addEventListener('click', () => {
   if (document.body.classList.contains('is-admin')) { setAdmin(false); return; }
   adminOverlay.classList.add('open');
@@ -3376,6 +6507,9 @@ document.getElementById('adminPw').addEventListener('keydown', e => { if (e.key 
     if (u) sessionStorage.setItem('winUser', u);
   } catch(e) {}
 })();
+// Auto-map Windows username → display name (runs after winUser is captured)
+crAutoIdentify();
+crLoadNotifyState();
 logUsageOpen();
 // Restore admin session if previously logged in
 if (sessionStorage.getItem('nmtAdmin') === '1') setAdmin(true);
