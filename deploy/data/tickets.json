@@ -1,0 +1,427 @@
+﻿[
+    {
+        "id":  1773686187480,
+        "macroId":  "cadlink",
+        "macroName":  "Prepare for CADLink",
+        "macroIcon":  "🚀",
+        "macroColor":  "#a855f7",
+        "title":  "TESTING 1 - 2 - 1 - 2",
+        "description":  "THUMBS UP ~ !",
+        "type":  "feature",
+        "priority":  "low",
+        "status":  "canceled",
+        "date":  "2026-03-16",
+        "createdBy":  "MIKE jACKSON",
+        "cancelReason":  "PLZ DO NOT CANCEL",
+        "canceledBy":  "MIKE jACKSON",
+        "canceledDate":  "2026-03-16"
+    },
+    {
+        "id":  1773761340142,
+        "macroId":  "cadlink",
+        "macroName":  "Prepare for CADLink",
+        "macroIcon":  "🚀",
+        "macroColor":  "#a855f7",
+        "title":  "Flat Bar conversion message prompt",
+        "description":  "when the Prepare for CADLink macro is ran on a plate that could be converted to FB, the prompt puts SW in full screen mode when it was in dual screen mode. This is annoying and disrupts my flow of work. make it not do that",
+        "type":  "bug",
+        "priority":  "medium",
+        "status":  "in-progress",
+        "date":  "2026-03-17",
+        "createdBy":  "Paul Lemelin",
+        "windowsUser":  "plemelin",
+        "votes":  1,
+        "voters":  [
+                       "jgagnon"
+                   ],
+        "pokes":  8,
+        "lastPoke":  "2026-04-28",
+        "pokers":  [
+                       "dshank",
+                       "kpatel",
+                       "dlebel"
+                   ]
+    },
+    {
+        "id":  1773785648329,
+        "macroId":  "cadlink",
+        "macroName":  "Prepare for CADLink",
+        "macroIcon":  "🚀",
+        "macroColor":  "#a855f7",
+        "title":  "Revision Handling",
+        "description":  "When an empty revision field is noted by the macro, could it simply set it to 1 instead of leaving it empty and giving an error/message? or is there a reason it does this?",
+        "type":  "feature",
+        "priority":  "low",
+        "status":  "done",
+        "date":  "2026-03-17",
+        "createdBy":  "Paul Lemelin",
+        "windowsUser":  "plemelin",
+        "pokes":  2,
+        "lastPoke":  "2026-03-19",
+        "votes":  1,
+        "voters":  [
+                       "jgagnon"
+                   ]
+    },
+    {
+        "id":  1773847242182,
+        "macroId":  "cadlink",
+        "macroName":  "Prepare for CADLink",
+        "macroIcon":  "🚀",
+        "macroColor":  "#a855f7",
+        "title":  "H-BEAM Support",
+        "description":  "Macro doesn\u0027t provide a stock size for H-Beam",
+        "type":  "bug",
+        "priority":  "medium",
+        "status":  "done",
+        "date":  "2026-03-18",
+        "createdBy":  "Paul Lemelin",
+        "windowsUser":  "plemelin",
+        "votes":  1,
+        "pokes":  1,
+        "lastPoke":  "2026-03-19"
+    },
+    {
+        "id":  1773930285196,
+        "macroId":  "cadlink",
+        "macroName":  "Prepare for CADLink",
+        "macroIcon":  "⚡",
+        "macroColor":  "#a855f7",
+        "title":  "Revision Handling",
+        "description":  "did you do this yet?",
+        "type":  "feature",
+        "priority":  "medium",
+        "status":  "closed",
+        "date":  "2026-03-19",
+        "createdBy":  "Paul Lemelin",
+        "windowsUser":  "plemelin",
+        "attachments":  [
+                            "Screenshot 2026-03-19 095431.png"
+                        ],
+        "pokes":  1,
+        "lastPoke":  "2026-03-19",
+        "votes":  1,
+        "voters":  [
+                       "jgagnon"
+                   ]
+    },
+    {
+        "id":  1773934390174,
+        "macroId":  "all",
+        "macroName":  "General",
+        "macroIcon":  "⚙️",
+        "macroColor":  "#4f8ef7",
+        "title":  "comment here",
+        "description":  "comment something",
+        "type":  "bug",
+        "priority":  "critical",
+        "status":  "in-progress",
+        "date":  "2026-03-19",
+        "windowsUser":  "dlebel",
+        "attachments":  [
+
+                        ],
+        "comments":  [
+                         {
+                             "date":  "2026-03-19",
+                             "windowsUser":  "plemelin",
+                             "displayName":  "Paul Lemelin",
+                             "text":  "YAAAaaaaAAAY",
+                             "gifUrl":  "https://media2.giphy.com/media/v1.Y2lkPWE1YTU4ZDcwc3o1NmNzZGE2ZDl3NWVzdGF3dzI1dzdha205YWM0dTZudzJwcGdmMSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/Zaej3GIZTzCI8/200w.gif",
+                             "editedDate":  "2026-03-19"
+                         }
+                     ],
+        "createdBy":  "Dylan Lebel",
+        "votes":  3,
+        "voters":  [
+                       "plemelin",
+                       "hhood",
+                       "dshank"
+                   ],
+        "pokes":  8,
+        "lastPoke":  "2026-04-29",
+        "pokers":  [
+                       "dshank",
+                       "kpatel",
+                       "dlebel",
+                       "jgagnon"
+                   ]
+    },
+    {
+        "id":  1775652055723,
+        "macroId":  "cadlink",
+        "macroName":  "Prepare for CADLink",
+        "macroIcon":  "⚡",
+        "macroColor":  "#a855f7",
+        "title":  "Revision Handling",
+        "description":  "I know that the MACRO currently sets the model to Revision 1 if no revision is found, but could the MACRO check to see if there is a drawing made, to check what revision the drawing is at and synchronize the model with the drawing at that point? or if running PrepForCADLink from the drawing, update the model? would that be possibly more efficient that doing it at the PDF stage? Might solve the issue of overlapping different revisions in the title block of a drawing when being reviewed by Mike",
+        "type":  "bug",
+        "priority":  "low",
+        "status":  "in-progress",
+        "date":  "2026-04-08T12:40:55.723Z",
+        "createdBy":  "Paul Lemelin",
+        "windowsUser":  "plemelin",
+        "attachments":  [
+
+                        ],
+        "pokes":  8,
+        "lastPoke":  "2026-04-28",
+        "pokers":  [
+                       "plemelin",
+                       "dshank",
+                       "kpatel",
+                       "dlebel"
+                   ]
+    },
+    {
+        "id":  1776777007644,
+        "macroId":  "cadlink",
+        "macroName":  "Prepare for CADLink",
+        "macroIcon":  "⚡",
+        "macroColor":  "#a855f7",
+        "title":  "Revision Feature broken",
+        "description":  "I know it\u0027s ongoing, but the MACRO is setting an empty revision to 2 instead of 1.",
+        "type":  "bug",
+        "priority":  "medium",
+        "status":  "done",
+        "date":  "2026-04-21T13:10:07.645Z",
+        "createdBy":  "Paul Lemelin",
+        "windowsUser":  "plemelin",
+        "attachments":  [
+
+                        ],
+        "pokes":  1,
+        "lastPoke":  "2026-04-21",
+        "pokers":  [
+                       "jgagnon"
+                   ],
+        "votes":  1,
+        "voters":  [
+                       "jgagnon"
+                   ],
+        "comments":  [
+                         {
+                             "date":  "2026-04-21",
+                             "windowsUser":  "jgagnon",
+                             "gifUrl":  "",
+                             "text":  "had this same issue",
+                             "displayName":  "Jason Gagnon"
+                         }
+                     ]
+    },
+    {
+        "id":  1776888135177,
+        "macroId":  "dylanshelp",
+        "macroName":  "Dylan\u0027s Help",
+        "macroIcon":  "🙋",
+        "macroColor":  "#f97316",
+        "title":  "Web Test",
+        "description":  "Test for names",
+        "type":  "newmacro",
+        "priority":  "critical",
+        "status":  "canceled",
+        "date":  "2026-04-22T20:02:15.177Z",
+        "createdBy":  "Other Dylan",
+        "windowsUser":  "dshank",
+        "attachments":  [
+
+                        ],
+        "pokes":  6,
+        "lastPoke":  "2026-04-29",
+        "pokers":  [
+                       "dshank",
+                       "dlebel",
+                       "plemelin"
+                   ],
+        "cancelReason":  "Can",
+        "canceledBy":  "Other Dylan",
+        "canceledDate":  "2026-04-29"
+    },
+    {
+        "id":  1776973578236,
+        "macroId":  "all",
+        "macroName":  "General",
+        "macroIcon":  "⚙️",
+        "macroColor":  "#4f8ef7",
+        "title":  "MATCH REV IN PDMCADLINK MACRO",
+        "description":  "Matching revision from drawings when we run Prepare for Cadlink macro.",
+        "type":  "feature",
+        "priority":  "medium",
+        "status":  "open",
+        "date":  "2026-04-23T19:46:18.236Z",
+        "createdBy":  "Krupal Patel",
+        "windowsUser":  "kpatel",
+        "attachments":  [
+
+                        ],
+        "votes":  1,
+        "voters":  [
+                       "dshank"
+                   ],
+        "pokes":  6,
+        "lastPoke":  "2026-04-29",
+        "pokers":  [
+                       "dshank",
+                       "dlebel",
+                       "plemelin"
+                   ]
+    },
+    {
+        "id":  1777407647126,
+        "macroId":  "all",
+        "macroName":  "General",
+        "macroIcon":  "⚙️",
+        "macroColor":  "#4f8ef7",
+        "title":  "TEST 1",
+        "description":  "DELETE AFTER TEST",
+        "type":  "feature",
+        "priority":  "medium",
+        "status":  "canceled",
+        "date":  "2026-04-28T20:20:47.126Z",
+        "createdBy":  "Other Dylan",
+        "windowsUser":  "dshank",
+        "attachments":  [
+
+                        ],
+        "pokes":  5,
+        "lastPoke":  "2026-04-29",
+        "pokers":  [
+                       "dshank",
+                       "plemelin"
+                   ],
+        "cancelReason":  "just cause",
+        "canceledBy":  "Other Dylan",
+        "canceledDate":  "2026-04-29"
+    },
+    {
+        "id":  1777407655437,
+        "macroId":  "all",
+        "macroName":  "General",
+        "macroIcon":  "⚙️",
+        "macroColor":  "#4f8ef7",
+        "title":  "TEST 2",
+        "description":  "DELETE AFTER TEST",
+        "type":  "bug",
+        "priority":  "medium",
+        "status":  "canceled",
+        "date":  "2026-04-28T20:20:55.437Z",
+        "createdBy":  "Other Dylan",
+        "windowsUser":  "dshank",
+        "attachments":  [
+
+                        ],
+        "pokes":  6,
+        "lastPoke":  "2026-04-29",
+        "pokers":  [
+                       "dshank",
+                       "plemelin",
+                       "jgagnon"
+                   ],
+        "cancelReason":  "thjytdx",
+        "canceledBy":  "Other Dylan",
+        "canceledDate":  "2026-04-29"
+    },
+    {
+        "id":  1777407665630,
+        "macroId":  "all",
+        "macroName":  "General",
+        "macroIcon":  "⚙️",
+        "macroColor":  "#4f8ef7",
+        "title":  "TEST 3",
+        "description":  "DELETE AFTER TEST",
+        "type":  "change",
+        "priority":  "medium",
+        "status":  "canceled",
+        "date":  "2026-04-28T20:21:05.630Z",
+        "createdBy":  "Other Dylan",
+        "windowsUser":  "dshank",
+        "attachments":  [
+
+                        ],
+        "pokes":  10,
+        "lastPoke":  "2026-04-29",
+        "pokers":  [
+                       "dshank",
+                       "dlebel",
+                       "plemelin",
+                       "jgagnon"
+                   ],
+        "cancelReason":  "Acctual reason why",
+        "canceledBy":  "Other Dylan",
+        "canceledDate":  "2026-04-29"
+    },
+    {
+        "id":  1777407723566,
+        "macroId":  "all",
+        "macroName":  "General",
+        "macroIcon":  "⚙️",
+        "macroColor":  "#4f8ef7",
+        "title":  "TEEST 4",
+        "description":  "DYLAN L IS GETTING MAD",
+        "type":  "bug",
+        "priority":  "medium",
+        "status":  "canceled",
+        "date":  "2026-04-28T20:22:03.566Z",
+        "createdBy":  "Other Dylan",
+        "windowsUser":  "dshank",
+        "attachments":  [
+
+                        ],
+        "pokes":  10,
+        "lastPoke":  "2026-04-29",
+        "pokers":  [
+                       "dlebel",
+                       "dshank",
+                       "plemelin",
+                       "jgagnon"
+                   ],
+        "cancelReason":  "jkop",
+        "canceledBy":  "Other Dylan",
+        "canceledDate":  "2026-04-29"
+    },
+    {
+        "id":  1777476022092,
+        "macroId":  "drawingtemplateupdate",
+        "macroName":  "Drawing Template Update",
+        "macroIcon":  "🖼️",
+        "macroColor":  "#14b8a6",
+        "title":  "Please correct Approved by is showing description",
+        "description":  "approved by is still showing tittle in template ... to be accurate its the metric template for this one",
+        "type":  "bug",
+        "priority":  "high",
+        "status":  "open",
+        "date":  "2026-04-29T15:20:22.092Z",
+        "createdBy":  "Jason G",
+        "windowsUser":  "jgagnon",
+        "attachments":  [
+                            "Screenshot 2026-04-29 111915.png"
+                        ],
+        "votes":  1,
+        "voters":  [
+                       "plemelin"
+                   ],
+        "comments":  [
+                         {
+                             "date":  "2026-04-29",
+                             "windowsUser":  "plemelin",
+                             "gifUrl":  "https://media1.giphy.com/media/v1.Y2lkPWE1YTU4ZDcwMXk1cWpzYzAwYzFmN2lidjgzYmJzMzI1bDliOWRrdWNwYmFxcDVydSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/xUPGcCKYtAgYRWrYAM/200w.gif",
+                             "displayName":  "Paul Lemelin",
+                             "text":  "This is a great idea! good Catch Jason (Aka mIKE JACKSON)🙌"
+                         },
+                         {
+                             "date":  "2026-04-29",
+                             "windowsUser":  "jgagnon",
+                             "gifUrl":  "",
+                             "displayName":  "Jason G",
+                             "text":  "thx"
+                         }
+                     ],
+        "pokes":  8,
+        "lastPoke":  "2026-04-29",
+        "pokers":  [
+                       "jgagnon",
+                       "plemelin",
+                       "dshank"
+                   ]
+    }
+]

@@ -1,3 +1,7 @@
+param(
+    [switch]$NoPause
+)
+
 <#
 .SYNOPSIS
     Deploys MacroGuide files from C:\AllMacros to the shared Y: drive.
@@ -77,14 +81,14 @@ if (-not (Test-Path $Target)) {
     Write-Host "  Make sure the Y: drive is mapped, then try again." -ForegroundColor Yellow
     Write-Host "    $Target" -ForegroundColor DarkGray
     Write-Host ""
-    Read-Host "Press Enter to close"
+    if (-not $NoPause) { Read-Host "Press Enter to close" }
     exit 1
 }
 
 foreach ($f in $Files) {
     if (-not (Test-Path $f.Local)) {
         Write-Host "  ERROR: Source file missing: $($f.Local)" -ForegroundColor Red
-        Read-Host "Press Enter to close"
+        if (-not $NoPause) { Read-Host "Press Enter to close" }
         exit 1
     }
 }
@@ -275,4 +279,4 @@ if ($failed.Count -eq 0) {
     Write-Host "    $BackupRoot" -ForegroundColor DarkGray
 }
 Write-Host ""
-Read-Host "Press Enter to close"
+if (-not $NoPause) { Read-Host "Press Enter to close" }

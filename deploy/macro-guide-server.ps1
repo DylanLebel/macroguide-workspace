@@ -57,7 +57,45 @@ $ClFile = Join-Path $DataDir 'changelog.json'
 $TkFile = Join-Path $DataDir 'tickets.json'
 $CrFile = Join-Path $DataDir 'crashes.json'
 $CrashNotifyFile = Join-Path $DataDir 'crash-notifications.json'
+$PokeResetFile = Join-Path $DataDir 'poke-resets.json'
+$PokeTargetsFile = Join-Path $DataDir 'poke-targets.json'
+$PresenceFile = Join-Path $DataDir 'presence.json'
+$CaptchaQueueFile = Join-Path $DataDir 'captcha-queue.json'
 
+$DefaultPokeTargets = @(
+    [ordered]@{
+        label        = 'Dylan Shank'
+        shortName    = 'Shank'
+        windowsUsers = @('dshank')
+        names        = @('Dylan Shank')
+        aliases      = @('shank')
+        enabled      = $true
+    },
+    [ordered]@{
+        label        = 'Jason Gagnon'
+        shortName    = 'Jason'
+        windowsUsers = @('jgagnon')
+        names        = @('Jason Gagnon')
+        aliases      = @('jason', 'gagnon')
+        enabled      = $true
+    },
+    [ordered]@{
+        label        = 'Krupal Patel'
+        shortName    = 'Krupal'
+        windowsUsers = @('kpatel')
+        names        = @('Krupal Patel')
+        aliases      = @('krupal', 'patel')
+        enabled      = $true
+    },
+    [ordered]@{
+        label        = 'Paul Lemelin'
+        shortName    = 'Paul'
+        windowsUsers = @('plemelin')
+        names        = @('Paul Lemelin')
+        aliases      = @('paul', 'lemelin')
+        enabled      = $true
+    }
+)
 
 
 # Email notifications — uses Outlook COM (no credentials needed, works with logged-in Outlook)
@@ -443,6 +481,72 @@ function Invoke-LockedMutate {
     }
 }
 
+function ConvertTo-PokeTargetStringArray {
+    param($Value, [switch]$Lower)
+    $items = @()
+    if ($null -eq $Value) { return @() }
+    $source = if ($Value -is [System.Array]) { @($Value) } else { @($Value) }
+    foreach ($entry in $source) {
+        if ($null -eq $entry) { continue }
+        foreach ($part in ([string]$entry -split '[,\r\n]+')) {
+            $text = $part.Trim()
+            if ([string]::IsNullOrWhiteSpace($text)) { continue }
+            if ($Lower) {
+                $text = (Normalize-WindowsUser $text)
+            }
+            if ($items -notcontains $text) { $items += $text }
+        }
+    }
+    return @($items)
+}
+
+function Get-PokeTargetProperty {
+    param($Item, [string]$Name)
+    if ($null -eq $Item) { return $null }
+    if ($Item -is [System.Collections.IDictionary] -and $Item.Contains($Name)) { return $Item[$Name] }
+    if ($Item.PSObject.Properties[$Name]) { return $Item.$Name }
+    return $null
+}
+
+function Normalize-PokeTargets {
+    param($Targets)
+    $clean = @()
+    foreach ($raw in @($Targets)) {
+        $label = [string](Get-PokeTargetProperty $raw 'label')
+        $label = $label.Trim()
+        if ([string]::IsNullOrWhiteSpace($label)) { continue }
+
+        $shortName = [string](Get-PokeTargetProperty $raw 'shortName')
+        $shortName = $shortName.Trim()
+        if ([string]::IsNullOrWhiteSpace($shortName)) {
+            $shortName = ($label -split '\s+')[0]
+        }
+
+        $windowsUsers = @(ConvertTo-PokeTargetStringArray (Get-PokeTargetProperty $raw 'windowsUsers') -Lower)
+        if ($windowsUsers.Count -eq 0) { continue }
+
+        $names = @(ConvertTo-PokeTargetStringArray (Get-PokeTargetProperty $raw 'names'))
+        if ($names.Count -eq 0) { $names = @($label) }
+
+        $aliases = @(ConvertTo-PokeTargetStringArray (Get-PokeTargetProperty $raw 'aliases') -Lower)
+        $enabled = $true
+        $enabledRaw = Get-PokeTargetProperty $raw 'enabled'
+        if ($null -ne $enabledRaw) {
+            try { $enabled = [System.Convert]::ToBoolean($enabledRaw) } catch { $enabled = $true }
+        }
+
+        $clean += [pscustomobject]@{
+            label        = $label
+            shortName    = $shortName
+            windowsUsers = @($windowsUsers)
+            names        = @($names)
+            aliases      = @($aliases)
+            enabled      = $enabled
+        }
+    }
+    return @($clean)
+}
+
 # ════════════════════════════════════════════════════════════════════════
 #  EMAIL NOTIFICATIONS
 # ════════════════════════════════════════════════════════════════════════
@@ -786,6 +890,10 @@ function Initialize-DataFiles {
             $script:TkFile  = Join-Path $LocalDataDir 'tickets.json'
             $script:CrFile  = Join-Path $LocalDataDir 'crashes.json'
             $script:CrashNotifyFile = Join-Path $LocalDataDir 'crash-notifications.json'
+            $script:PokeResetFile = Join-Path $LocalDataDir 'poke-resets.json'
+            $script:PokeTargetsFile = Join-Path $LocalDataDir 'poke-targets.json'
+            $script:PresenceFile = Join-Path $LocalDataDir 'presence.json'
+            $script:CaptchaQueueFile = Join-Path $LocalDataDir 'captcha-queue.json'
             $script:DataSource = 'local'
         }
     }
@@ -806,6 +914,22 @@ function Initialize-DataFiles {
     if (-not (Test-Path $CrFile)) {
         [System.IO.File]::WriteAllText($CrFile, '[]', [System.Text.Encoding]::UTF8)
         Write-Host "  Created crashes.json (empty)"
+    }
+    if (-not (Test-Path $PokeResetFile)) {
+        [System.IO.File]::WriteAllText($PokeResetFile, '[]', [System.Text.Encoding]::UTF8)
+        Write-Host "  Created poke-resets.json (empty)"
+    }
+    if (-not (Test-Path $PokeTargetsFile)) {
+        Write-JsonFile $PokeTargetsFile $DefaultPokeTargets
+        Write-Host "  Created poke-targets.json (default targets)"
+    }
+    if (-not (Test-Path $PresenceFile)) {
+        [System.IO.File]::WriteAllText($PresenceFile, '[]', [System.Text.Encoding]::UTF8)
+        Write-Host "  Created presence.json (empty)"
+    }
+    if (-not (Test-Path $CaptchaQueueFile)) {
+        [System.IO.File]::WriteAllText($CaptchaQueueFile, '[]', [System.Text.Encoding]::UTF8)
+        Write-Host "  Created captcha-queue.json (empty)"
     }
     if (-not (Test-Path $CrashNotifyFile)) {
         [System.IO.File]::WriteAllText($CrashNotifyFile, '[]', [System.Text.Encoding]::UTF8)
@@ -921,6 +1045,46 @@ function Handle-Request {
     if ($method -eq 'GET' -and $url -eq '/api/crashes') {
         $data = @(Read-JsonFile $CrFile)
         Send-JsonResponse $res 200 $data
+        return
+    }
+
+    # -- GET /api/poke-targets ---------------------------------
+    # Public because the client needs this before it can decide whether the
+    # current Windows user should get the poke gauntlet.
+    if ($method -eq 'GET' -and ($url -eq '/api/poke-targets' -or $url -eq '/api/admin/poke-targets')) {
+        $targets = @(Read-JsonFile $PokeTargetsFile)
+        if ($targets.Count -eq 0) { $targets = @($DefaultPokeTargets) }
+        Send-JsonResponse $res 200 @{
+            targets = @($targets)
+            count   = $targets.Count
+            source  = $DataSource
+        }
+        return
+    }
+
+    # -- PATCH /api/admin/poke-targets --------------------------
+    # Saves the shared list used by the poke gauntlet and admin test panel.
+    if ($method -eq 'PATCH' -and $url -eq '/api/admin/poke-targets') {
+        $body = Read-RequestBody $req
+        $parsed = $null
+        try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
+        $incoming = $null
+        if ($parsed -and $parsed.PSObject.Properties['targets']) { $incoming = $parsed.targets }
+        $targets = @(Normalize-PokeTargets $incoming)
+        if ($targets.Count -eq 0) {
+            Send-JsonResponse $res 400 @{ error = 'At least one enabled or disabled target with a display name and Windows username is required.' }
+            return
+        }
+        $updated = Invoke-LockedMutate $PokeTargetsFile {
+            param($data)
+            return @($targets)
+        }
+        Send-JsonResponse $res 200 @{
+            ok      = $true
+            targets = @($updated)
+            count   = $updated.Count
+            source  = $DataSource
+        }
         return
     }
 
@@ -1693,6 +1857,74 @@ function Handle-Request {
         return
     }
 
+    # ── POST /api/admin/poke-reset (dlebel only) ────────
+    # Marks a target display name as "reset". Their next page load wipes their
+    # local poke history + today's poked-tickets cache.
+    if ($method -eq 'POST' -and $url -eq '/api/admin/poke-reset') {
+        $body = Read-RequestBody $req
+        $parsed = $null
+        try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
+        $caller = ''
+        $target = ''
+        if ($parsed) {
+            if ($parsed.PSObject.Properties['windowsUser']) { $caller = [string]$parsed.windowsUser }
+            if ($parsed.PSObject.Properties['target']) { $target = [string]$parsed.target }
+        }
+        $caller = $caller.Trim().ToLowerInvariant()
+        $target = $target.Trim().ToLowerInvariant()
+        if ($caller -ne 'dlebel') {
+            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
+            return
+        }
+        if ([string]::IsNullOrWhiteSpace($target)) {
+            Send-JsonResponse $res 400 @{ error = 'target is required.' }
+            return
+        }
+        $resetAt = (Get-Date).ToUniversalTime().ToString('o')
+        Invoke-LockedMutate $PokeResetFile {
+            param($data)
+            $newData = @()
+            $found = $false
+            foreach ($e in $data) {
+                $u = if ($e.PSObject.Properties['user']) { ([string]$e.user).Trim().ToLowerInvariant() } else { '' }
+                if ($u -eq $target) {
+                    $e | Add-Member -NotePropertyName resetAt -NotePropertyValue $resetAt -Force
+                    $found = $true
+                }
+                $newData += $e
+            }
+            if (-not $found) {
+                $newData += [pscustomobject]@{ user = $target; resetAt = $resetAt }
+            }
+            return $newData
+        }
+        Send-JsonResponse $res 200 @{ ok = $true; target = $target; resetAt = $resetAt }
+        return
+    }
+
+    # ── GET /api/poke-reset-check?user=<displayName> ────
+    # Returns the most recent reset timestamp for that user, or null.
+    if ($method -eq 'GET' -and $url -eq '/api/poke-reset-check') {
+        $userParam = ''
+        try { $userParam = [string]$req.QueryString['user'] } catch {}
+        if ([string]::IsNullOrWhiteSpace($userParam)) {
+            Send-JsonResponse $res 200 @{ resetAt = $null }
+            return
+        }
+        $needle = $userParam.Trim().ToLowerInvariant()
+        $resetAt = $null
+        $resets = @(Read-JsonFile $PokeResetFile)
+        foreach ($e in $resets) {
+            $u = if ($e.PSObject.Properties['user']) { ([string]$e.user).Trim().ToLowerInvariant() } else { '' }
+            if ($u -eq $needle) {
+                if ($e.PSObject.Properties['resetAt']) { $resetAt = [string]$e.resetAt }
+                break
+            }
+        }
+        Send-JsonResponse $res 200 @{ resetAt = $resetAt }
+        return
+    }
+
     # ── PATCH /api/tickets/{id}/delete (admin) ──────────
     if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/delete$') {
         $id = [long]$Matches[1]
@@ -1729,7 +1961,7 @@ function Handle-Request {
                 $ver = (Get-Item $HtmlFile).LastWriteTimeUtc.Ticks.ToString()
             }
         } catch {}
-        Send-JsonResponse $res 200 @{ version = $ver }
+        Send-JsonResponse $res 200 @{ version = $ver; source = $DataSource; machine = $env:COMPUTERNAME }
         return
     }
 
@@ -1796,6 +2028,328 @@ function Handle-Request {
         Send-JsonResponse $res 200 @{ ok = $true; message = 'Server restarting.' }
         Write-Host "  Restart requested via browser." -ForegroundColor Yellow
         return 'RESTART'
+    }
+
+    # ── POST /api/presence/ping ──────────────────────────
+    # Browser pings every ~30s while the guide is open. Server tracks last-seen
+    # so the admin panel can show who's currently active and remotely zap them.
+    # Body: { windowsUser: "...", displayName: "..." }
+    if ($method -eq 'POST' -and $url -eq '/api/presence/ping') {
+        $body = Read-RequestBody $req
+        $parsed = $null
+        try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
+        $who = ''
+        $name = ''
+        $sessionId = ''
+        if ($parsed) {
+            if ($parsed.PSObject.Properties['windowsUser'] -and $parsed.windowsUser) { $who = ([string]$parsed.windowsUser).Trim() }
+            if ($parsed.PSObject.Properties['displayName'] -and $parsed.displayName) { $name = ([string]$parsed.displayName).Trim() }
+            if ($parsed.PSObject.Properties['sessionId'] -and $parsed.sessionId) { $sessionId = ([string]$parsed.sessionId).Trim() }
+        }
+        if ([string]::IsNullOrWhiteSpace($who)) {
+            Send-JsonResponse $res 200 @{ ok = $false; reason = 'no windowsUser' }
+            return
+        }
+        $isLauncherProbe = $false
+        try { $isLauncherProbe = -not [string]::IsNullOrWhiteSpace([string]$req.QueryString['launcher']) } catch {}
+        if ($isLauncherProbe) {
+            try {
+                $probeUser = $who.ToLowerInvariant()
+                Invoke-LockedMutate $PresenceFile {
+                    param($data)
+                    $newData = @()
+                    foreach ($e in $data) {
+                        $u = if ($e.PSObject.Properties['windowsUser']) { ([string]$e.windowsUser).Trim().ToLowerInvariant() } else { '' }
+                        $dn = if ($e.PSObject.Properties['displayName']) { ([string]$e.displayName).Trim() } else { '' }
+                        if (-not ($u -eq $probeUser -and $dn -eq 'launcher-probe')) { $newData += $e }
+                    }
+                    return $newData
+                } | Out-Null
+            } catch {
+                Write-ErrorLog 'presence/probe' "Could not clean launcher-probe row for $who." $_.Exception.Message
+            }
+            Send-JsonResponse $res 200 @{ ok = $true; probe = $true; source = $DataSource }
+            return
+        }
+        $now = (Get-Date).ToUniversalTime().ToString('o')
+        $cutoff = (Get-Date).ToUniversalTime().AddMinutes(-10)
+        $writeOk = $true
+        $writeErr = ''
+        try {
+            Invoke-LockedMutate $PresenceFile {
+                param($data)
+                $newData = @()
+                $found = $false
+                foreach ($e in $data) {
+                    $u = if ($e.PSObject.Properties['windowsUser']) { ([string]$e.windowsUser).Trim().ToLowerInvariant() } else { '' }
+                    if ($u -eq $who.ToLowerInvariant()) {
+                        $found = $true
+                        $entry = [ordered]@{
+                            windowsUser = $who
+                            displayName = if ($name) { $name } elseif ($e.PSObject.Properties['displayName']) { [string]$e.displayName } else { '' }
+                            machine     = $env:COMPUTERNAME
+                            sessionId   = $sessionId
+                            lastSeen    = $now
+                        }
+                        $newData += [pscustomobject]$entry
+                    } else {
+                        # Drop stale rows (>10 min) while we're here
+                        $ls = $null
+                        if ($e.PSObject.Properties['lastSeen']) {
+                            try { $ls = [datetime]::Parse([string]$e.lastSeen).ToUniversalTime() } catch {}
+                        }
+                        if ($ls -and $ls -gt $cutoff) { $newData += $e }
+                    }
+                }
+                if (-not $found) {
+                    $newData += [pscustomobject]@{
+                        windowsUser = $who
+                        displayName = $name
+                        machine     = $env:COMPUTERNAME
+                        sessionId   = $sessionId
+                        lastSeen    = $now
+                    }
+                }
+                return $newData
+            } | Out-Null
+        } catch {
+            $writeOk = $false
+            $writeErr = $_.Exception.Message
+            Write-ErrorLog 'presence/ping' "Could not write presence for $who." $writeErr
+        }
+        if (-not $writeOk) {
+            Send-JsonResponse $res 500 @{ ok = $false; error = 'Presence write failed.'; detail = $writeErr; source = $DataSource }
+            return
+        }
+        Send-JsonResponse $res 200 @{ ok = $true; lastSeen = $now; source = $DataSource }
+        return
+    }
+
+    # ── POST /api/presence/leave ─────────────────────────
+    # Browser sends this on pagehide/beforeunload so closed tabs disappear from
+    # the active list immediately instead of waiting for the stale timeout.
+    # Body: { windowsUser: "..." }
+    if ($method -eq 'POST' -and $url -eq '/api/presence/leave') {
+        $body = Read-RequestBody $req
+        $parsed = $null
+        try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
+        $who = ''
+        $sessionId = ''
+        if ($parsed -and $parsed.PSObject.Properties['windowsUser'] -and $parsed.windowsUser) {
+            $who = ([string]$parsed.windowsUser).Trim().ToLowerInvariant()
+        }
+        if ($parsed -and $parsed.PSObject.Properties['sessionId'] -and $parsed.sessionId) {
+            $sessionId = ([string]$parsed.sessionId).Trim()
+        }
+        if ([string]::IsNullOrWhiteSpace($who)) {
+            Send-JsonResponse $res 200 @{ ok = $false; reason = 'no windowsUser' }
+            return
+        }
+        try {
+            Invoke-LockedMutate $PresenceFile {
+                param($data)
+                $newData = @()
+                foreach ($e in $data) {
+                    $u = if ($e.PSObject.Properties['windowsUser']) { ([string]$e.windowsUser).Trim().ToLowerInvariant() } else { '' }
+                    if ($u -ne $who) {
+                        $newData += $e
+                        continue
+                    }
+                    if (-not [string]::IsNullOrWhiteSpace($sessionId)) {
+                        $rowSession = if ($e.PSObject.Properties['sessionId']) { ([string]$e.sessionId).Trim() } else { '' }
+                        if ($rowSession -ne $sessionId) { $newData += $e }
+                    }
+                }
+                return $newData
+            } | Out-Null
+            Send-JsonResponse $res 200 @{ ok = $true; source = $DataSource }
+        } catch {
+            Write-ErrorLog 'presence/leave' "Could not remove presence for $who." $_.Exception.Message
+            Send-JsonResponse $res 500 @{ ok = $false; error = 'Presence leave failed.'; detail = $_.Exception.Message; source = $DataSource }
+        }
+        return
+    }
+
+    # ── GET /api/admin/presence (dlebel only) ────────────
+    # Returns users seen in the last 90 seconds, plus pending captcha-queue ids.
+    if ($method -eq 'GET' -and $url -eq '/api/admin/presence') {
+        $callerParam = ''
+        try { $callerParam = [string]$req.QueryString['windowsUser'] } catch {}
+        if ($callerParam.Trim().ToLowerInvariant() -ne 'dlebel') {
+            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
+            return
+        }
+        $cutoff = (Get-Date).ToUniversalTime().AddSeconds(-90)
+        $rows = @(Read-JsonFile $PresenceFile)
+        $active = @()
+        foreach ($e in $rows) {
+            $dn = if ($e.PSObject.Properties['displayName']) { [string]$e.displayName } else { '' }
+            $ls = $null
+            if ($e.PSObject.Properties['lastSeen']) {
+                try { $ls = [datetime]::Parse([string]$e.lastSeen).ToUniversalTime() } catch {}
+            }
+            if ($ls -and $ls -gt $cutoff) {
+                $active += [pscustomobject]@{
+                    windowsUser = if ($e.PSObject.Properties['windowsUser']) { [string]$e.windowsUser } else { '' }
+                    displayName = $dn
+                    machine     = if ($e.PSObject.Properties['machine']) { [string]$e.machine } else { '' }
+                    lastSeen    = [string]$e.lastSeen
+                }
+            }
+        }
+        # Pending/recent captcha-queue rows so the admin panel shows status.
+        $queue = @(Read-JsonFile $CaptchaQueueFile)
+        $recent = @()
+        $cutoffQ = (Get-Date).ToUniversalTime().AddHours(-1)
+        foreach ($q in $queue) {
+            $qa = $null
+            if ($q.PSObject.Properties['queuedAt']) {
+                try { $qa = [datetime]::Parse([string]$q.queuedAt).ToUniversalTime() } catch {}
+            }
+            if ($qa -and $qa -gt $cutoffQ) { $recent += $q }
+        }
+        Send-JsonResponse $res 200 @{ active = $active; queue = $recent; source = $DataSource }
+        return
+    }
+
+    # ── POST /api/admin/captcha-send (dlebel only) ───────
+    # Queues a captcha gauntlet for the target user. Their browser picks it up
+    # on the next /api/captcha-check poll.
+    # Body: { windowsUser: "dlebel", target: "dshank", count: 3 }
+    if ($method -eq 'POST' -and $url -eq '/api/admin/captcha-send') {
+        $body = Read-RequestBody $req
+        $parsed = $null
+        try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
+        $caller = ''
+        $target = ''
+        $count = 3
+        $challenge = ''
+        if ($parsed) {
+            if ($parsed.PSObject.Properties['windowsUser']) { $caller = [string]$parsed.windowsUser }
+            if ($parsed.PSObject.Properties['target'])      { $target = [string]$parsed.target }
+            if ($parsed.PSObject.Properties['count'])       { try { $count = [int]$parsed.count } catch {} }
+            if ($parsed.PSObject.Properties['challenge'])   { $challenge = ([string]$parsed.challenge).Trim() }
+        }
+        if ($caller.Trim().ToLowerInvariant() -ne 'dlebel') {
+            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
+            return
+        }
+        if ([string]::IsNullOrWhiteSpace($target)) {
+            Send-JsonResponse $res 400 @{ error = 'target is required.' }
+            return
+        }
+        if ($count -lt 1) { $count = 1 }
+        if ($count -gt 7) { $count = 7 }
+        $entry = [ordered]@{
+            id          = [string][guid]::NewGuid()
+            target      = $target.Trim()
+            count       = $count
+            challenge   = $challenge
+            queuedBy    = $caller.Trim()
+            queuedAt    = (Get-Date).ToUniversalTime().ToString('o')
+            status      = 'pending'
+            firedAt     = $null
+            completedAt = $null
+            result      = $null
+        }
+        Invoke-LockedMutate $CaptchaQueueFile {
+            param($data)
+            $newData = @()
+            $cutoff = (Get-Date).ToUniversalTime().AddHours(-2)
+            foreach ($q in $data) {
+                $qa = $null
+                if ($q.PSObject.Properties['queuedAt']) {
+                    try { $qa = [datetime]::Parse([string]$q.queuedAt).ToUniversalTime() } catch {}
+                }
+                if ($qa -and $qa -gt $cutoff) { $newData += $q }
+            }
+            $newData += [pscustomobject]$entry
+            return $newData
+        } | Out-Null
+        Send-JsonResponse $res 200 @{ ok = $true; id = $entry.id; queuedAt = $entry.queuedAt }
+        return
+    }
+
+    # ── GET /api/captcha-check?user=<windowsUser> ────────
+    # Returns the oldest pending captcha for that user, or { id: null }.
+    if ($method -eq 'GET' -and $url -eq '/api/captcha-check') {
+        $userParam = ''
+        try { $userParam = [string]$req.QueryString['user'] } catch {}
+        if ([string]::IsNullOrWhiteSpace($userParam)) {
+            Send-JsonResponse $res 200 @{ id = $null }
+            return
+        }
+        $needle = $userParam.Trim().ToLowerInvariant()
+        $waitSeconds = 0
+        try { $waitSeconds = [int]$req.QueryString['wait'] } catch {}
+        if ($waitSeconds -lt 0) { $waitSeconds = 0 }
+        if ($waitSeconds -gt 1) { $waitSeconds = 1 }
+
+        $hit = $null
+        $deadline = (Get-Date).AddSeconds($waitSeconds)
+        do {
+            $queue = @(Read-JsonFile $CaptchaQueueFile)
+            foreach ($q in $queue) {
+                $t = if ($q.PSObject.Properties['target']) { ([string]$q.target).Trim().ToLowerInvariant() } else { '' }
+                $s = if ($q.PSObject.Properties['status']) { [string]$q.status } else { '' }
+                if ($t -eq $needle -and $s -eq 'pending') { $hit = $q; break }
+            }
+            if ($null -ne $hit -or $waitSeconds -eq 0) { break }
+            Start-Sleep -Milliseconds 500
+        } while ((Get-Date) -lt $deadline)
+
+        if ($null -eq $hit) {
+            Send-JsonResponse $res 200 @{ id = $null }
+            return
+        }
+        Send-JsonResponse $res 200 @{
+            id        = if ($hit.PSObject.Properties['id']) { [string]$hit.id } else { '' }
+            count     = if ($hit.PSObject.Properties['count']) { [int]$hit.count } else { 3 }
+            challenge = if ($hit.PSObject.Properties['challenge']) { [string]$hit.challenge } else { '' }
+            queuedAt  = if ($hit.PSObject.Properties['queuedAt']) { [string]$hit.queuedAt } else { '' }
+            queuedBy  = if ($hit.PSObject.Properties['queuedBy']) { [string]$hit.queuedBy } else { '' }
+        }
+        return
+    }
+
+    # ── POST /api/captcha-ack ────────────────────────────
+    # Browser calls this when it fires the captcha (status=fired) and again
+    # when the user finishes (status=completed, result='passed'|'escaped').
+    # Body: { id, status, result?, windowsUser }
+    if ($method -eq 'POST' -and $url -eq '/api/captcha-ack') {
+        $body = Read-RequestBody $req
+        $parsed = $null
+        try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
+        $id = ''
+        $status = ''
+        $result = ''
+        if ($parsed) {
+            if ($parsed.PSObject.Properties['id']) { $id = [string]$parsed.id }
+            if ($parsed.PSObject.Properties['status']) { $status = [string]$parsed.status }
+            if ($parsed.PSObject.Properties['result']) { $result = [string]$parsed.result }
+        }
+        if ([string]::IsNullOrWhiteSpace($id)) {
+            Send-JsonResponse $res 400 @{ error = 'id is required.' }
+            return
+        }
+        $now = (Get-Date).ToUniversalTime().ToString('o')
+        Invoke-LockedMutate $CaptchaQueueFile {
+            param($data)
+            $newData = @()
+            foreach ($q in $data) {
+                $qid = if ($q.PSObject.Properties['id']) { [string]$q.id } else { '' }
+                if ($qid -eq $id) {
+                    if ($status) { $q | Add-Member -NotePropertyName status -NotePropertyValue $status -Force }
+                    if ($status -eq 'fired')     { $q | Add-Member -NotePropertyName firedAt     -NotePropertyValue $now -Force }
+                    if ($status -eq 'completed') { $q | Add-Member -NotePropertyName completedAt -NotePropertyValue $now -Force }
+                    if ($result) { $q | Add-Member -NotePropertyName result -NotePropertyValue $result -Force }
+                }
+                $newData += $q
+            }
+            return $newData
+        } | Out-Null
+        Send-JsonResponse $res 200 @{ ok = $true }
+        return
     }
 
     # ── 404 ─────────────────────────────────────────────
@@ -1956,6 +2510,7 @@ function Start-Server {
     try { $listener.Close() } catch {}
     Release-Lock $ClFile
     Release-Lock $TkFile
+    Release-Lock $PokeTargetsFile
     # Only remove the port file if it still points at our port. On restart the
     # replacement child may have already written its own value — don't clobber.
     try {

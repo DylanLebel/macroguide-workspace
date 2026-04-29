@@ -72,6 +72,43 @@ $previewShim = @'
     return JSON.parse(JSON.stringify(value));
   }
 
+  function defaultPokeTargets() {
+    return [
+      {
+        label: 'Dylan Shank',
+        shortName: 'Shank',
+        windowsUsers: ['dshank'],
+        names: ['Dylan Shank'],
+        aliases: ['shank'],
+        enabled: true
+      },
+      {
+        label: 'Jason Gagnon',
+        shortName: 'Jason',
+        windowsUsers: ['jgagnon'],
+        names: ['Jason Gagnon'],
+        aliases: ['jason', 'gagnon'],
+        enabled: true
+      },
+      {
+        label: 'Krupal Patel',
+        shortName: 'Krupal',
+        windowsUsers: ['kpatel'],
+        names: ['Krupal Patel'],
+        aliases: ['krupal', 'patel'],
+        enabled: true
+      },
+      {
+        label: 'Paul Lemelin',
+        shortName: 'Paul',
+        windowsUsers: ['plemelin'],
+        names: ['Paul Lemelin'],
+        aliases: ['paul', 'lemelin'],
+        enabled: true
+      }
+    ];
+  }
+
   function seedData() {
     return {
       changelog: [
@@ -198,6 +235,8 @@ $previewShim = @'
         { timestamp: '2026-04-16 09:18:21', windowsUser: 'plemelin', machine: 'P-2044', page: 'macros', action: 'OPEN' },
         { timestamp: '2026-04-16 09:35:04', windowsUser: 'github-preview', machine: 'GitHub Pages', page: 'tickets', action: 'OPEN' }
       ],
+      pokeResets: [],
+      pokeTargets: defaultPokeTargets(),
       version: 'github-preview-2026-04-16'
     };
   }
@@ -205,7 +244,12 @@ $previewShim = @'
   function loadData() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        const data = JSON.parse(raw);
+        data.pokeResets = Array.isArray(data.pokeResets) ? data.pokeResets : [];
+        data.pokeTargets = Array.isArray(data.pokeTargets) ? data.pokeTargets : defaultPokeTargets();
+        return data;
+      }
     } catch {}
     const seeded = seedData();
     saveData(seeded);
@@ -358,7 +402,69 @@ $previewShim = @'
     if (method === 'GET' && path === '/api/version') return jsonResponse({ version: data.version });
     if (method === 'GET' && path === '/api/usage') return jsonResponse(usageSummary(data.usage || []));
     if (method === 'GET' && path === '/api/restart') return jsonResponse({ ok: true, preview: true });
+    if (method === 'POST' && path === '/api/presence/ping') return jsonResponse({
+      ok: true,
+      preview: true,
+      lastSeen: new Date().toISOString(),
+      source: 'GitHub preview local browser storage'
+    });
+    if (method === 'POST' && path === '/api/presence/leave') return jsonResponse({ ok: true, preview: true });
+    if (method === 'GET' && path === '/api/admin/presence') return jsonResponse({
+      active: [{
+        windowsUser: sessionStorage.getItem('winUser') || 'github-preview',
+        displayName: localStorage.getItem('mgUserName') || 'Preview User',
+        machine: 'GitHub Pages',
+        lastSeen: new Date().toISOString()
+      }],
+      queue: []
+    });
+    if (method === 'GET' && path === '/api/captcha-check') return jsonResponse({ id: null });
+    if (method === 'POST' && path === '/api/captcha-ack') return jsonResponse({ ok: true, preview: true });
+    if (method === 'POST' && path === '/api/admin/captcha-send') return jsonResponse({ ok: true, preview: true, id: 'preview-captcha', queuedAt: new Date().toISOString() });
     if (method === 'POST' && path === '/api/admin/log-attempt') return jsonResponse({ ok: true, preview: true });
+    if (method === 'GET' && (path === '/api/poke-targets' || path === '/api/admin/poke-targets')) {
+      data.pokeTargets = Array.isArray(data.pokeTargets) ? data.pokeTargets : defaultPokeTargets();
+      saveData(data);
+      return jsonResponse({
+        targets: clone(data.pokeTargets),
+        count: data.pokeTargets.length,
+        source: 'GitHub preview local browser storage'
+      });
+    }
+
+    if (method === 'PATCH' && path === '/api/admin/poke-targets') {
+      const body = parseBody(init);
+      const targets = Array.isArray(body.targets) ? body.targets : [];
+      if (targets.length === 0) return jsonResponse({ error: 'At least one target is required.' }, 400);
+      data.pokeTargets = clone(targets);
+      saveData(data);
+      return jsonResponse({
+        ok: true,
+        preview: true,
+        targets: clone(data.pokeTargets),
+        count: data.pokeTargets.length,
+        source: 'GitHub preview local browser storage'
+      });
+    }
+
+    if (method === 'POST' && path === '/api/admin/poke-reset') {
+      const body = parseBody(init);
+      const target = String(body.target || '').trim().toLowerCase();
+      if (!target) return jsonResponse({ error: 'target is required.' }, 400);
+      data.pokeResets = Array.isArray(data.pokeResets) ? data.pokeResets : [];
+      const resetAt = new Date().toISOString();
+      const existing = data.pokeResets.find(e => String(e.user || '').trim().toLowerCase() === target);
+      if (existing) existing.resetAt = resetAt;
+      else data.pokeResets.push({ user: target, resetAt });
+      saveData(data);
+      return jsonResponse({ ok: true, preview: true, target, resetAt });
+    }
+
+    if (method === 'GET' && path === '/api/poke-reset-check') {
+      const user = String(url.searchParams.get('user') || '').trim().toLowerCase();
+      const entry = (data.pokeResets || []).find(e => String(e.user || '').trim().toLowerCase() === user);
+      return jsonResponse({ resetAt: entry ? entry.resetAt : null });
+    }
 
     if (method === 'POST' && path === '/api/usage/open') {
       const body = parseBody(init);

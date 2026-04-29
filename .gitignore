@@ -6,8 +6,8 @@ node_modules/
 macro-guide-server.js
 LaunchMacroGuide.bat
 
-# Data files (live on shared drive, not in repo)
-data/
+# Root data files stay local. Macro Guide seed data may live under deploy/data.
+/data/
 *.lock
 
 # OS files
