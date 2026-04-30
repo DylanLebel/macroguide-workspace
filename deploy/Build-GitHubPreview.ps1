@@ -66,7 +66,8 @@ $previewShim = @'
   document.documentElement.classList.add('github-preview');
   if (!sessionStorage.getItem('winUser')) sessionStorage.setItem('winUser', 'github-preview');
   if (!localStorage.getItem('mgUserName')) localStorage.setItem('mgUserName', 'Preview User');
-  if (!sessionStorage.getItem('nmtAdmin')) sessionStorage.setItem('nmtAdmin', '1');
+  sessionStorage.removeItem('mgAdminUnlocked');
+  sessionStorage.removeItem('nmtAdmin');
 
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
@@ -237,6 +238,7 @@ $previewShim = @'
       ],
       pokeResets: [],
       pokeTargets: defaultPokeTargets(),
+      tiePollVotes: [],
       version: 'github-preview-2026-04-16'
     };
   }
@@ -248,6 +250,7 @@ $previewShim = @'
         const data = JSON.parse(raw);
         data.pokeResets = Array.isArray(data.pokeResets) ? data.pokeResets : [];
         data.pokeTargets = Array.isArray(data.pokeTargets) ? data.pokeTargets : defaultPokeTargets();
+        data.tiePollVotes = Array.isArray(data.tiePollVotes) ? data.tiePollVotes : [];
         return data;
       }
     } catch {}
@@ -304,6 +307,56 @@ $previewShim = @'
       source: 'GitHub preview local browser storage',
       unique,
       entries: entries.slice().reverse().slice(0, 300)
+    };
+  }
+
+  const TIE_POLL_ID = 'crash-tie-break-2026-04';
+  const TIE_POLL_CLOSES_AT = new Date(2026, 3, 30, 16, 30, 0).toISOString();
+  const TIE_POLL_CLOSED_LABEL = '4:30 PM';
+  const TIE_POLL_OPTIONS = [
+    {
+      id: 'wheel',
+      icon: '🎡',
+      title: 'Spin a wheel',
+      description: 'Put everyone from the tie on a wheel. Whoever it lands on brings donuts.'
+    },
+    {
+      id: 'split',
+      icon: '🍩',
+      title: 'Split snack duty',
+      description: 'One tied person brings donuts. The other tied person brings cookies or muffins.'
+    },
+    {
+      id: 'weeks',
+      icon: '\uD83D\uDCC5',
+      title: 'One week each',
+      description: 'One tied person brings donuts one week. The other tied person gets the next week.'
+    }
+  ];
+
+  function tiePollState(data) {
+    data.tiePollVotes = Array.isArray(data.tiePollVotes) ? data.tiePollVotes : [];
+    const valid = new Set(TIE_POLL_OPTIONS.map(o => o.id));
+    const byUser = new Map();
+    for (const vote of data.tiePollVotes) {
+      if (!vote || vote.pollId !== TIE_POLL_ID || !valid.has(vote.optionId)) continue;
+      const user = String(vote.windowsUser || '').trim().toLowerCase();
+      if (user) byUser.set(user, vote);
+    }
+    const totals = Object.fromEntries(TIE_POLL_OPTIONS.map(o => [o.id, 0]));
+    for (const vote of byUser.values()) totals[vote.optionId] = (totals[vote.optionId] || 0) + 1;
+    const currentUser = (sessionStorage.getItem('winUser') || 'github-preview').trim().toLowerCase();
+    return {
+      pollId: TIE_POLL_ID,
+      question: 'What should happen when crash duty ends in a tie?',
+      options: clone(TIE_POLL_OPTIONS),
+      totals,
+      totalVotes: byUser.size,
+      userVote: byUser.get(currentUser)?.optionId || null,
+      closesAt: TIE_POLL_CLOSES_AT,
+      closedLabel: TIE_POLL_CLOSED_LABEL,
+      isClosed: Date.now() >= Date.parse(TIE_POLL_CLOSES_AT),
+      source: 'GitHub preview local browser storage'
     };
   }
 
@@ -399,9 +452,34 @@ $previewShim = @'
 
     if (method === 'GET' && path === '/api/changelog') return jsonResponse(clone(data.changelog));
     if (method === 'GET' && path === '/api/tickets') return jsonResponse(clone(data.tickets));
+    if (method === 'GET' && path === '/api/whoami') return jsonResponse({
+      windowsUser: sessionStorage.getItem('winUser') || 'github-preview',
+      isAdmin: true,
+      machine: 'GitHub Pages'
+    });
     if (method === 'GET' && path === '/api/version') return jsonResponse({ version: data.version });
     if (method === 'GET' && path === '/api/usage') return jsonResponse(usageSummary(data.usage || []));
     if (method === 'GET' && path === '/api/restart') return jsonResponse({ ok: true, preview: true });
+    if (method === 'GET' && path === '/api/crash-tie-poll') return jsonResponse(tiePollState(data));
+    if (method === 'POST' && path === '/api/crash-tie-poll/vote') {
+      const body = parseBody(init);
+      const optionId = String(body.optionId || '').trim().toLowerCase();
+      if (!TIE_POLL_OPTIONS.some(o => o.id === optionId)) return jsonResponse({ error: 'Choose one of the poll options.' }, 400);
+      if (Date.now() >= Date.parse(TIE_POLL_CLOSES_AT)) {
+        return jsonResponse({ ...tiePollState(data), error: 'The tie-break poll closed at 4:30 PM.' }, 409);
+      }
+      const windowsUser = (sessionStorage.getItem('winUser') || 'github-preview').trim().toLowerCase();
+      data.tiePollVotes = (data.tiePollVotes || []).filter(v => !(v.pollId === TIE_POLL_ID && String(v.windowsUser || '').trim().toLowerCase() === windowsUser));
+      data.tiePollVotes.push({
+        pollId: TIE_POLL_ID,
+        windowsUser,
+        displayName: body.displayName || localStorage.getItem('mgUserName') || 'Preview User',
+        optionId,
+        votedAt: new Date().toISOString()
+      });
+      saveData(data);
+      return jsonResponse(tiePollState(data));
+    }
     if (method === 'POST' && path === '/api/presence/ping') return jsonResponse({
       ok: true,
       preview: true,

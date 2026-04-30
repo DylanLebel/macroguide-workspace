@@ -4,11 +4,11 @@ param(
 
 <#
 .SYNOPSIS
-    Deploys MacroGuide files from C:\AllMacros to the shared Y: drive.
+    Deploys MacroGuide files from this checkout to the shared Y: drive.
 
 .DESCRIPTION
     Copies MacroGuide.html, macro-guide-server.ps1, and Open Macro Guide.vbs
-    from the local source (C:\AllMacros) to:
+    from the checkout that contains this script to:
         Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\
 
     Before overwriting, it backs up the current Y: copies to a timestamped
@@ -21,8 +21,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$Source      = 'C:\AllMacros'
-$DeploySrc   = 'C:\AllMacros\deploy'
+$DeploySrc   = $PSScriptRoot
+$Source      = Split-Path -Parent $DeploySrc
 $Target      = 'Y:\Solidworks\Macros\Macro Data PDM\MacroGuide'
 $PdmTarget   = 'C:\NMT_PDM\Libraries\Macro'   # launcher also goes here so the team can open the guide from PDM
 $IconName    = 'NMTMacroGuide.ico'                              # custom icon, matches MacroGuide.html aesthetic

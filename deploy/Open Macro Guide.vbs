@@ -76,7 +76,7 @@ Sub OpenGuide(port)
     CleanupLock
     MarkSplashDone
     WScript.Sleep 350
-    WshShell.Run "http://localhost:" & port & "/?user=" & winUser
+    WshShell.Run "http://localhost:" & port & "/?user=" & winUser & "&launch=" & CStr(Int(Timer * 1000))
     WScript.Quit 0
 End Sub
 
@@ -180,7 +180,7 @@ End Function
 
 ' Confirm the server has the current API surface, not just /api/version.
 ' A browser refresh can load updated HTML from disk while an older PowerShell
-' process is still running with stale routes; /api/presence/ping catches that.
+' process is still running with stale routes; these probes catch that.
 Function ProbePresence(p)
     ProbePresence = False
     On Error Resume Next
@@ -201,6 +201,30 @@ Function ProbePresence(p)
     h.Send body
     If Err.Number = 0 Then
         If h.Status = 200 And InStr(1, h.responseText, """ok"":true", vbTextCompare) > 0 Then ProbePresence = True
+    End If
+
+    Set h = Nothing
+    On Error GoTo 0
+End Function
+
+Function ProbeTiePoll(p)
+    ProbeTiePoll = False
+    On Error Resume Next
+
+    Dim h
+    Set h = CreateObject("MSXML2.ServerXMLHTTP")
+    If Err.Number <> 0 Then
+        Err.Clear
+        On Error GoTo 0
+        Exit Function
+    End If
+
+    h.setTimeouts 300, 300, 500, 700
+    Err.Clear
+    h.Open "GET", "http://localhost:" & p & "/api/crash-tie-poll?launcher=" & CStr(Int(Timer * 1000)), False
+    h.Send
+    If Err.Number = 0 Then
+        If h.Status = 200 And InStr(1, h.responseText, """pollId""", vbTextCompare) > 0 Then ProbeTiePoll = True
     End If
 
     Set h = Nothing
@@ -236,13 +260,13 @@ End Function
 Function ConfirmReady(p)
     ConfirmReady = False
     If ProbePort(p) = p Then
-        If Not ProbePresence(p) Then
-            LogMessage "Server on port " & CStr(p) & " is missing current presence API; requesting restart"
+        If (Not ProbePresence(p)) Or (Not ProbeTiePoll(p)) Then
+            LogMessage "Server on port " & CStr(p) & " is missing current API surface; requesting restart"
             If RequestServerRestart(p) Then
                 Dim i
                 For i = 1 To 20
                     WScript.Sleep 500
-                    If ProbePort(p) = p And ProbePresence(p) Then
+                    If ProbePort(p) = p And ProbePresence(p) And ProbeTiePoll(p) Then
                         ConfirmReady = True
                         Exit Function
                     End If
@@ -251,7 +275,7 @@ Function ConfirmReady(p)
             Exit Function
         End If
         WScript.Sleep 250
-        If ProbePort(p) = p And ProbePresence(p) Then ConfirmReady = True
+        If ProbePort(p) = p And ProbePresence(p) And ProbeTiePoll(p) Then ConfirmReady = True
     End If
 End Function
 

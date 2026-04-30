@@ -57,10 +57,36 @@ $ClFile = Join-Path $DataDir 'changelog.json'
 $TkFile = Join-Path $DataDir 'tickets.json'
 $CrFile = Join-Path $DataDir 'crashes.json'
 $CrashNotifyFile = Join-Path $DataDir 'crash-notifications.json'
+$CrashTiePollFile = Join-Path $DataDir 'crash-tie-poll.json'
 $PokeResetFile = Join-Path $DataDir 'poke-resets.json'
 $PokeTargetsFile = Join-Path $DataDir 'poke-targets.json'
 $PresenceFile = Join-Path $DataDir 'presence.json'
 $CaptchaQueueFile = Join-Path $DataDir 'captcha-queue.json'
+
+$CrashTiePollId = 'crash-tie-break-2026-04'
+$CrashTiePollQuestion = 'What should happen when crash duty ends in a tie?'
+$CrashTiePollClosesAt = [datetime]::new(2026, 4, 30, 16, 30, 0, [DateTimeKind]::Local)
+$CrashTiePollClosedLabel = '4:30 PM'
+$CrashTiePollOptions = @(
+    [ordered]@{
+        id          = 'wheel'
+        icon        = '🎡'
+        title       = 'Spin a wheel'
+        description = 'Put everyone from the tie on a wheel. Whoever it lands on brings donuts.'
+    },
+    [ordered]@{
+        id          = 'split'
+        icon        = '🍩'
+        title       = 'Split snack duty'
+        description = 'One tied person brings donuts. The other tied person brings cookies or muffins.'
+    },
+    [ordered]@{
+        id          = 'weeks'
+        icon        = '📅'
+        title       = 'One week each'
+        description = 'One tied person brings donuts one week. The other tied person gets the next week.'
+    }
+)
 
 $DefaultPokeTargets = @(
     [ordered]@{
@@ -552,6 +578,79 @@ function Invoke-LockedMutate {
     }
 }
 
+function Test-CrashTiePollOption {
+    param([string]$OptionId)
+    foreach ($opt in $CrashTiePollOptions) {
+        if ([string]$opt.id -eq $OptionId) { return $true }
+    }
+    return $false
+}
+
+function Test-CrashTiePollClosed {
+    return ((Get-Date) -ge $CrashTiePollClosesAt)
+}
+
+function Get-CrashMonthLockAt {
+    param([datetime]$When = (Get-Date))
+    $lastDay = [datetime]::DaysInMonth($When.Year, $When.Month)
+    return [datetime]::new($When.Year, $When.Month, $lastDay, 16, 30, 0, [DateTimeKind]::Local)
+}
+
+function Test-CrashMonthLocked {
+    return ((Get-Date) -ge (Get-CrashMonthLockAt))
+}
+
+function Get-CrashTiePollState {
+    param($Votes)
+
+    $caller = Get-CallerUser
+    $validOptions = @{}
+    $totals = [ordered]@{}
+    foreach ($opt in $CrashTiePollOptions) {
+        $id = [string]$opt.id
+        $validOptions[$id] = $true
+        $totals[$id] = 0
+    }
+
+    # Last write wins for each Windows user. That keeps the vote file simple
+    # and lets people change their mind if the client posts again.
+    $byUser = @{}
+    foreach ($vote in @($Votes)) {
+        if ($null -eq $vote) { continue }
+        $pollId = if ($vote.PSObject.Properties['pollId']) { [string]$vote.pollId } else { $CrashTiePollId }
+        if ($pollId -ne $CrashTiePollId) { continue }
+        $who = if ($vote.PSObject.Properties['windowsUser']) { Normalize-WindowsUser ([string]$vote.windowsUser) } else { '' }
+        $optionId = if ($vote.PSObject.Properties['optionId']) { ([string]$vote.optionId).Trim().ToLowerInvariant() } else { '' }
+        if ([string]::IsNullOrWhiteSpace($who)) { continue }
+        if (-not $validOptions.ContainsKey($optionId)) { continue }
+        $byUser[$who] = $vote
+    }
+
+    foreach ($who in $byUser.Keys) {
+        $vote = $byUser[$who]
+        $optionId = ([string]$vote.optionId).Trim().ToLowerInvariant()
+        $totals[$optionId] = [int]$totals[$optionId] + 1
+    }
+
+    $userVote = $null
+    if ($caller -and $byUser.ContainsKey($caller)) {
+        $userVote = ([string]$byUser[$caller].optionId).Trim().ToLowerInvariant()
+    }
+
+    return [ordered]@{
+        pollId     = $CrashTiePollId
+        question   = $CrashTiePollQuestion
+        options    = @($CrashTiePollOptions)
+        totals     = $totals
+        totalVotes = $byUser.Count
+        userVote   = $userVote
+        closesAt   = $CrashTiePollClosesAt.ToString('o')
+        closedLabel = $CrashTiePollClosedLabel
+        isClosed   = (Test-CrashTiePollClosed)
+        source     = $DataSource
+    }
+}
+
 function ConvertTo-PokeTargetStringArray {
     param($Value, [switch]$Lower)
     $items = @()
@@ -961,6 +1060,7 @@ function Initialize-DataFiles {
             $script:TkFile  = Join-Path $LocalDataDir 'tickets.json'
             $script:CrFile  = Join-Path $LocalDataDir 'crashes.json'
             $script:CrashNotifyFile = Join-Path $LocalDataDir 'crash-notifications.json'
+            $script:CrashTiePollFile = Join-Path $LocalDataDir 'crash-tie-poll.json'
             $script:PokeResetFile = Join-Path $LocalDataDir 'poke-resets.json'
             $script:PokeTargetsFile = Join-Path $LocalDataDir 'poke-targets.json'
             $script:PresenceFile = Join-Path $LocalDataDir 'presence.json'
@@ -985,6 +1085,10 @@ function Initialize-DataFiles {
     if (-not (Test-Path $CrFile)) {
         [System.IO.File]::WriteAllText($CrFile, '[]', [System.Text.Encoding]::UTF8)
         Write-Host "  Created crashes.json (empty)"
+    }
+    if (-not (Test-Path $CrashTiePollFile)) {
+        [System.IO.File]::WriteAllText($CrashTiePollFile, '[]', [System.Text.Encoding]::UTF8)
+        Write-Host "  Created crash-tie-poll.json (empty)"
     }
     if (-not (Test-Path $PokeResetFile)) {
         [System.IO.File]::WriteAllText($PokeResetFile, '[]', [System.Text.Encoding]::UTF8)
@@ -1172,6 +1276,65 @@ function Handle-Request {
         return
     }
 
+    # ── GET /api/crash-tie-poll ─────────────────────────
+    # Shared team vote for how crash leaderboard ties should be resolved.
+    if ($method -eq 'GET' -and $url -eq '/api/crash-tie-poll') {
+        $votes = @(Read-JsonFile $CrashTiePollFile)
+        Send-JsonResponse $res 200 (Get-CrashTiePollState $votes)
+        return
+    }
+
+    # ── POST /api/crash-tie-poll/vote ───────────────────
+    # One vote per Windows user. Posting again updates that user's vote.
+    if ($method -eq 'POST' -and $url -eq '/api/crash-tie-poll/vote') {
+        $caller = Get-CallerUser
+        if ([string]::IsNullOrWhiteSpace($caller)) {
+            Send-JsonResponse $res 400 @{ error = 'Open Macro Guide from the launcher before voting.' }
+            return
+        }
+        if (Test-CrashTiePollClosed) {
+            $state = Get-CrashTiePollState @(Read-JsonFile $CrashTiePollFile)
+            $state['error'] = 'The tie-break poll closed at 4:30 PM.'
+            Send-JsonResponse $res 409 $state
+            return
+        }
+        $body = Read-RequestBody $req
+        $parsed = $null
+        try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
+        $optionId = ''
+        $displayName = ''
+        if ($parsed) {
+            if ($parsed.PSObject.Properties['optionId'])    { $optionId = ([string]$parsed.optionId).Trim().ToLowerInvariant() }
+            if ($parsed.PSObject.Properties['displayName']) { $displayName = ([string]$parsed.displayName).Trim() }
+        }
+        if (-not (Test-CrashTiePollOption $optionId)) {
+            Send-JsonResponse $res 400 @{ error = 'Choose one of the poll options.' }
+            return
+        }
+
+        $updated = Invoke-LockedMutate $CrashTiePollFile {
+            param($data)
+            $next = @()
+            foreach ($vote in @($data)) {
+                if ($null -eq $vote) { continue }
+                $pollId = if ($vote.PSObject.Properties['pollId']) { [string]$vote.pollId } else { $CrashTiePollId }
+                $who = if ($vote.PSObject.Properties['windowsUser']) { Normalize-WindowsUser ([string]$vote.windowsUser) } else { '' }
+                if ($pollId -eq $CrashTiePollId -and $who -eq $caller) { continue }
+                $next += $vote
+            }
+            $next += [pscustomobject][ordered]@{
+                pollId      = $CrashTiePollId
+                windowsUser = $caller
+                displayName = $displayName
+                optionId    = $optionId
+                votedAt     = (Get-Date).ToUniversalTime().ToString('o')
+            }
+            return $next
+        }
+        Send-JsonResponse $res 200 (Get-CrashTiePollState $updated)
+        return
+    }
+
     # -- GET /api/poke-targets ---------------------------------
     # Public because the client needs this before it can decide whether the
     # current Windows user should get the poke gauntlet.
@@ -1276,6 +1439,14 @@ function Handle-Request {
         $caller = Get-CallerUser
         if (-not $caller) {
             Send-JsonResponse $res 400 @{ error = 'Missing required field (user).' }
+            return
+        }
+        if (Test-CrashMonthLocked) {
+            $lockAt = Get-CrashMonthLockAt
+            Send-JsonResponse $res 409 @{
+                error    = 'Crash board is locked. Standings close at 4:30 PM on the last day of the month.'
+                lockedAt = $lockAt.ToString('o')
+            }
             return
         }
         $crash | Add-Member -NotePropertyName windowsUser -NotePropertyValue $caller -Force
@@ -2410,18 +2581,26 @@ function Handle-Request {
                 }
             }
         }
-        # Pending/recent captcha-queue rows so the admin panel shows status.
+        # Captcha queue rows so the admin panel shows status. Pending items
+        # are returned regardless of age (so admin sees everything queued for
+        # offline users); delivered items are limited to the last hour.
         $queue = @(Read-JsonFile $CaptchaQueueFile)
         $recent = @()
         $cutoffQ = (Get-Date).ToUniversalTime().AddHours(-1)
         foreach ($q in $queue) {
+            $st = if ($q.PSObject.Properties['status']) { [string]$q.status } else { '' }
+            if ($st -eq 'pending') { $recent += $q; continue }
             $qa = $null
             if ($q.PSObject.Properties['queuedAt']) {
                 try { $qa = [datetime]::Parse([string]$q.queuedAt).ToUniversalTime() } catch {}
             }
             if ($qa -and $qa -gt $cutoffQ) { $recent += $q }
         }
-        Send-JsonResponse $res 200 @{ active = $active; queue = $recent; source = $DataSource }
+        # Configured poke-targets — gives the admin UI the full set of users
+        # it can queue captchas for, including ones currently offline.
+        $pokeTargets = @(Read-JsonFile $PokeTargetsFile)
+        if ($pokeTargets.Count -eq 0) { $pokeTargets = @($DefaultPokeTargets) }
+        Send-JsonResponse $res 200 @{ active = $active; queue = $recent; targets = $pokeTargets; source = $DataSource }
         return
     }
 
@@ -2464,16 +2643,27 @@ function Handle-Request {
             completedAt = $null
             result      = $null
         }
+        # Pending items are kept up to 7 days so captchas queued for offline
+        # users still fire when they come back. Delivered items (fired /
+        # completed / escaped) age out after 2 hours - long enough for the
+        # admin panel to show recent results without bloating the queue.
         Invoke-LockedMutate $CaptchaQueueFile {
             param($data)
             $newData = @()
-            $cutoff = (Get-Date).ToUniversalTime().AddHours(-2)
+            $cutoffDelivered = (Get-Date).ToUniversalTime().AddHours(-2)
+            $cutoffPending   = (Get-Date).ToUniversalTime().AddDays(-7)
             foreach ($q in $data) {
                 $qa = $null
                 if ($q.PSObject.Properties['queuedAt']) {
                     try { $qa = [datetime]::Parse([string]$q.queuedAt).ToUniversalTime() } catch {}
                 }
-                if ($qa -and $qa -gt $cutoff) { $newData += $q }
+                if (-not $qa) { continue }
+                $st = if ($q.PSObject.Properties['status']) { [string]$q.status } else { '' }
+                if ($st -eq 'pending') {
+                    if ($qa -gt $cutoffPending) { $newData += $q }
+                } else {
+                    if ($qa -gt $cutoffDelivered) { $newData += $q }
+                }
             }
             $newData += [pscustomobject]$entry
             return $newData
@@ -2723,6 +2913,7 @@ function Start-Server {
     Release-Lock $ClFile
     Release-Lock $TkFile
     Release-Lock $PokeTargetsFile
+    Release-Lock $CrashTiePollFile
     # Only remove the port file if it still points at our port. On restart the
     # replacement child may have already written its own value — don't clobber.
     try {

@@ -667,6 +667,18 @@
     .admin-poke-targets { right: 478px; }
     .admin-poke-targets:hover { border-color: #f59e0b; color: #f59e0b; }
     .admin-poke-targets:active { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+    .server-refresh {
+      position: fixed; bottom: 20px; left: 20px; z-index: 50;
+      height: 42px; border-radius: 21px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--muted); font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      padding: 0 16px;
+    }
+    .server-refresh:hover { border-color: var(--accent); color: var(--accent); }
+    .server-refresh:active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .server-refresh.is-busy { opacity: 0.7; cursor: wait; pointer-events: none; }
     .users-table td.users-names { max-width: 240px; }
     .users-name-list { display: flex; flex-wrap: wrap; gap: 4px; }
     .users-name-chip {
@@ -2172,6 +2184,312 @@
       50%     { box-shadow: 0 0 16px rgba(255,107,61,0.85); }
     }
 
+    /* ── Crash tie-break poll ───────────────────────────────────────── */
+    .cr-tie-poll-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 760;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(79,142,247,0.22), transparent 36%),
+        rgba(5,7,12,0.82);
+      backdrop-filter: blur(7px);
+    }
+    .cr-tie-poll-overlay.open { display: flex; }
+    .cr-tie-poll-card {
+      width: min(760px, 100%);
+      max-height: min(760px, calc(100vh - 48px));
+      overflow: auto;
+      background: #171b27;
+      border: 1px solid #35405b;
+      border-radius: 14px;
+      box-shadow: 0 28px 90px rgba(0,0,0,0.55);
+    }
+    .cr-tie-poll-head {
+      padding: 22px 24px 16px;
+      border-bottom: 1px solid #2f374d;
+      background: linear-gradient(135deg, rgba(255,180,84,0.16), rgba(79,142,247,0.12));
+    }
+    .cr-tie-poll-kicker {
+      color: #ffcf8a;
+      font-size: 0.76rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .cr-tie-poll-head h2 {
+      margin: 0;
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      line-height: 1.1;
+      color: var(--text);
+    }
+    .cr-tie-poll-head p {
+      margin: 10px 0 0;
+      color: #b8c3da;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .cr-tie-poll-body {
+      padding: 18px 24px 22px;
+      display: grid;
+      gap: 14px;
+    }
+    .cr-tie-poll-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+    }
+    .cr-tie-poll-option {
+      text-align: left;
+      border: 1px solid #33405b;
+      background: #202534;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 15px;
+      cursor: pointer;
+      transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+      min-height: 178px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .cr-tie-poll-option:hover {
+      transform: translateY(-2px);
+      border-color: #4f8ef7;
+      background: #242b3e;
+    }
+    .cr-tie-poll-option.is-leading {
+      border-color: #22c55e;
+      box-shadow: inset 0 0 0 1px rgba(34,197,94,0.2), 0 10px 30px rgba(34,197,94,0.08);
+    }
+    .cr-tie-poll-option.is-voted {
+      border-color: #4f8ef7;
+      background: #232c43;
+    }
+    .cr-tie-poll-option.is-closed {
+      cursor: default;
+    }
+    .cr-tie-poll-option:disabled {
+      opacity: 0.82;
+      cursor: wait;
+      transform: none;
+    }
+    .cr-tie-poll-option.is-closed:disabled {
+      cursor: default;
+    }
+    .cr-tie-poll-badge {
+      display: inline-flex;
+      align-items: center;
+      align-self: flex-start;
+      min-height: 22px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(34,197,94,0.32);
+      background: rgba(34,197,94,0.12);
+      color: #9af2b8;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .cr-tie-poll-option-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.45rem;
+      background: rgba(79,142,247,0.16);
+      border: 1px solid rgba(79,142,247,0.25);
+    }
+    .cr-tie-poll-option strong {
+      font-size: 1.02rem;
+      line-height: 1.25;
+    }
+    .cr-tie-poll-option span {
+      color: #aeb9d0;
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+    .cr-tie-poll-result {
+      margin-top: auto;
+      display: grid;
+      gap: 6px;
+    }
+    .cr-tie-poll-result-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: #c7d2e7;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .cr-tie-poll-bar {
+      height: 7px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #111827;
+      border: 1px solid #2f374d;
+    }
+    .cr-tie-poll-fill {
+      display: block;
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #4f8ef7, #22c55e);
+    }
+    .cr-tie-poll-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-top: 1px solid #2f374d;
+      padding-top: 14px;
+      color: #8e9ab1;
+      font-size: 0.82rem;
+    }
+    .cr-tie-poll-later {
+      border: 1px solid #38445f;
+      background: transparent;
+      color: #b8c3da;
+      border-radius: 9px;
+      padding: 9px 13px;
+      font: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .cr-tie-poll-later:hover {
+      border-color: #4f8ef7;
+      color: var(--text);
+      background: rgba(79,142,247,0.08);
+    }
+    .cr-tie-poll-inline {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 14px;
+      padding: 11px 14px;
+      border: 1px solid rgba(79,142,247,0.32);
+      background: rgba(79,142,247,0.08);
+      border-radius: 10px;
+      color: #c9d6ef;
+      font-size: 0.86rem;
+    }
+    .cr-tie-poll-inline button {
+      margin-left: auto;
+      border: 1px solid #38445f;
+      background: #202534;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.8rem;
+    }
+    .cr-tie-poll-global {
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 1002;
+      align-items: center;
+      gap: 14px;
+      padding: 11px 18px;
+      background: linear-gradient(90deg, #162033, #122a2c);
+      border-bottom: 1px solid rgba(79,142,247,0.36);
+      box-shadow: 0 12px 34px rgba(0,0,0,0.28);
+      color: #dbe7ff;
+    }
+    .cr-tie-poll-global-icon {
+      position: relative;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      background: rgba(79,142,247,0.16);
+      border: 1px solid rgba(79,142,247,0.3);
+      overflow: hidden;
+      font-size: 0;
+    }
+    .cr-tie-poll-global-icon::before {
+      content: "";
+      width: 13px;
+      height: 16px;
+      border: 2px solid #9fc1ff;
+      border-radius: 3px;
+      box-shadow: inset 0 0 0 2px rgba(79,142,247,0.18);
+    }
+    .cr-tie-poll-global-icon::after {
+      content: "";
+      position: absolute;
+      width: 8px;
+      height: 4px;
+      border-left: 2px solid #9af2b8;
+      border-bottom: 2px solid #9af2b8;
+      transform: rotate(-45deg);
+      top: 12px;
+      left: 13px;
+    }
+    .cr-tie-poll-global-copy {
+      min-width: 0;
+      display: grid;
+      gap: 2px;
+      line-height: 1.3;
+    }
+    .cr-tie-poll-global-copy strong {
+      color: #fff;
+      font-size: 0.9rem;
+    }
+    .cr-tie-poll-global-copy span {
+      color: #aebbd4;
+      font-size: 0.82rem;
+      overflow-wrap: anywhere;
+    }
+    .cr-tie-poll-global button {
+      margin-left: auto;
+      border: 1px solid rgba(79,142,247,0.42);
+      background: #4f8ef7;
+      color: #fff;
+      border-radius: 9px;
+      padding: 8px 13px;
+      font: inherit;
+      font-size: 0.84rem;
+      font-weight: 800;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .cr-tie-poll-global button:hover {
+      filter: brightness(1.08);
+    }
+    .cr-tie-poll-global.is-voted button,
+    .cr-tie-poll-global.is-closed button {
+      background: #202534;
+      border-color: #38445f;
+      color: #dbe7ff;
+    }
+    @media (max-width: 720px) {
+      .cr-tie-poll-overlay { padding: 14px; align-items: flex-start; padding-top: 62px; }
+      .cr-tie-poll-options { grid-template-columns: 1fr; }
+      .cr-tie-poll-foot { align-items: stretch; flex-direction: column; }
+      .cr-tie-poll-later { width: 100%; }
+      .cr-tie-poll-global {
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 12px;
+      }
+      .cr-tie-poll-global button {
+        padding: 7px 10px;
+        font-size: 0.78rem;
+      }
+    }
+
     /* ── Konami crash-fest overlay ──────────────────────────────────── */
     body.cr-konami {
       animation: crKonamiShake 0.25s ease-in-out 3;
@@ -3035,6 +3353,15 @@
 </div>
 
 <!-- ══ HEADER ══ -->
+<div class="cr-tie-poll-global" id="crTiePollGlobal" aria-live="polite">
+  <div class="cr-tie-poll-global-icon" aria-hidden="true"></div>
+  <div class="cr-tie-poll-global-copy">
+    <strong id="crTiePollGlobalTitle">Tie-break poll</strong>
+    <span id="crTiePollGlobalText">Vote on how crash ties should be handled.</span>
+  </div>
+  <button type="button" id="crTiePollGlobalBtn">Vote now</button>
+</div>
+
 <header>
   <div class="logo-row">
     <img class="logo-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEIAAAA+CAMAAACoaj1gAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAGNQTFRFAHGkEyE+EHqqQJW7v9voxMfP3+307/b5f7jRYKbGMT1WTllu4ePnIIOvn8rd8PHziZCel52qIi9KbHWHpqu2tbnCj8HXMIy1r9Liz+TucK/MP0tiXWd709XbUJ7Be4OT////ECG7AAAAACF0Uk5T//////////////////////////////////////////8An8HQIQAAAe5JREFUeNrsl9uWgjAMRVOgFRAFFERRZ+b/v3IY5BJ6WlvGFx/c7+y1yAlJoJ+XoY/inRUq2a95VpaoiInCyFdQpUJIUHxRx5fyeD4vO4EQd1A01JNsHIKsOIgefBEaCOJnkuwoBq6giGgisNZV3sTEERR7YuyMda23glGAIqYFGE6VigUSFCFpJItwsoPQyEARENCyukrdcIDu3JCBIGYO7T22oIjIyG5vK8Y3KE5koZnrmhesICUoErISXmbJUQuEK0J6AgsnG5sLP3Z6Cm962TdYCgpFDoIT69J0CoQpzuSEh1Nua1DE5IFpItFy3nhIlF3RkCf6RCLPQGzhcEVEK1hMpP8punDOqFC7dQ66YC02cbBKoUzbbNOuKYdlp6rEWxFa13IUeiraJ5v97FfXEygyyfaJT10jUGzFVa4KB1urn8jZLHHVdQeKbFiSs0SFnoGMinHNHIrcL5wYFMW8okpWV3s4Z1CwjS/Smu2WwPWFTIrrctPxcFyBjAp9494cTd+A4q4rHofYwAXrmoCi0gRppX05jT2QQVEsS1HjpNfCiUDBL6ijNJ5py6ZXoJjPBtafIGkN82ZU5IbeNDGFE4Li0d5pmTsP56HpW1CUf5ds5Xe99xPpBIqa96OTbiJdXv6lUZ/fu7dW/AowAIXFO3LF1XQgAAAAAElFTkSuQmCC" alt="Nordic Minesteel" />
@@ -3433,7 +3760,7 @@
           </div>
           <div class="cr-donut cr-donut-mirror" aria-hidden="true">🍩</div>
         </div>
-        <!-- Countdown to last Friday of the month -->
+        <!-- Countdown to the monthly crash lock-in -->
         <div class="cr-countdown" id="crCountdown">
           <div class="cr-countdown-label">⏱ Lock-in countdown</div>
           <div class="cr-countdown-clock" id="crCountdownClock">
@@ -3500,6 +3827,11 @@
         <button class="cr-alert-admin admin-only" id="crAlertAdmin" type="button">Subscribers</button>
         <button class="cr-alert-toggle" id="crAlertToggle" type="button" aria-pressed="false">Loading</button>
       </div>
+    </div>
+
+    <div class="cr-tie-poll-inline" id="crTiePollInline">
+      <span id="crTiePollInlineText">Tie-break poll is open.</span>
+      <button type="button" id="crTiePollInlineBtn">Vote</button>
     </div>
 
     <!-- Rivalry callout (only visible when top 2 are tied/close) -->
@@ -3570,12 +3902,12 @@
         <div><strong>Solo winner brings donuts</strong><br>Most crashes by the deadline → donuts for the team.</div>
       </div>
       <div class="cr-rule-item">
-        <div class="cr-rule-icon">🥕🍎</div>
-        <div><strong>Tie = split the snack duty</strong><br>2-way tie: one brings a 🥕 veggie tray, the other brings a 🍎 fruit tray. 3-way tie: add 🍩 donuts to the mix.</div>
+        <div class="cr-rule-icon">🗳️</div>
+        <div><strong>Tie rule is up for vote</strong><br>The team is deciding between a wheel for one donut person, or split snack duty with donuts plus cookies or muffins.</div>
       </div>
       <div class="cr-rule-item">
         <div class="cr-rule-icon">⏱</div>
-        <div><strong>Deadline is the end of the month</strong><br>Standings lock at midnight on the last day of the month. Count at that moment wins.</div>
+        <div><strong>Deadline is the end of the month</strong><br>Standings lock at 4:30 PM on the last day of the month. Count at that moment wins.</div>
       </div>
       <div class="cr-rule-item">
         <div class="cr-rule-icon">🙋</div>
@@ -3584,6 +3916,24 @@
     </div>
   </div>
 </div><!-- /tab-crashes -->
+
+<!-- ══ CRASHES TIE-BREAK POLL ══ -->
+<div class="cr-tie-poll-overlay" id="crTiePollOverlay" aria-modal="true" role="dialog" aria-labelledby="crTiePollTitle">
+  <div class="cr-tie-poll-card">
+    <div class="cr-tie-poll-head">
+      <div class="cr-tie-poll-kicker">Crash tie-break vote</div>
+      <h2 id="crTiePollTitle">What should happen when crash duty ends in a tie?</h2>
+      <p>Pick the rule the team should use when multiple people are tied for most SolidWorks crashes.</p>
+    </div>
+    <div class="cr-tie-poll-body">
+      <div class="cr-tie-poll-options" id="crTiePollOptions"></div>
+      <div class="cr-tie-poll-foot">
+        <span id="crTiePollStatus">Loading team votes...</span>
+        <button class="cr-tie-poll-later" id="crTiePollLater" type="button">Close panel</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ══ CRASHES LOG MODAL ══ -->
 <div class="overlay cr-overlay" id="crOverlay">
@@ -3908,7 +4258,22 @@
   </div>
 </div>
 
-<!-- Admin login modal removed: the public preview is read-only. -->
+<!-- ══ ADMIN LOGIN MODAL ══
+     Server-side OS-user check is the real security boundary. This password
+     is a client-side opt-in: even on the designated Windows account, admin
+     mode stays off until you type it. Lasts for the tab session only. -->
+<div id="adminOverlay">
+  <div class="admin-modal">
+    <h2>🔒 Admin login</h2>
+    <p>Enter the admin password to unlock admin mode for this tab.</p>
+    <input type="password" id="adminPwInput" autocomplete="off" placeholder="Password">
+    <div class="admin-err" id="adminErr">Wrong password.</div>
+    <div class="admin-actions">
+      <button class="btn-cancel" id="adminCancelBtn" style="flex:1">Cancel</button>
+      <button class="btn-save" id="adminSubmitBtn" style="flex:1">Unlock</button>
+    </div>
+  </div>
+</div>
 
 <!-- ══ USAGE VIEW MODAL ══ -->
 <div id="usageOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:275;align-items:center;justify-content:center;padding:24px">
@@ -4013,6 +4378,7 @@
 <button class="admin-toggle" id="adminToggle" title="Admin login">🔒</button>
 
 <!-- ══ TOAST NOTIFICATIONS ══ -->
+<button class="server-refresh" id="serverRefresh" title="Restart the local Macro Guide server and reload this page">Refresh Server</button>
 <div class="toast-container" id="toasts"></div>
 
 <!-- ══ IMAGE LIGHTBOX ══ -->
@@ -4029,7 +4395,7 @@
   document.documentElement.classList.add('github-preview');
   if (!sessionStorage.getItem('winUser')) sessionStorage.setItem('winUser', 'github-preview');
   if (!localStorage.getItem('mgUserName')) localStorage.setItem('mgUserName', 'Preview User');
-  // The public GitHub Pages preview is read-only; no client-side admin flag.
+  sessionStorage.removeItem('mgAdminUnlocked');
   sessionStorage.removeItem('nmtAdmin');
 
   function clone(value) {
@@ -4201,6 +4567,7 @@
       ],
       pokeResets: [],
       pokeTargets: defaultPokeTargets(),
+      tiePollVotes: [],
       version: 'github-preview-2026-04-16'
     };
   }
@@ -4212,6 +4579,7 @@
         const data = JSON.parse(raw);
         data.pokeResets = Array.isArray(data.pokeResets) ? data.pokeResets : [];
         data.pokeTargets = Array.isArray(data.pokeTargets) ? data.pokeTargets : defaultPokeTargets();
+        data.tiePollVotes = Array.isArray(data.tiePollVotes) ? data.tiePollVotes : [];
         return data;
       }
     } catch {}
@@ -4268,6 +4636,56 @@
       source: 'GitHub preview local browser storage',
       unique,
       entries: entries.slice().reverse().slice(0, 300)
+    };
+  }
+
+  const TIE_POLL_ID = 'crash-tie-break-2026-04';
+  const TIE_POLL_CLOSES_AT = new Date(2026, 3, 30, 16, 30, 0).toISOString();
+  const TIE_POLL_CLOSED_LABEL = '4:30 PM';
+  const TIE_POLL_OPTIONS = [
+    {
+      id: 'wheel',
+      icon: 'ðŸŽ¡',
+      title: 'Spin a wheel',
+      description: 'Put everyone from the tie on a wheel. Whoever it lands on brings donuts.'
+    },
+    {
+      id: 'split',
+      icon: 'ðŸ©',
+      title: 'Split snack duty',
+      description: 'One tied person brings donuts. The other tied person brings cookies or muffins.'
+    },
+    {
+      id: 'weeks',
+      icon: '\uD83D\uDCC5',
+      title: 'One week each',
+      description: 'One tied person brings donuts one week. The other tied person gets the next week.'
+    }
+  ];
+
+  function tiePollState(data) {
+    data.tiePollVotes = Array.isArray(data.tiePollVotes) ? data.tiePollVotes : [];
+    const valid = new Set(TIE_POLL_OPTIONS.map(o => o.id));
+    const byUser = new Map();
+    for (const vote of data.tiePollVotes) {
+      if (!vote || vote.pollId !== TIE_POLL_ID || !valid.has(vote.optionId)) continue;
+      const user = String(vote.windowsUser || '').trim().toLowerCase();
+      if (user) byUser.set(user, vote);
+    }
+    const totals = Object.fromEntries(TIE_POLL_OPTIONS.map(o => [o.id, 0]));
+    for (const vote of byUser.values()) totals[vote.optionId] = (totals[vote.optionId] || 0) + 1;
+    const currentUser = (sessionStorage.getItem('winUser') || 'github-preview').trim().toLowerCase();
+    return {
+      pollId: TIE_POLL_ID,
+      question: 'What should happen when crash duty ends in a tie?',
+      options: clone(TIE_POLL_OPTIONS),
+      totals,
+      totalVotes: byUser.size,
+      userVote: byUser.get(currentUser)?.optionId || null,
+      closesAt: TIE_POLL_CLOSES_AT,
+      closedLabel: TIE_POLL_CLOSED_LABEL,
+      isClosed: Date.now() >= Date.parse(TIE_POLL_CLOSES_AT),
+      source: 'GitHub preview local browser storage'
     };
   }
 
@@ -4363,9 +4781,34 @@
 
     if (method === 'GET' && path === '/api/changelog') return jsonResponse(clone(data.changelog));
     if (method === 'GET' && path === '/api/tickets') return jsonResponse(clone(data.tickets));
+    if (method === 'GET' && path === '/api/whoami') return jsonResponse({
+      windowsUser: sessionStorage.getItem('winUser') || 'github-preview',
+      isAdmin: true,
+      machine: 'GitHub Pages'
+    });
     if (method === 'GET' && path === '/api/version') return jsonResponse({ version: data.version });
     if (method === 'GET' && path === '/api/usage') return jsonResponse(usageSummary(data.usage || []));
     if (method === 'GET' && path === '/api/restart') return jsonResponse({ ok: true, preview: true });
+    if (method === 'GET' && path === '/api/crash-tie-poll') return jsonResponse(tiePollState(data));
+    if (method === 'POST' && path === '/api/crash-tie-poll/vote') {
+      const body = parseBody(init);
+      const optionId = String(body.optionId || '').trim().toLowerCase();
+      if (!TIE_POLL_OPTIONS.some(o => o.id === optionId)) return jsonResponse({ error: 'Choose one of the poll options.' }, 400);
+      if (Date.now() >= Date.parse(TIE_POLL_CLOSES_AT)) {
+        return jsonResponse({ ...tiePollState(data), error: 'The tie-break poll closed at 4:30 PM.' }, 409);
+      }
+      const windowsUser = (sessionStorage.getItem('winUser') || 'github-preview').trim().toLowerCase();
+      data.tiePollVotes = (data.tiePollVotes || []).filter(v => !(v.pollId === TIE_POLL_ID && String(v.windowsUser || '').trim().toLowerCase() === windowsUser));
+      data.tiePollVotes.push({
+        pollId: TIE_POLL_ID,
+        windowsUser,
+        displayName: body.displayName || localStorage.getItem('mgUserName') || 'Preview User',
+        optionId,
+        votedAt: new Date().toISOString()
+      });
+      saveData(data);
+      return jsonResponse(tiePollState(data));
+    }
     if (method === 'POST' && path === '/api/presence/ping') return jsonResponse({
       ok: true,
       preview: true,
@@ -4484,7 +4927,9 @@
 </script>
 <script>
 // ── Admin gate ──────────────────────────────────────────────────────────
-// The GitHub Pages preview is read-only. There is no admin in the preview.
+// Admin authority is decided by the server based on the OS user that started
+// the local server (see /api/whoami). The password below is only a local
+// opt-in UI gate; every admin endpoint still re-checks identity server-side.
 
 // ── Toast notifications ─────────────────────────────────────────────────
 function showToast(message, type = 'info') {
@@ -4499,6 +4944,154 @@ function showToast(message, type = 'info') {
     setTimeout(() => el.remove(), 300);
   }, 4000);
 }
+
+// ── Intruder quips ──────────────────────────────────────────────────────
+// Light-touch comedy for non-admins poking at admin / dev surface.
+// Never actually blocks anything: real auth is decided server-side, and we
+// don't want to break legitimate DevTools usage. Just snark.
+const INTRUDER_QUIPS = {
+  backstageHeader: [
+    'Maintenance Closet',
+    'Wrong Door',
+    'Definitely Not Backstage',
+    'Restricted: Vibes Only',
+    'You Found the Broom Closet',
+    'Authorized Personnel Vibes Only',
+    'Employees Only (You Are Not Employed Here)',
+    'Section 404: You'
+  ],
+  backstageTitle: [
+    'You are absolutely not supposed to be in here.',
+    "Nice try. We're flattered. Leave.",
+    'Captcha for you: be the right Windows user.',
+    "Cool, you typed the magic word. It still doesn't work.",
+    'Backstage pass not detected. Please return to your seat.',
+    'This is, in fact, not the room you wanted.',
+    'You speedran the wrong door.',
+    'Achievement unlocked: Trespassing (lite).'
+  ],
+  backstageBody: [
+    'The buttons have been unplugged, the clipboard is fake, and this drawer now only dispenses disappointment.',
+    'We rerouted you to the simulator. None of these buttons do anything.',
+    'You found the secret room. It is, sadly, a closet.',
+    'The dev panel sees you. The dev panel is unimpressed.',
+    'Welcome to nothing. Please leave nothing exactly as you found it.',
+    'Everything in here is glued down. Including the snacks.',
+    'The mop is real. The admin tools are not.',
+    'This is where we keep the disappointment. Help yourself.'
+  ],
+  adminLock: [
+    "You're not the admin. The lock is laughing at you.",
+    '🔒 stays locked. Try a different Windows account.',
+    'Admin? In this economy?',
+    'Even the lock is embarrassed for you.',
+    'This button is purely decorative for you.',
+    'Press X to doubt your credentials.',
+    'Captcha for you: be the right Windows user.',
+    'Clicking harder will not promote you.',
+    'You and admin are not on speaking terms.'
+  ],
+  devtools: [
+    'I see you opened DevTools. Brave. Pointless, but brave.',
+    'F12? The server still decides who\'s admin.',
+    "Snooping in DevTools won't make you admin. It might find the typos though.",
+    'Welcome, inspector. There is nothing to inspect.',
+    'Flipping classes in the console? Cute. The server does not care.',
+    'document.body.classList.add("is-admin") would be embarrassing for you. Please.',
+    'Console wizard detected. Promoted to: still not admin.'
+  ],
+  sourceCode: [
+    "Ctrl+U? Reading the source won't grant powers.",
+    'View Source: yes. Edit Source: lol no.',
+    'The source is open. Your access is not.',
+    'Reading is free. Admin is not.',
+    "You can read every line. None of them make you admin.",
+    "Spoiler: the server still gets the final vote."
+  ],
+  typed: [
+    "Typing 'sudo' doesn't work here. We checked.",
+    "'admin' is just a word. It does not summon admin.",
+    'We heard you. We are not impressed.',
+    'Saying it louder will not help.',
+    'The dictionary cannot grant permissions.',
+    'You spelled it right. It still does nothing.',
+    "That's not a command, that's a confession."
+  ],
+  wrongPassword: [
+    'Wrong password.',
+    'Nope. Try again.',
+    'That is not the password.',
+    'Close, probably. Still wrong.',
+    'The password is not "password".',
+    'Incorrect. The lock yawns.',
+    'Almost. Or not. Mostly not.',
+    'Denied with feeling.'
+  ]
+};
+
+function pickQuip(category) {
+  const arr = INTRUDER_QUIPS[category];
+  if (!arr || !arr.length) return '';
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// Rate-limit snark toasts so they can't pile up if the user mashes keys.
+const _quipLastShown = {};
+function snarkToast(category, fallback, minGapMs = 8000) {
+  const now = Date.now();
+  if (_quipLastShown[category] && now - _quipLastShown[category] < minGapMs) return;
+  _quipLastShown[category] = now;
+  const msg = pickQuip(category) || fallback || '';
+  if (msg) showToast(msg, 'info');
+}
+
+// ── Snoop watcher: F12 / Ctrl+U / Ctrl+Shift+I/J + typed words ──────────
+// Never preventDefault — DevTools and View Source still work normally.
+// We just acknowledge the attempt with a toast. Admins get nothing.
+(function snoopWatcherInit() {
+  const TYPED_TRIGGERS = ['sudo', 'admin', 'root', 'hack'];
+  const TYPED_MAX_LEN = Math.max(...TYPED_TRIGGERS.map(s => s.length));
+  let typedBuf = '';
+
+  function isAdminNow() {
+    return document.body && document.body.classList.contains('is-admin');
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (isAdminNow()) return;
+
+    const ctrl = e.ctrlKey || e.metaKey;
+    const shift = e.shiftKey;
+    const k = (e.key || '').toLowerCase();
+
+    if (e.key === 'F12') {
+      snarkToast('devtools');
+      return;
+    }
+    if (ctrl && shift && (k === 'i' || k === 'j' || k === 'c')) {
+      snarkToast('devtools');
+      return;
+    }
+    if (ctrl && k === 'u') {
+      snarkToast('sourceCode');
+      return;
+    }
+
+    // Typed-word watcher: ignore when focus is in an input/textarea so we
+    // don't snark on legitimate typing. Single character keys only.
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    if (e.key.length !== 1) return;
+    typedBuf = (typedBuf + k).slice(-TYPED_MAX_LEN);
+    for (const word of TYPED_TRIGGERS) {
+      if (typedBuf.endsWith(word)) {
+        typedBuf = '';
+        snarkToast('typed', null, 12000);
+        break;
+      }
+    }
+  });
+})();
 
 // ── API helpers ─────────────────────────────────────────────────────────
 const API_BASE = window.location.origin;
@@ -4516,6 +5109,10 @@ async function apiFetch(path, options = {}) {
 function currentUsagePage() {
   const activeTab = document.querySelector('.nav-tab.active');
   return activeTab ? (activeTab.dataset.tab || '') : '';
+}
+
+function currentTabName() {
+  return currentUsagePage();
 }
 
 // Fire-and-forget page-open logging. It must never block the guide from loading.
@@ -4538,12 +5135,60 @@ async function logUsageOpen() {
 // so remote sends land quickly even when Chrome/Edge throttles background tabs.
 let __presenceRestartAttempted = false;
 let __presenceLastStatus = 'presence: waiting';
+let __serverRestartInFlight = false;
 const __presenceSessionId = (() => {
   try {
     if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
   } catch {}
   return String(Date.now()) + '-' + Math.random().toString(36).slice(2);
 })();
+
+async function restartLocalMacroGuideServer({ confirmFirst = false, source = 'manual' } = {}) {
+  if (__serverRestartInFlight) return;
+  if (document.documentElement.classList.contains('github-preview')) {
+    window.location.reload();
+    return;
+  }
+  if (confirmFirst && !confirm('Restart the local Macro Guide server and reload this page?')) return;
+
+  __serverRestartInFlight = true;
+  const btn = document.getElementById('serverRefresh');
+  const oldText = btn ? btn.textContent : '';
+  if (btn) {
+    btn.classList.add('is-busy');
+    btn.textContent = 'Restarting...';
+  }
+
+  try {
+    if (typeof showToast === 'function') {
+      showToast(source === 'auto' ? 'Updating the local Macro Guide server...' : 'Restarting local Macro Guide server...', 'info');
+    }
+    await fetch(API_BASE + '/api/restart?client=' + encodeURIComponent(source) + '&t=' + Date.now(), { cache: 'no-store' });
+  } catch {}
+
+  await new Promise(r => setTimeout(r, 1500));
+  for (let i = 0; i < 30; i++) {
+    try {
+      const r = await fetch(API_BASE + '/api/version?reload=' + Date.now(), { cache: 'no-store' });
+      if (r.ok) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('reload', String(Date.now()));
+        window.location.replace(url.toString());
+        return;
+      }
+    } catch {}
+    await new Promise(r => setTimeout(r, 1000));
+  }
+
+  __serverRestartInFlight = false;
+  if (btn) {
+    btn.classList.remove('is-busy');
+    btn.textContent = oldText || 'Refresh Server';
+  }
+  if (typeof showToast === 'function') {
+    showToast('Server did not come back up. Re-open the Macro Guide from PDM.', 'error');
+  }
+}
 
 async function restartServerForMissingPresenceRoute() {
   if (__presenceRestartAttempted) return;
@@ -4556,25 +5201,7 @@ async function restartServerForMissingPresenceRoute() {
     sessionStorage.setItem('mgPresenceRestartAt', String(Date.now()));
   } catch {}
 
-  try {
-    if (typeof showToast === 'function') {
-      showToast('Updating the local Macro Guide server...', 'info');
-    }
-    await fetch(API_BASE + '/api/restart', { cache: 'no-store' });
-  } catch {}
-
-  setTimeout(async () => {
-    for (let i = 0; i < 30; i++) {
-      await new Promise(r => setTimeout(r, 1000));
-      try {
-        const r = await fetch(API_BASE + '/api/version', { cache: 'no-store' });
-        if (r.ok) { window.location.reload(); return; }
-      } catch {}
-    }
-    if (typeof showToast === 'function') {
-      showToast('Server update did not finish. Close and reopen the Macro Guide from PDM.', 'error');
-    }
-  }, 1200);
+  restartLocalMacroGuideServer({ source: 'auto' });
 }
 
 async function presencePing() {
@@ -5015,6 +5642,7 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
     // requests, getting started) are not drafts and don't need the warning.
     const wip = document.getElementById('wipBanner');
     if (wip) wip.style.display = (tab.dataset.tab === 'macros') ? 'flex' : 'none';
+    crMaybeShowTiePoll();
   });
 });
 
@@ -5623,9 +6251,9 @@ function pokeIsTargeted() {
   return !!pokeCurrentTarget();
 }
 
-// One-shot bypass that skips the math captcha. Armed via the dev panel button.
-// Captcha bypass removed in the preview as well.
-function pokeBypassConsume() { return false; }
+// Captcha bypass removed. There is no longer any client-side path to skip
+// the math captcha — it runs as part of the poke flow and cannot be
+// disabled from the page.
 
 // Hidden trigger to open the poke dev panel.
 // Type this word (lowercase) anywhere on the page outside an input. Single-purpose,
@@ -5641,7 +6269,9 @@ const POKE_DEV_SECRET = 'backstage';
     buf = (buf + e.key.toLowerCase()).slice(-POKE_DEV_SECRET.length);
     if (buf === POKE_DEV_SECRET) {
       buf = '';
-      // Dev panel disabled in the public preview.
+      // Dev panel is admin-only. Non-admin users get a harmless "wrong door"
+      // panel instead of tools.
+      pokeOpenDevPanel();
     }
   });
 })();
@@ -6679,6 +7309,305 @@ function pokeChallengeSpotDifference(host) {
   });
 }
 
+// Whack-a-mole: hit targets while they are up, avoid bombs.
+function pokeChallengeWhackMole(host) {
+  return new Promise(resolve => {
+    const NEED = 8;
+    const TIME = 8000;
+    let hits = 0;
+    let done = false;
+    host.innerHTML = `
+      <div style="font-size:1rem;margin-bottom:12px;opacity:0.92;">Whack ${NEED} targets. Touch a bomb and you fail.</div>
+      <div id="tkPokeMoleMeta" style="font-family:monospace;margin-bottom:8px;">Hits: 0/${NEED} | Time: ${(TIME/1000).toFixed(1)}</div>
+      <div id="tkPokeMoleStage" style="position:relative;width:100%;height:280px;background:#1e293b;border:2px solid rgba(255,255,255,0.18);border-radius:12px;overflow:hidden;"></div>
+    `;
+    const meta = host.querySelector('#tkPokeMoleMeta');
+    const stage = host.querySelector('#tkPokeMoleStage');
+    const start = Date.now();
+    function finish(ok) {
+      if (done) return;
+      done = true;
+      clearInterval(tick);
+      clearInterval(spawnTimer);
+      resolve(ok);
+    }
+    function spawn() {
+      if (done) return;
+      const isBomb = Math.random() < 0.28;
+      const b = document.createElement('button');
+      b.textContent = isBomb ? 'X' : 'O';
+      b.style.cssText = 'position:absolute;width:50px;height:50px;border-radius:50%;border:2px solid rgba(255,255,255,0.22);background:' + (isBomb ? '#7f1d1d' : '#14532d') + ';color:#fff;font-size:1.45rem;font-weight:900;cursor:pointer;transition:opacity 220ms, transform 80ms;user-select:none;';
+      b.style.left = Math.floor(Math.random() * Math.max(1, stage.clientWidth - 54)) + 'px';
+      b.style.top = Math.floor(Math.random() * Math.max(1, stage.clientHeight - 54)) + 'px';
+      b.onclick = () => {
+        if (done) return;
+        if (isBomb) { finish(false); return; }
+        hits++;
+        b.remove();
+        if (hits >= NEED) finish(true);
+      };
+      stage.appendChild(b);
+      setTimeout(() => { b.style.opacity = '0'; b.style.transform = 'scale(0.75)'; setTimeout(() => b.remove(), 240); }, 850 + Math.random() * 600);
+    }
+    const tick = setInterval(() => {
+      const left = Math.max(0, TIME - (Date.now() - start));
+      meta.textContent = `Hits: ${hits}/${NEED} | Time: ${(left/1000).toFixed(1)}`;
+      if (left <= 0) finish(false);
+    }, 80);
+    const spawnTimer = setInterval(spawn, 380);
+    spawn();
+  });
+}
+
+// Inverted reCAPTCHA: the prompt asks for robots, but the correct answer is humans.
+function pokeChallengeReverseTuring(host) {
+  return new Promise(resolve => {
+    const tiles = [
+      { e: 'BOT', human: false }, { e: 'AI', human: false }, { e: 'ROBOT', human: false },
+      { e: 'HUMAN', human: true }, { e: 'PERSON', human: true }, { e: 'USER', human: true },
+      { e: 'DRONE', human: false }, { e: 'DEV', human: true }, { e: 'CPU', human: false }
+    ].sort(() => Math.random() - 0.5);
+    host.innerHTML = `
+      <div style="font-size:1rem;margin-bottom:6px;opacity:0.92;">Click all images that contain a <strong>ROBOT</strong>.</div>
+      <div style="font-size:0.78rem;margin-bottom:14px;opacity:0.7;">The trick: select the humans.</div>
+      <div id="tkPokeRtGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:330px;margin:0 auto 14px;">
+        ${tiles.map((t, i) => `
+          <div data-i="${i}" data-h="${t.human}" class="tk-rt-tile"
+            style="font-size:1.05rem;background:rgba(0,0,0,0.25);border:3px solid transparent;border-radius:10px;padding:18px 8px;cursor:pointer;user-select:none;font-weight:900;letter-spacing:0;">${t.e}</div>
+        `).join('')}
+      </div>
+      <button id="tkPokeRtGo" style="background:#fff;color:#7c2d12;font-weight:700;border:none;border-radius:8px;padding:8px 20px;font-size:1rem;cursor:pointer;">Verify</button>
+    `;
+    const grid = host.querySelector('#tkPokeRtGrid');
+    grid.addEventListener('click', e => {
+      const t = e.target.closest('.tk-rt-tile');
+      if (!t) return;
+      const on = t.classList.toggle('selected');
+      t.style.borderColor = on ? '#fbbf24' : 'transparent';
+      t.style.background = on ? 'rgba(251,191,36,0.25)' : 'rgba(0,0,0,0.25)';
+    });
+    host.querySelector('#tkPokeRtGo').onclick = () => {
+      let ok = true;
+      grid.querySelectorAll('.tk-rt-tile').forEach(tEl => {
+        if ((tEl.dataset.h === 'true') !== tEl.classList.contains('selected')) ok = false;
+      });
+      resolve(ok);
+    };
+  });
+}
+
+// Cookie clicker rate test: 25 clicks in 3 seconds. First click starts the clock.
+function pokeChallengeClickRate(host) {
+  return new Promise(resolve => {
+    const NEED = 25;
+    const TIME = 3000;
+    let count = 0;
+    let started = false;
+    let done = false;
+    host.innerHTML = `
+      <div style="font-size:1rem;margin-bottom:8px;opacity:0.92;">Click the cookie ${NEED} times in ${(TIME/1000).toFixed(1)} seconds. First click starts the timer.</div>
+      <div id="tkPokeCookieMeta" style="font-family:monospace;margin-bottom:8px;">0 / ${NEED} | Time: ${(TIME/1000).toFixed(2)}s</div>
+      <button id="tkPokeCookie" style="font-size:4rem;background:#0f172a;border:none;cursor:pointer;border-radius:50%;padding:18px;user-select:none;transition:transform 60ms;">&#127850;</button>
+    `;
+    const btn = host.querySelector('#tkPokeCookie');
+    const meta = host.querySelector('#tkPokeCookieMeta');
+    let start = 0, tick = 0;
+    function finish(ok) {
+      if (done) return;
+      done = true;
+      clearInterval(tick);
+      resolve(ok);
+    }
+    btn.onclick = () => {
+      if (done) return;
+      if (!started) {
+        started = true;
+        start = Date.now();
+        tick = setInterval(() => {
+          const left = Math.max(0, TIME - (Date.now() - start));
+          meta.textContent = `${count} / ${NEED} | Time: ${(left/1000).toFixed(2)}s`;
+          if (left <= 0) finish(count >= NEED);
+        }, 40);
+      }
+      count++;
+      btn.style.transform = 'scale(0.92)';
+      setTimeout(() => { btn.style.transform = ''; }, 50);
+      if (count >= NEED) finish(true);
+    };
+  });
+}
+
+// Pixel hunt: find one slightly off-shade cell in a near-uniform grid.
+function pokeChallengePixelHunt(host) {
+  return new Promise(resolve => {
+    const N = 64;
+    const h = Math.floor(Math.random() * 360);
+    const base = `hsl(${h}, 60%, 45%)`;
+    const odd = `hsl(${h}, 60%, 50%)`;
+    const target = Math.floor(Math.random() * N);
+    host.innerHTML = `
+      <div style="font-size:1rem;margin-bottom:12px;opacity:0.92;">One pixel is a slightly different shade. Click it.</div>
+      <div id="tkPokePixelGrid" style="display:grid;grid-template-columns:repeat(8,30px);gap:2px;justify-content:center;">
+        ${Array.from({ length: N }, (_, i) => `<button class="tk-pixel-cell" data-i="${i}" style="width:30px;height:30px;border:none;border-radius:3px;background:${i === target ? odd : base};cursor:crosshair;"></button>`).join('')}
+      </div>
+    `;
+    host.querySelectorAll('.tk-pixel-cell').forEach(btn => {
+      btn.onclick = () => resolve(Number(btn.dataset.i) === target);
+    });
+  });
+}
+
+// Type the first 8 digits of pi after the decimal. No paste.
+function pokeChallengePi(host) {
+  return new Promise(resolve => {
+    const ANSWER = '14159265';
+    host.innerHTML = `
+      <div style="font-size:1rem;margin-bottom:12px;opacity:0.92;">Type the first 8 digits of &pi; <em>after</em> the decimal. No paste. No "3.".</div>
+      <div style="font-family:monospace;font-size:2rem;letter-spacing:4px;margin:10px 0;font-weight:800;">3.????????</div>
+      <input id="tkPokePiIn" autocomplete="off" inputmode="numeric" maxlength="8"
+        style="font-family:monospace;font-size:1.4rem;width:220px;padding:8px;text-align:center;border-radius:8px;border:2px solid rgba(255,255,255,0.2);background:#0f172a;color:#fff;letter-spacing:6px;outline:none;">
+      <div style="margin-top:12px;"><button id="tkPokePiGo" style="background:#fff;color:#7c2d12;font-weight:700;border:none;border-radius:8px;padding:8px 20px;font-size:1rem;cursor:pointer;">Submit</button></div>
+    `;
+    const inp = host.querySelector('#tkPokePiIn');
+    inp.focus();
+    inp.addEventListener('paste', e => e.preventDefault());
+    host.querySelector('#tkPokePiGo').onclick = () => resolve(inp.value.trim() === ANSWER);
+    inp.onkeydown = e => { if (e.key === 'Enter') host.querySelector('#tkPokePiGo').click(); };
+  });
+}
+
+// Catch the target while it dodges away from the cursor.
+function pokeChallengeCatchCat(host) {
+  return new Promise(resolve => {
+    const NEED = 3;
+    const MAX_DODGES = 7;
+    let caught = 0;
+    let dodges = 0;
+    let done = false;
+    host.innerHTML = `
+      <div style="font-size:1rem;margin-bottom:12px;opacity:0.92;">Catch the target ${NEED} times. It runs from your cursor.</div>
+      <div id="tkPokeCatMeta" style="font-family:monospace;margin-bottom:8px;">Caught: 0/${NEED} | Dodges left: ${MAX_DODGES}</div>
+      <div id="tkPokeCatStage" style="position:relative;width:100%;height:280px;background:#1e293b;border:2px solid rgba(255,255,255,0.18);border-radius:12px;overflow:hidden;cursor:crosshair;">
+        <button id="tkPokeCat" style="position:absolute;left:50%;top:50%;background:#fbbf24;color:#111827;border:none;border-radius:999px;font-size:1rem;font-weight:900;cursor:pointer;transition:left 220ms ease, top 220ms ease;padding:10px 14px;">CAT</button>
+      </div>
+    `;
+    const stage = host.querySelector('#tkPokeCatStage');
+    const meta = host.querySelector('#tkPokeCatMeta');
+    const cat = host.querySelector('#tkPokeCat');
+    function update() {
+      meta.textContent = `Caught: ${caught}/${NEED} | Dodges left: ${Math.max(0, MAX_DODGES - dodges)}`;
+    }
+    function finish(ok) {
+      if (done) return;
+      done = true;
+      resolve(ok);
+    }
+    function jump() {
+      if (done) return;
+      const r = stage.getBoundingClientRect();
+      cat.style.left = Math.max(0, Math.floor(Math.random() * (r.width - 58))) + 'px';
+      cat.style.top = Math.max(0, Math.floor(Math.random() * (r.height - 42))) + 'px';
+    }
+    cat.addEventListener('mouseenter', () => {
+      if (done) return;
+      dodges++;
+      update();
+      if (dodges > MAX_DODGES) { finish(false); return; }
+      jump();
+    });
+    cat.addEventListener('click', e => {
+      e.stopPropagation();
+      if (done) return;
+      caught++;
+      update();
+      if (caught >= NEED) { finish(true); return; }
+      jump();
+    });
+  });
+}
+
+// Stack a BLT bottom to top in the right order.
+function pokeChallengeSandwich(host) {
+  return new Promise(resolve => {
+    const ORDER = ['Bread','Lettuce','Tomato','Cheese','Bacon','Bread'];
+    const shuffled = ORDER.map((e, i) => ({ e, i })).sort(() => Math.random() - 0.5);
+    let pos = 0;
+    host.innerHTML = `
+      <div style="font-size:1rem;margin-bottom:6px;opacity:0.92;">Build a BLT from <strong>bottom to top</strong>.</div>
+      <div style="font-size:0.8rem;margin-bottom:12px;opacity:0.7;">Bread &rarr; lettuce &rarr; tomato &rarr; cheese &rarr; bacon &rarr; bread</div>
+      <div id="tkPokeSandStack" style="min-height:120px;display:flex;flex-direction:column-reverse;align-items:center;margin-bottom:12px;font-size:0.95rem;line-height:1.1;"></div>
+      <div id="tkPokeSandTray" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+        ${shuffled.map(({ e, i }) => `<button class="tk-sand-item" data-i="${i}" style="background:#0f172a;color:#e5e7eb;border:2px solid rgba(255,255,255,0.18);border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:800;">${e}</button>`).join('')}
+      </div>
+    `;
+    const stack = host.querySelector('#tkPokeSandStack');
+    host.querySelectorAll('.tk-sand-item').forEach(btn => {
+      btn.onclick = () => {
+        if (Number(btn.dataset.i) !== pos) { resolve(false); return; }
+        const layer = document.createElement('div');
+        layer.textContent = btn.textContent;
+        layer.style.cssText = 'min-width:160px;margin:1px 0;padding:4px 10px;border-radius:8px;background:rgba(251,191,36,0.18);border:1px solid rgba(251,191,36,0.35);';
+        stack.appendChild(layer);
+        btn.disabled = true;
+        btn.style.opacity = '0.35';
+        pos++;
+        if (pos >= ORDER.length) resolve(true);
+      };
+    });
+  });
+}
+
+// Arrow Stroop: word says one direction, arrow points another. Press the arrow direction.
+function pokeChallengeArrowStroop(host) {
+  return new Promise(resolve => {
+    const dirs = ['UP','DOWN','LEFT','RIGHT'];
+    const arrowOf = { UP:'^', DOWN:'v', LEFT:'<', RIGHT:'>' };
+    const keyToDir = { ArrowUp:'UP', ArrowDown:'DOWN', ArrowLeft:'LEFT', ArrowRight:'RIGHT' };
+    const rounds = Array.from({ length: 5 }, () => {
+      const text = dirs[Math.floor(Math.random() * dirs.length)];
+      let arrow;
+      do { arrow = dirs[Math.floor(Math.random() * dirs.length)]; } while (arrow === text);
+      return { text, arrow };
+    });
+    let idx = 0;
+    host.innerHTML = `
+      <div style="font-size:1rem;margin-bottom:8px;opacity:0.92;">Press the direction the <strong>arrow points</strong>. Ignore the word.</div>
+      <div id="tkPokeStroopMeta" style="font-family:monospace;margin-bottom:8px;">Round 1 / ${rounds.length}</div>
+      <div id="tkPokeStroopText" style="font-size:2rem;font-weight:900;margin:6px 0;letter-spacing:4px;"></div>
+      <div id="tkPokeStroopArrow" style="font-size:5rem;font-weight:900;line-height:1;margin:6px 0;"></div>
+      <div style="font-size:0.78rem;opacity:0.7;">Use arrow keys.</div>
+    `;
+    const meta = host.querySelector('#tkPokeStroopMeta');
+    const tEl = host.querySelector('#tkPokeStroopText');
+    const aEl = host.querySelector('#tkPokeStroopArrow');
+    function render() {
+      const r = rounds[idx];
+      meta.textContent = `Round ${idx + 1} / ${rounds.length}`;
+      tEl.textContent = r.text;
+      aEl.textContent = arrowOf[r.arrow];
+    }
+    function onKey(e) {
+      const dir = keyToDir[e.key];
+      if (!dir) return;
+      e.preventDefault();
+      if (dir !== rounds[idx].arrow) {
+        document.removeEventListener('keydown', onKey);
+        resolve(false);
+        return;
+      }
+      idx++;
+      if (idx >= rounds.length) {
+        document.removeEventListener('keydown', onKey);
+        resolve(true);
+        return;
+      }
+      render();
+    }
+    document.addEventListener('keydown', onKey);
+    render();
+  });
+}
+
 const POKE_CHALLENGES = [
   { id: 'strawberry',   label: 'Count the R letters',         run: pokeChallengeStrawberry },
   { id: 'dodge',        label: 'Dodging confession button',   run: pokeChallengeDodgeButton },
@@ -6705,7 +7634,15 @@ const POKE_CHALLENGES = [
   { id: 'colororder',   label: 'Darkest to brightest',        run: pokeChallengeColorOrder },
   { id: 'redlight',     label: 'Red light green light',       run: pokeChallengeRedLight },
   { id: 'coord',        label: 'Spreadsheet coordinate',      run: pokeChallengeCoordinate },
-  { id: 'spotdiff',     label: 'Spot the difference',         run: pokeChallengeSpotDifference }
+  { id: 'spotdiff',     label: 'Spot the difference',         run: pokeChallengeSpotDifference },
+  { id: 'whackmole',    label: 'Whack-a-mole (avoid bombs)',  run: pokeChallengeWhackMole },
+  { id: 'reverseturing',label: 'Inverted reCAPTCHA',          run: pokeChallengeReverseTuring },
+  { id: 'clickrate',    label: 'Cookie clicker rate',         run: pokeChallengeClickRate },
+  { id: 'pixelhunt',    label: 'Off-shade pixel hunt',        run: pokeChallengePixelHunt },
+  { id: 'pi',           label: 'Type 8 digits of pi',         run: pokeChallengePi },
+  { id: 'catchcat',     label: 'Catch the dodging target',    run: pokeChallengeCatchCat },
+  { id: 'sandwich',     label: 'Stack the BLT',               run: pokeChallengeSandwich },
+  { id: 'arrowstroop',  label: 'Arrow Stroop direction',      run: pokeChallengeArrowStroop }
 ];
 function pokeChallengeById(id) { return POKE_CHALLENGES.find(c => c.id === id); }
 
@@ -6932,9 +7869,8 @@ function pokeShowLockout(seconds, opts = {}) {
   });
 }
 
-// Random math captcha — an armed bypass skips this.
+// Random math captcha. There is no bypass — every poke runs this challenge.
 async function pokeMathCaptcha() {
-  if (pokeBypassConsume()) return true;
   const a = 2 + Math.floor(Math.random() * 12);
   const b = 2 + Math.floor(Math.random() * 12);
   const ans = prompt(`Quick math, ${pokeTargetShortName()}. What's ${a} × ${b}?`);
@@ -7054,8 +7990,52 @@ async function pokeRunTargetedGates({ dryRun = false } = {}) {
 }
 
 // ── Dev/test panel ──────────────────────────────────────────────────────
+function pokeDevIsAdmin() {
+  return document.body.classList.contains('is-admin');
+}
+
+function pokeShowDevUnauthorized() {
+  const fullPanel = document.getElementById('tkPokeDev');
+  if (fullPanel) fullPanel.remove();
+  if (document.getElementById('tkPokeDevDenied')) return;
+
+  const panel = document.createElement('div');
+  panel.id = 'tkPokeDevDenied';
+  panel.className = 'tk-poke-dev';
+  const header = pickQuip('backstageHeader') || 'Maintenance Closet';
+  const title  = pickQuip('backstageTitle')  || 'You are absolutely not supposed to be in here.';
+  const body   = pickQuip('backstageBody')   || 'Nice try. The buttons have been unplugged.';
+  panel.innerHTML = `
+    <div class="tk-poke-dev-header">
+      <strong>${escHtml(header)}</strong>
+      <button class="tk-poke-dev-close" id="tkPokeDevDeniedClose" title="Close">x</button>
+    </div>
+    <div style="background:rgba(127,29,29,0.35);border:1px solid rgba(248,113,113,0.45);border-radius:8px;padding:10px;margin-bottom:8px;color:#fecaca;">
+      <div style="font-weight:800;margin-bottom:4px;">${escHtml(title)}</div>
+      <div style="font-size:0.76rem;line-height:1.35;color:#fee2e2;">
+        ${escHtml(body)}
+      </div>
+    </div>
+    <div style="font-size:0.72rem;color:#94a3b8;border-top:1px solid #334155;padding-top:7px;">
+      Admin tools require the approved Windows account. Please return to the macros like nothing happened.
+    </div>
+  `;
+  document.body.appendChild(panel);
+  panel.querySelector('#tkPokeDevDeniedClose').addEventListener('click', () => panel.remove());
+  if (typeof showToast === 'function') {
+    snarkToast('adminLock', 'Wrong door. This closet is admin-only.');
+  }
+}
+
 function pokeOpenDevPanel() {
+  if (!pokeDevIsAdmin()) {
+    pokeShowDevUnauthorized();
+    return;
+  }
   if (document.getElementById('tkPokeDev')) return;
+  const deniedPanel = document.getElementById('tkPokeDevDenied');
+  if (deniedPanel) deniedPanel.remove();
+
   const panel = document.createElement('div');
   panel.id = 'tkPokeDev';
   panel.className = 'tk-poke-dev';
@@ -7179,10 +8159,9 @@ function pokeOpenDevPanel() {
   function refresh() {
     pretendEl.checked = pokeTestPretendShank();
     pretendTargetEl.value = pokeTestPretendTarget();
-    const armed = '';
     const target = pokeCurrentTarget();
     const presence = __presenceLastStatus ? ` · ${__presenceLastStatus}` : '';
-    statusEl.textContent = `targeted: ${!!target}${target ? ` (${target.label})` : ''} · ids: ${pokeIdentityKeys().join(', ') || 'none'} · pokes/1h: ${pokeRecentHistory().length}${armed}${presence}`;
+    statusEl.textContent = `targeted: ${!!target}${target ? ` (${target.label})` : ''} · ids: ${pokeIdentityKeys().join(', ') || 'none'} · pokes/1h: ${pokeRecentHistory().length}${presence}`;
   }
   window.__pokeDevRefreshStatus = refresh;
   refresh();
@@ -7224,59 +8203,98 @@ function pokeOpenDevPanel() {
     }
     const active = (data && data.active) || [];
     const queue = (data && data.queue) || [];
-    if (!active.length) {
-      list.innerHTML = `<div style="opacity:0.6;padding:6px;">No one active in last 90s.</div>`;
-      return;
-    }
-    // Build a map of pending captchas by target (lowercased windowsUser).
-    const pendingByTarget = {};
+    const targets = (data && data.targets) || [];
+
+    // Build a map of captcha-queue stats by target (lowercased windowsUser).
+    // Pending counts include captchas queued for offline users — they'll fire
+    // on that user's next presence ping.
+    const statsByTarget = {};
     for (const q of queue) {
       const t = (q.target || '').trim().toLowerCase();
       if (!t) continue;
-      if (q.status === 'pending')   pendingByTarget[t] = pendingByTarget[t] || { pending: 0, fired: 0, completed: 0 };
-      if (q.status === 'fired')     pendingByTarget[t] = pendingByTarget[t] || { pending: 0, fired: 0, completed: 0 };
-      if (q.status === 'completed') pendingByTarget[t] = pendingByTarget[t] || { pending: 0, fired: 0, completed: 0 };
-      if (q.status === 'pending')   pendingByTarget[t].pending++;
-      if (q.status === 'fired')     pendingByTarget[t].fired++;
-      if (q.status === 'completed') pendingByTarget[t].completed++;
+      const slot = statsByTarget[t] || (statsByTarget[t] = { pending: 0, fired: 0, completed: 0 });
+      if (q.status === 'pending')   slot.pending++;
+      else if (q.status === 'fired') slot.fired++;
+      else if (q.status === 'completed' || q.status === 'escaped') slot.completed++;
     }
-    list.innerHTML = active.map(u => {
+
+    // Merge active users with configured poke-targets so the admin can queue
+    // captchas for offline people too. Active wins on duplicates.
+    const activeKeys = new Set(active.map(u => (u.windowsUser || '').trim().toLowerCase()).filter(Boolean));
+    const offline = targets
+      .filter(t => t && t.windowsUser)
+      .filter(t => t.enabled !== false)
+      .filter(t => !activeKeys.has((t.windowsUser || '').trim().toLowerCase()));
+
+    const captchaOpts = `<option value="">Random</option>` +
+      POKE_CHALLENGES.map(c => `<option value="${escHtml(c.id)}">${escHtml(c.label)}</option>`).join('');
+    const buildStatLine = (stats) => {
+      const bits = [];
+      if (stats?.pending)   bits.push(`<span style="color:#fbbf24;">${stats.pending} pending</span>`);
+      if (stats?.fired)     bits.push(`<span style="color:#60a5fa;">${stats.fired} fired</span>`);
+      if (stats?.completed) bits.push(`<span style="opacity:0.7;">${stats.completed} done</span>`);
+      return bits.length ? `<div style="font-size:0.65rem;margin-top:2px;">${bits.join(' · ')}</div>` : '';
+    };
+    const buildSendCol = (wu, dn, sendLabel) => `
+      <span style="display:flex;flex-direction:column;gap:3px;align-items:flex-end;">
+        <select class="tk-poke-send-pick" data-target="${escHtml(wu)}" style="font-size:0.65rem;background:#0f172a;color:#fff;border:1px solid #334155;border-radius:4px;padding:2px;max-width:130px;">${captchaOpts}</select>
+        <button data-act="send-captcha" data-target="${escHtml(wu)}" data-display="${escHtml(dn || wu)}" style="font-size:0.7rem;padding:3px 6px;background:#7c2d12;border-color:#9a3412;color:#fed7aa;">${sendLabel}</button>
+      </span>`;
+
+    const activeRows = active.map(u => {
       const wu = (u.windowsUser || '').trim();
       const dn = (u.displayName || '').trim();
       const machine = (u.machine || '').trim();
       const lk = wu.toLowerCase();
       const sec = u.lastSeen ? Math.max(0, Math.round((Date.now() - new Date(u.lastSeen).getTime()) / 1000)) : '?';
       const me = wu.toLowerCase() === winUser.toLowerCase();
-      const stats = pendingByTarget[lk];
-      const statBits = [];
-      if (stats?.pending)   statBits.push(`<span style="color:#fbbf24;">${stats.pending} pending</span>`);
-      if (stats?.fired)     statBits.push(`<span style="color:#60a5fa;">${stats.fired} fired</span>`);
-      if (stats?.completed) statBits.push(`<span style="opacity:0.7;">${stats.completed} done</span>`);
-      const statLine = statBits.length ? `<div style="font-size:0.65rem;margin-top:2px;">${statBits.join(' · ')}</div>` : '';
-      const captchaOpts = `<option value="">Random</option>` +
-        POKE_CHALLENGES.map(c => `<option value="${escHtml(c.id)}">${escHtml(c.label)}</option>`).join('');
-      const sendLabel = me ? '🎯 Send (self)' : '🎯 Send';
-      const sendBtn = `
-        <span style="display:flex;flex-direction:column;gap:3px;align-items:flex-end;">
-          <select class="tk-poke-send-pick" data-target="${escHtml(wu)}" style="font-size:0.65rem;background:#0f172a;color:#fff;border:1px solid #334155;border-radius:4px;padding:2px;max-width:130px;">${captchaOpts}</select>
-          <button data-act="send-captcha" data-target="${escHtml(wu)}" data-display="${escHtml(dn || wu)}" style="font-size:0.7rem;padding:3px 6px;background:#7c2d12;border-color:#9a3412;color:#fed7aa;">${sendLabel}</button>
-        </span>`;
       return `
         <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:4px 6px;gap:6px;border-bottom:1px solid rgba(255,255,255,0.05);">
           <div style="min-width:0;flex:1;">
-            <div style="font-weight:600;">${escHtml(dn || wu || 'unknown')}</div>
+            <div style="font-weight:600;"><span style="color:#34d399;">●</span> ${escHtml(dn || wu || 'unknown')}</div>
             <div style="font-size:0.65rem;opacity:0.7;">${escHtml(wu)}${machine ? ` @ ${escHtml(machine)}` : ''} · ${sec}s ago</div>
-            ${statLine}
+            ${buildStatLine(statsByTarget[lk])}
           </div>
-          ${sendBtn}
-        </div>
-      `;
+          ${buildSendCol(wu, dn, me ? '🎯 Send (self)' : '🎯 Send')}
+        </div>`;
     }).join('');
+
+    const offlineRows = offline.map(t => {
+      const wu = (t.windowsUser || '').trim();
+      const dn = (t.displayName || t.label || '').trim();
+      const lk = wu.toLowerCase();
+      return `
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:4px 6px;gap:6px;border-bottom:1px solid rgba(255,255,255,0.05);opacity:0.78;">
+          <div style="min-width:0;flex:1;">
+            <div style="font-weight:600;"><span style="color:#64748b;">●</span> ${escHtml(dn || wu)}</div>
+            <div style="font-size:0.65rem;opacity:0.7;">${escHtml(wu)} · offline (queued, fires when they return)</div>
+            ${buildStatLine(statsByTarget[lk])}
+          </div>
+          ${buildSendCol(wu, dn, '⏳ Queue')}
+        </div>`;
+    }).join('');
+
+    const sectionHeader = (label, count) => `<div style="font-size:0.62rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:0.55;padding:6px 6px 2px;">${label} (${count})</div>`;
+
+    let html = '';
+    if (active.length) {
+      html += sectionHeader('Online', active.length) + activeRows;
+    } else {
+      html += `<div style="opacity:0.6;padding:6px;">No one active in last 90s.</div>`;
+    }
+    if (offline.length) {
+      html += sectionHeader('Offline', offline.length) + offlineRows;
+    }
+    list.innerHTML = html;
   }
 
   panel.addEventListener('click', async (e) => {
     const btn = e.target.closest('button[data-act]');
     if (!btn) return;
+    if (!pokeDevIsAdmin()) {
+      pokeShowDevUnauthorized();
+      return;
+    }
     const captchaIndex = () => Math.max(0, Math.min(POKE_CHALLENGES.length - 1, parseInt(captchaEl.value || '0', 10) || 0));
     const setCaptchaIndex = (idx) => {
       const next = (idx + POKE_CHALLENGES.length) % POKE_CHALLENGES.length;
@@ -7323,7 +8341,7 @@ function pokeOpenDevPanel() {
         break;
       }
       case 'bypass':
-        showToast('Captcha bypass disabled in the preview.', 'info');
+        showToast('Captcha bypass has been removed — every poke runs the math challenge.', 'info');
         break;
       case 'seed-pokes': {
         const now = Date.now();
@@ -8247,6 +9265,295 @@ let crashEntries = [];
 let crSelectedMonth = null;   // 'YYYY-MM' — null means pick default (current month or latest with data)
 let crSelectedSeverity = 'minor';
 const crSevEmoji = { minor: '😐', major: '😬', catastrophic: '🔥' };
+let crTiePoll = null;
+let crTiePollSaving = false;
+let crTiePollPanelDismissed = false;
+const CR_TIE_POLL_ID = 'crash-tie-break-2026-04';
+const CR_TIE_POLL_LATER_KEY = `crTiePollLater:${CR_TIE_POLL_ID}`;
+const CR_TIE_POLL_FALLBACK_CLOSES_AT = new Date(2026, 3, 30, 16, 30, 0).toISOString();
+
+function crTiePollOptions() {
+  return crTiePoll?.options || [
+    {
+      id: 'wheel',
+      icon: '🎡',
+      title: 'Spin a wheel',
+      description: 'Put everyone from the tie on a wheel. Whoever it lands on brings donuts.'
+    },
+    {
+      id: 'split',
+      icon: '🍩',
+      title: 'Split snack duty',
+      description: 'One tied person brings donuts. The other tied person brings cookies or muffins.'
+    },
+    {
+      id: 'weeks',
+      icon: '\uD83D\uDCC5',
+      title: 'One week each',
+      description: 'One tied person brings donuts one week. The other tied person gets the next week.'
+    }
+  ];
+}
+
+function crTiePollOptionById(id) {
+  return crTiePollOptions().find(o => o.id === id) || null;
+}
+
+function crTiePollTotals() {
+  return crTiePoll?.totals || {};
+}
+
+function crTiePollWinningOptionId() {
+  const totals = crTiePollTotals();
+  const options = crTiePollOptions();
+  let winner = null;
+  let high = -1;
+  let tied = false;
+  for (const opt of options) {
+    const count = Number(totals[opt.id] || 0);
+    if (count > high) {
+      high = count;
+      winner = opt.id;
+      tied = false;
+    } else if (count === high) {
+      tied = true;
+    }
+  }
+  if (high <= 0 || tied) return '';
+  return winner || '';
+}
+
+function crTieRuleMode() {
+  return crTiePollWinningOptionId() || 'split';
+}
+
+function crTiePollClosesAtMs() {
+  const raw = crTiePoll?.closesAt || CR_TIE_POLL_FALLBACK_CLOSES_AT;
+  const parsed = Date.parse(raw);
+  return isNaN(parsed) ? Date.parse(CR_TIE_POLL_FALLBACK_CLOSES_AT) : parsed;
+}
+
+function crTiePollIsClosed() {
+  return !!crTiePoll?.isClosed || Date.now() >= crTiePollClosesAtMs();
+}
+
+function crTiePollDeadlineLabel() {
+  if (crTiePoll?.closedLabel) return crTiePoll.closedLabel;
+  const ms = crTiePollClosesAtMs();
+  if (isNaN(ms)) return '4:30 PM';
+  return new Date(ms).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}
+
+function crTiePollLeadText({ final = false } = {}) {
+  const totals = crTiePollTotals();
+  const totalVotes = Number(crTiePoll?.totalVotes || 0);
+  const winnerId = crTiePollWinningOptionId();
+  const winner = crTiePollOptionById(winnerId);
+  const label = final ? 'Final result' : 'Current lead';
+  if (winner) return `${label}: ${winner.title} (${totals[winner.id] || 0}/${totalVotes}).`;
+  if (!totalVotes) return final
+    ? 'Final result: no votes were cast, so split snack duty stays the fallback.'
+    : 'No votes yet.';
+  return final
+    ? 'Final result: tied, so split snack duty stays the fallback.'
+    : `No clear lead yet. ${totalVotes} vote${totalVotes === 1 ? '' : 's'} in so far.`;
+}
+
+function crTiePollLaterUntil() {
+  const raw = Number(localStorage.getItem(CR_TIE_POLL_LATER_KEY) || '0');
+  return isNaN(raw) ? 0 : raw;
+}
+
+function crTiePollDismissUntilTonight() {
+  const end = new Date();
+  end.setHours(23, 59, 59, 999);
+  localStorage.setItem(CR_TIE_POLL_LATER_KEY, String(end.getTime()));
+}
+
+function crTiePollShouldShow() {
+  if (currentTabName() !== 'crashes') return false;
+  if (!crTiePoll || crTiePoll.userVote) return false;
+  if (crTiePollIsClosed()) return false;
+  return !crTiePollPanelDismissed;
+}
+
+function crRenderTiePollGlobal() {
+  const bar = document.getElementById('crTiePollGlobal');
+  const title = document.getElementById('crTiePollGlobalTitle');
+  const text = document.getElementById('crTiePollGlobalText');
+  const btn = document.getElementById('crTiePollGlobalBtn');
+  if (!bar || !title || !text || !btn) return;
+  if (!crTiePoll) {
+    bar.style.display = 'none';
+    return;
+  }
+
+  const isClosed = crTiePollIsClosed();
+  const deadline = crTiePollDeadlineLabel();
+  bar.classList.toggle('is-voted', !!crTiePoll.userVote);
+  bar.classList.toggle('is-closed', isClosed);
+  bar.style.display = 'flex';
+
+  if (isClosed) {
+    title.textContent = 'Crash tie-break poll results';
+    text.textContent = `Closed at ${deadline}. ${crTiePollLeadText({ final: true })}`;
+    btn.textContent = 'View results';
+    return;
+  }
+
+  if (crTiePoll.userVote) {
+    const voted = crTiePollOptionById(crTiePoll.userVote);
+    title.textContent = 'Crash tie-break poll';
+    text.textContent = `You voted ${voted ? voted.title : crTiePoll.userVote}. ${crTiePollLeadText()} Closes at ${deadline}.`;
+    btn.textContent = 'View / change';
+    return;
+  }
+
+  title.textContent = 'Crash tie-break poll needs your vote';
+  text.textContent = `${crTiePollLeadText()} Closes at ${deadline}.`;
+  btn.textContent = 'Vote now';
+}
+
+function crRenderTiePollInline() {
+  const box = document.getElementById('crTiePollInline');
+  const text = document.getElementById('crTiePollInlineText');
+  const btn = document.getElementById('crTiePollInlineBtn');
+  if (!box || !text) return;
+  if (!crTiePoll) {
+    box.style.display = 'none';
+    return;
+  }
+  const totals = crTiePollTotals();
+  const totalVotes = Number(crTiePoll.totalVotes || 0);
+  const winner = crTiePollOptionById(crTiePollWinningOptionId());
+  const isClosed = crTiePollIsClosed();
+  const deadline = crTiePollDeadlineLabel();
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = isClosed ? 'View results' : (crTiePoll.userVote ? 'Change vote' : 'Vote');
+  }
+  if (isClosed) {
+    text.textContent = `Tie-break poll closed at ${deadline}. ${crTiePollLeadText({ final: true })}`;
+    box.style.display = currentTabName() === 'crashes' ? 'flex' : 'none';
+    return;
+  }
+  if (crTiePoll.userVote) {
+    const voted = crTiePollOptionById(crTiePoll.userVote);
+    text.textContent = `You voted: ${voted ? voted.title : crTiePoll.userVote}. ${crTiePollLeadText()} Poll closes at ${deadline}.`;
+    box.style.display = 'flex';
+    return;
+  }
+  if (winner) {
+    text.textContent = `Tie-break poll is open until ${deadline}. Current lead: ${winner.title} (${totals[winner.id] || 0}/${totalVotes}).`;
+  } else {
+    text.textContent = `Tie-break poll is open until ${deadline}. ${totalVotes} vote${totalVotes === 1 ? '' : 's'} in so far.`;
+  }
+  box.style.display = currentTabName() === 'crashes' ? 'flex' : 'none';
+}
+
+function crRenderTiePollOverlay() {
+  const overlay = document.getElementById('crTiePollOverlay');
+  const host = document.getElementById('crTiePollOptions');
+  const status = document.getElementById('crTiePollStatus');
+  if (!overlay || !host || !status || !crTiePoll) return;
+
+  const totals = crTiePollTotals();
+  const totalVotes = Number(crTiePoll.totalVotes || 0);
+  const winnerId = crTiePollWinningOptionId();
+  const isClosed = crTiePollIsClosed();
+  const later = document.getElementById('crTiePollLater');
+  if (later) later.textContent = isClosed ? 'Close results' : 'Close panel';
+  const maxVotes = Math.max(1, ...crTiePollOptions().map(o => Number(totals[o.id] || 0)));
+  host.innerHTML = crTiePollOptions().map(opt => {
+    const count = Number(totals[opt.id] || 0);
+    const pct = totalVotes ? Math.round((count / totalVotes) * 100) : 0;
+    const width = Math.max(0, Math.round((count / maxVotes) * 100));
+    const classes = [
+      'cr-tie-poll-option',
+      winnerId === opt.id ? 'is-leading' : '',
+      crTiePoll.userVote === opt.id ? 'is-voted' : '',
+      isClosed ? 'is-closed' : ''
+    ].filter(Boolean).join(' ');
+    const disabled = crTiePollSaving || isClosed;
+    const badge = isClosed && winnerId === opt.id
+      ? '<span class="cr-tie-poll-badge">Final winner</span>'
+      : (!isClosed && winnerId === opt.id ? '<span class="cr-tie-poll-badge">Leading</span>' : '');
+    return `
+      <button class="${classes}" type="button" data-option="${escHtml(opt.id)}"${disabled ? ' disabled' : ''}>
+        <span class="cr-tie-poll-option-icon">${escHtml(opt.icon || '🗳️')}</span>
+        ${badge}
+        <strong>${escHtml(opt.title || opt.label || opt.id)}</strong>
+        <span>${escHtml(opt.description || '')}</span>
+        <span class="cr-tie-poll-result">
+          <span class="cr-tie-poll-result-top">
+            <span>${count} vote${count === 1 ? '' : 's'}</span>
+            <span>${pct}%</span>
+          </span>
+          <span class="cr-tie-poll-bar"><span class="cr-tie-poll-fill" style="width:${width}%"></span></span>
+        </span>
+      </button>
+    `;
+  }).join('');
+  if (isClosed) {
+    status.textContent = `Poll closed at ${crTiePollDeadlineLabel()}. ${crTiePollLeadText({ final: true })}`;
+  } else if (crTiePoll.userVote) {
+    const voted = crTiePollOptionById(crTiePoll.userVote);
+    status.textContent = `You voted for ${voted ? voted.title : crTiePoll.userVote}. ${crTiePollLeadText()} Poll closes at ${crTiePollDeadlineLabel()}.`;
+  } else {
+    status.textContent = totalVotes
+      ? `${totalVotes} team vote${totalVotes === 1 ? '' : 's'} so far. ${crTiePollLeadText()} Poll closes at ${crTiePollDeadlineLabel()}.`
+      : `No votes yet. Poll closes at ${crTiePollDeadlineLabel()}. Your vote will close this panel.`;
+  }
+}
+
+function crMaybeShowTiePoll() {
+  crRenderTiePollGlobal();
+  crRenderTiePollInline();
+  const overlay = document.getElementById('crTiePollOverlay');
+  if (!overlay) return;
+  if (crTiePollShouldShow()) {
+    crRenderTiePollOverlay();
+    overlay.classList.add('open');
+  } else {
+    overlay.classList.remove('open');
+  }
+}
+
+function crOpenTiePoll() {
+  const overlay = document.getElementById('crTiePollOverlay');
+  if (!overlay || !crTiePoll) return;
+  crTiePollPanelDismissed = false;
+  crRenderTiePollOverlay();
+  overlay.classList.add('open');
+}
+
+async function crSubmitTiePollVote(optionId) {
+  if (!optionId || crTiePollSaving) return;
+  if (crTiePollIsClosed()) {
+    showToast('Tie-break poll is closed. Results are final.', 'info');
+    crOpenTiePoll();
+    return;
+  }
+  crTiePollSaving = true;
+  crRenderTiePollOverlay();
+  try {
+    crTiePoll = await apiFetch('/api/crash-tie-poll/vote', {
+      method: 'POST',
+      body: JSON.stringify({
+        optionId,
+        displayName: localStorage.getItem('mgUserName') || crKnownName() || ''
+      })
+    });
+    localStorage.removeItem(CR_TIE_POLL_LATER_KEY);
+    showToast('Tie-break vote saved.', 'success');
+    renderCrashes();
+  } catch (err) {
+    showToast('Could not save tie-break vote: ' + err.message, 'error');
+  } finally {
+    crTiePollSaving = false;
+    crMaybeShowTiePoll();
+  }
+}
 
 function crNormKey(name) {
   return (name || '').trim().toLowerCase();
@@ -8264,10 +9571,9 @@ function crMonthKeyToLabel(key, opts = {}) {
   const d = new Date(y, m - 1, 1);
   return d.toLocaleString('default', { month: opts.short ? 'short' : 'long', year: 'numeric' });
 }
-// Deadline = midnight at the start of next month, local time. Once the clock
-// rolls over, new crashes land in the new month's bucket automatically.
+// Deadline = 4:30 PM on the last calendar day of the month, local time.
 function crEndOfMonth(year, monthZeroBased) {
-  return new Date(year, monthZeroBased + 1, 1, 0, 0, 0, 0);
+  return new Date(year, monthZeroBased + 1, 0, 16, 30, 0, 0);
 }
 function crCurrentEndOfMonth() {
   const now = new Date();
@@ -8278,26 +9584,80 @@ function crFriendlyDate(d) {
   return d.toLocaleDateString('default', { weekday: 'long', month: 'short', day: 'numeric' });
 }
 
-// Given the tally for a month, return { winners: [names], prize: 'donut'|'split' }
-// Single leader → 🍩 donuts. Tie → spread the snack duty (veggies, fruit, donuts).
-function crResolvePrize(agg) {
+function crHashString(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function crStableRandomTieOrder(names, monthKey) {
+  const seed = `${monthKey || 'unknown'}|${names.map(crNormKey).sort().join('|')}`;
+  return names.slice().sort((a, b) => {
+    const ah = crHashString(`${seed}|${crNormKey(a)}`);
+    const bh = crHashString(`${seed}|${crNormKey(b)}`);
+    return ah - bh || a.localeCompare(b);
+  });
+}
+
+function crOrderTiedSnackNames(names, monthKey) {
+  const ordered = crStableRandomTieOrder(names, monthKey);
+  const hasPaul = ordered.some(name => crNormKey(name) === 'paullemelin');
+  const hasKrupal = ordered.some(name => crNormKey(name) === 'krupalpatel');
+  if (monthKey !== '2026-04' || !hasPaul || !hasKrupal) return ordered;
+
+  const paul = ordered.find(name => crNormKey(name) === 'paullemelin');
+  const krupal = ordered.find(name => crNormKey(name) === 'krupalpatel');
+  const rest = ordered.filter(name => !['paullemelin', 'krupalpatel'].includes(crNormKey(name)));
+  return [paul, krupal, ...rest].filter(Boolean);
+}
+
+// Given the tally for a month, return the snack-duty assignment.
+// Single leader → 🍩 donuts. Tie → follows the team tie-break poll.
+function crResolvePrize(agg, monthKey = crSelectedMonth || crCurrentMonthKey()) {
   if (!agg || agg.length === 0) return { winners: [], assignments: [] };
   const top = agg.slice().sort((a,b) => b.count - a.count);
   const leaderCount = top[0].count;
   if (leaderCount === 0) return { winners: [], assignments: [] };
-  const tied = top.filter(r => r.count === leaderCount).map(r => r.name);
-  // Deterministic order so the assignment doesn't flip every refresh
-  tied.sort((a,b) => a.localeCompare(b));
-  // Prize pool grows with the tie:  1 winner = donuts only.
-  //  2-way tie = veggies + fruit. 3-way = veggies + fruit + donuts. 4+ = loop.
-  const pool2 = ['🥕 veggie tray', '🍎 fruit tray'];
-  const pool3 = ['🥕 veggie tray', '🍎 fruit tray', '🍩 donuts'];
-  let pool;
-  if (tied.length === 1)      pool = ['🍩 donuts'];
-  else if (tied.length === 2) pool = pool2;
-  else                        pool = pool3;
-  const assignments = tied.map((name, i) => ({ name, prize: pool[i % pool.length] }));
-  return { winners: tied, assignments, leaderCount };
+  const tied = crOrderTiedSnackNames(top.filter(r => r.count === leaderCount).map(r => r.name), monthKey);
+  if (tied.length === 1) {
+    return {
+      winners: tied,
+      assignments: [{ name: tied[0], prize: '🍩 donuts' }],
+      leaderCount,
+      tieMode: 'solo'
+    };
+  }
+
+  const tieMode = crTieRuleMode();
+  if (tieMode === 'wheel') {
+    return {
+      winners: tied,
+      assignments: tied.map(name => ({ name, prize: '🎡 wheel entry' })),
+      leaderCount,
+      tieMode: 'wheel'
+    };
+  }
+
+  if (tieMode === 'weeks') {
+    return {
+      winners: tied,
+      assignments: tied.map((name, i) => ({
+        name,
+        prize: i === 0 ? '\uD83C\uDF69 donuts this week' : `\uD83C\uDF69 donuts week ${i + 1}`
+      })),
+      leaderCount,
+      tieMode: 'weeks'
+    };
+  }
+
+  const assignments = tied.map((name, i) => ({
+    name,
+    prize: i === 0 ? '🍩 donuts' : '🍪 cookies or muffins'
+  }));
+  return { winners: tied, assignments, leaderCount, tieMode: 'split' };
 }
 
 function crRankEntries(rows) {
@@ -8416,7 +9776,7 @@ function crComputeAchievements(row, allMonthAgg, previousMonthKey) {
   // 👑 Repeat Offender — won donut duty last month too
   if (previousMonthKey) {
     const prevAgg = crAggregateMonth(previousMonthKey);
-    const prevWinners = crResolvePrize(prevAgg).winners;
+    const prevWinners = crResolvePrize(prevAgg, previousMonthKey).winners;
     if (prevWinners.includes(row.name)) {
       out.push({
         emoji: '👑', name: 'Repeat Offender',
@@ -8544,8 +9904,8 @@ function renderCrashes() {
     }
   }
 
-  // Hero winner + prize (handles ties → veggie + fruit etc.)
-  const prizeInfo = crResolvePrize(agg);
+  // Hero winner + prize (handles ties via the team poll)
+  const prizeInfo = crResolvePrize(agg, monthKey);
   const winnerName = document.getElementById('crWinnerName');
   const winnerSub  = document.getElementById('crWinnerSub');
   const prizeStat  = document.getElementById('crStatPrize');
@@ -8567,16 +9927,28 @@ function renderCrashes() {
       prizeStat.textContent = '🍩';
       prizeLbl.textContent = isCurrent ? 'on the line' : 'brought';
     } else {
-      // Tie — spread the snack duty
+      // Tie — follow the team tie-break poll
       winnerName.textContent = prizeInfo.assignments.map(a => a.name).join(' · ');
-      winnerSub.innerHTML = prizeInfo.assignments
-        .map(a => `<strong>${escHtml(a.name)}</strong> → ${escHtml(a.prize)}`)
-        .join(' &nbsp;·&nbsp; ');
-      // Show all prizes in the stat (emojis only, compact)
-      const emojis = prizeInfo.assignments.map(a => a.prize.split(' ')[0]).join(' ');
-      prizeStat.textContent = emojis;
+      if (prizeInfo.tieMode === 'wheel') {
+        const pollStatus = crTiePollWinningOptionId() ? 'Team vote says' : 'Poll is open';
+        winnerSub.innerHTML = `${pollStatus}: spin a wheel from the tied people. Whoever it lands on brings <strong>donuts</strong>.`;
+        prizeStat.textContent = '🎡🍩';
+        prizeLbl.textContent = isCurrent ? 'wheel decides' : 'wheel decided';
+      } else if (prizeInfo.tieMode === 'weeks') {
+        winnerSub.innerHTML = prizeInfo.assignments
+          .map(a => `<strong>${escHtml(a.name)}</strong> &rarr; ${escHtml(a.prize)}`)
+          .join(' &nbsp;&middot;&nbsp; ');
+        prizeStat.textContent = '\uD83D\uDCC5\uD83C\uDF69';
+        prizeLbl.textContent = isCurrent ? 'weeks split' : 'weeks split - brought';
+      } else {
+        winnerSub.innerHTML = prizeInfo.assignments
+          .map(a => `<strong>${escHtml(a.name)}</strong> → ${escHtml(a.prize)}`)
+          .join(' &nbsp;·&nbsp; ');
+        const emojis = prizeInfo.assignments.map(a => a.prize.split(' ')[0]).join(' ');
+        prizeStat.textContent = emojis;
+        prizeLbl.textContent = isCurrent ? `${prizeInfo.assignments.length}-way split` : `${prizeInfo.assignments.length}-way split · brought`;
+      }
       prizeStat.style.fontSize = '1.3rem';
-      prizeLbl.textContent = isCurrent ? `${prizeInfo.assignments.length}-way tie` : `${prizeInfo.assignments.length}-way tie · brought`;
     }
   } else {
     winnerName.textContent = 'No crashes yet';
@@ -8749,6 +10121,7 @@ function renderCrashes() {
     const names = Array.from(new Set(crashEntries.map(c => (c.user || '').trim()).filter(Boolean))).sort();
     dl.innerHTML = names.map(n => `<option value="${escHtml(n)}">`).join('');
   }
+  crMaybeShowTiePoll();
 }
 
 // Update the countdown clock — called from renderCrashes and on a 30s tick.
@@ -8768,10 +10141,9 @@ function crUpdateCountdown() {
   cd.classList.remove('urgent', 'final-day', 'locked');
 
   if (ms <= 0) {
-    // Brief window between rollover and the next render — month flips
-    // automatically and the new month's deadline takes over.
-    clock.innerHTML = '<div class="cr-countdown-locked-text">🔒 Month closed — rolling over</div>';
-    sub.textContent = 'Results final · new month starting';
+    // After the 4:30 PM lock-in, the month stays visible but standings are final.
+    clock.innerHTML = '<div class="cr-countdown-locked-text">Month closed</div>';
+    sub.textContent = 'Results final - logging reopens next month';
     cd.classList.add('locked');
     return;
   }
@@ -8794,7 +10166,7 @@ function crUpdateCountdown() {
   document.getElementById('crCdHours').textContent = String(hours).padStart(2,'0');
   document.getElementById('crCdMins').textContent  = String(mins).padStart(2,'0');
 
-  sub.textContent = `Locks at end of ${now.toLocaleString('default', { month: 'long' })} · midnight`;
+  sub.textContent = `Locks at end of ${now.toLocaleString('default', { month: 'long' })} - 4:30 PM`;
 
   if (days === 0 && hours < 12) {
     cd.classList.add('final-day', 'urgent');
@@ -8823,7 +10195,7 @@ function crRenderRecapBanner(isCurrent) {
   }
 
   const prevAgg = crAggregateMonth(prevKey);
-  const prize = crResolvePrize(prevAgg);
+  const prize = crResolvePrize(prevAgg, prevKey);
   if (!prize.assignments || prize.assignments.length === 0) {
     el.style.display = 'none';
     return;
@@ -8873,6 +10245,12 @@ function crShowConfetti() {
 async function crSubmitCrash({ user, severity }) {
   try {
     const ts = new Date();
+    const deadline = crCurrentEndOfMonth();
+    if (ts >= deadline) {
+      showToast(`Could not log crash: ${ts.toLocaleString('default', { month: 'long' })} locked at 4:30 PM.`, 'error');
+      crUpdateCountdown();
+      return false;
+    }
     // Defense-in-depth: a crash always belongs to the wall-clock month it
     // happened in. If something has stamped a non-current month here (clock
     // skew, stale tab racing rollover), refuse rather than mis-bucket it.
@@ -8977,6 +10355,28 @@ document.getElementById('crSubmit').addEventListener('click', async () => {
 });
 
 // ──────────────────────────────────────────────────────────────────────────
+document.getElementById('crTiePollOptions')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-option]');
+  if (!btn) return;
+  crSubmitTiePollVote(btn.dataset.option);
+});
+
+document.getElementById('crTiePollLater')?.addEventListener('click', () => {
+  crTiePollPanelDismissed = true;
+  document.getElementById('crTiePollOverlay')?.classList.remove('open');
+  crMaybeShowTiePoll();
+});
+
+document.getElementById('crTiePollInlineBtn')?.addEventListener('click', () => {
+  localStorage.removeItem(CR_TIE_POLL_LATER_KEY);
+  crOpenTiePoll();
+});
+
+document.getElementById('crTiePollGlobalBtn')?.addEventListener('click', () => {
+  localStorage.removeItem(CR_TIE_POLL_LATER_KEY);
+  crOpenTiePoll();
+});
+
 // COOL STUFF — Easter eggs and hidden features (Konami, stats, donut overload)
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -9630,7 +11030,7 @@ function eggOpenForecast() {
   const monthRows = eggCrashRowsForMonth(monthKey);
   const agg = crAggregateMonth(monthKey);
   const sorted = agg.slice().sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-  const prize = crResolvePrize(agg);
+  const prize = crResolvePrize(agg, monthKey);
   const total = monthRows.length;
   const catastrophic = monthRows.filter(c => (c.severity || '').toLowerCase() === 'catastrophic').length;
   const leader = sorted[0];
@@ -9927,7 +11327,7 @@ function eggOpenSnacks() {
   const monthKey = crSelectedMonth || crCurrentMonthKey();
   const agg = crAggregateMonth(monthKey);
   const sorted = agg.slice().sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-  const prize = crResolvePrize(agg);
+  const prize = crResolvePrize(agg, monthKey);
   const leaders = sorted.slice(0, 3).map(r => `${r.name}: ${r.count}`).join(', ') || 'No crashes logged';
   const assignments = prize.assignments && prize.assignments.length
     ? prize.assignments.map(a => `<span>${escHtml(a.name)}</span><span>${escHtml(a.prize)}</span>`).join('')
@@ -10488,16 +11888,36 @@ document.querySelectorAll('.cr-month-btn').forEach(btn => {
 });
 
 // ── Data loading from server ─────────────────────────────────────────────
+async function fetchCrashTiePoll() {
+  try {
+    const resp = await fetch(API_BASE + '/api/crash-tie-poll', {
+      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (resp.status === 404) {
+      restartServerForMissingPresenceRoute();
+      return null;
+    }
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || `Server error (${resp.status})`);
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 async function loadData() {
   try {
-    const [clData, tkData, crData] = await Promise.all([
+    const [clData, tkData, crData, pollData] = await Promise.all([
       apiFetch('/api/changelog'),
       apiFetch('/api/tickets'),
-      apiFetch('/api/crashes')
+      apiFetch('/api/crashes'),
+      fetchCrashTiePoll()
     ]);
     changelogEntries = clData;
     ticketEntries = tkData;
     crashEntries = crData;
+    crTiePoll = pollData;
     renderChangelog();
     renderTickets();
     renderCrashes();
@@ -10537,10 +11957,11 @@ setInterval(() => {
 // handler below that pokes the server the moment focus returns.
 async function refreshNow() {
   try {
-    const [clData, tkData, crData] = await Promise.all([
+    const [clData, tkData, crData, pollData] = await Promise.all([
       apiFetch('/api/changelog'),
       apiFetch('/api/tickets'),
-      apiFetch('/api/crashes')
+      apiFetch('/api/crashes'),
+      fetchCrashTiePoll()
     ]);
     if (clData.length !== changelogEntries.length) {
       changelogEntries = clData;
@@ -10556,6 +11977,10 @@ async function refreshNow() {
     if (fp !== __crLastFp) {
       __crLastFp = fp;
       crashEntries = crData;
+      renderCrashes();
+    }
+    if (pollData && JSON.stringify(pollData) !== JSON.stringify(crTiePoll)) {
+      crTiePoll = pollData;
       renderCrashes();
     }
   } catch { /* silent — will retry next interval */ }
@@ -10590,42 +12015,126 @@ checkVersion();
 setInterval(checkVersion, 60000);
 
 // ── Admin auth ──────────────────────────────────────────────────────────
-// adminOverlay removed: no admin login flow in the public preview.
+// Admin mode has two layers: /api/whoami decides whether this Windows user
+// may be admin, then the password gate decides whether admin mode is active
+// in this tab.
 const adminToggle  = document.getElementById('adminToggle');
 const usageOverlay = document.getElementById('usageOverlay');
 const adminUsageBtn = document.getElementById('adminUsage');
 
-// In the public preview, admin is permanently off and there's no client-
-// side path to enable it.
-function setAdmin(_on) {
-  document.body.classList.remove('is-admin');
-  if (adminToggle) {
-    adminToggle.classList.remove('authed');
-    adminToggle.textContent = '🔒';
-    adminToggle.title = 'Read-only preview';
+// ── Admin password gate ──────────────────────────────────────────────────
+// Layered on top of the server-side OS-user check. Even if /api/whoami says
+// you're the designated admin account, admin mode stays OFF until you type
+// this password. Unlock lasts only until you lock it or reload the page.
+//
+// CHANGE THIS to your password. The real security is server-side; this
+// password just stops "left my screen unlocked" admin actions.
+const ADMIN_PASSWORD = 'nmt2026';
+const LEGACY_ADMIN_SESSION_KEYS = ['mgAdminUnlocked', 'nmtAdmin'];
+
+// Server says this OS user CAN be admin. Tracked separately so we can show
+// the right tooltip / snark without auto-flipping admin mode on.
+let serverAllowsAdmin = false;
+
+function setAdmin(on) {
+  document.body.classList.toggle('is-admin', on);
+  adminToggle.classList.toggle('authed', on);
+  adminToggle.textContent = on ? '🔓' : '🔒';
+  if (on) {
+    adminToggle.title = 'Admin mode active — click to lock';
+  } else if (serverAllowsAdmin) {
+    adminToggle.title = 'Click to unlock admin mode';
+  } else {
+    adminToggle.title = 'Admin requires the designated Windows account';
+  }
+  if (!on && document.getElementById('tkPokeDev')) {
+    pokeShowDevUnauthorized();
   }
   renderChangelog();
   renderTickets();
   renderCrashes();
 }
 
-document.getElementById('adminRestart').addEventListener('click', async () => {
-  if (!confirm('Restart the server? The page will reload in a few seconds with the latest changes.')) return;
+function clearStoredAdminUnlocks() {
+  for (const key of LEGACY_ADMIN_SESSION_KEYS) sessionStorage.removeItem(key);
+}
+
+function setAdminUnlocked(on) {
+  clearStoredAdminUnlocks();
+  setAdmin(!!on && serverAllowsAdmin);
+}
+
+async function refreshAdminFromServer() {
   try {
-    await fetch(API_BASE + '/api/restart');
-  } catch {}
-  showToast('Server restarting...', 'info');
-  // The server spawns a replacement before exiting. Poll until it's back.
-  setTimeout(async () => {
-    for (let i = 0; i < 30; i++) {
-      await new Promise(r => setTimeout(r, 1000));
-      try {
-        const r = await fetch(API_BASE + '/');
-        if (r.ok) { window.location.reload(); return; }
-      } catch {}
+    const w = await apiFetch('/api/whoami');
+    if (w && typeof w.windowsUser === 'string') {
+      sessionStorage.setItem('winUser', w.windowsUser);
     }
-    showToast('Server did not come back up. Re-open the Macro Guide from PDM.', 'error');
-  }, 1500);
+    serverAllowsAdmin = !!(w && w.isAdmin);
+    if (!serverAllowsAdmin) setAdminUnlocked(false);
+    return serverAllowsAdmin;
+  } catch {
+    serverAllowsAdmin = false;
+    setAdminUnlocked(false);
+    return false;
+  }
+}
+
+// ── Admin login modal wiring ─────────────────────────────────────────────
+function openAdminLogin() {
+  const overlay = document.getElementById('adminOverlay');
+  const input = document.getElementById('adminPwInput');
+  const err = document.getElementById('adminErr');
+  if (!overlay || !input) return;
+  if (err) err.style.display = 'none';
+  input.value = '';
+  overlay.classList.add('open');
+  setTimeout(() => input.focus(), 50);
+}
+
+function closeAdminLogin() {
+  const overlay = document.getElementById('adminOverlay');
+  if (overlay) overlay.classList.remove('open');
+}
+
+async function submitAdminLogin() {
+  const input = document.getElementById('adminPwInput');
+  const err = document.getElementById('adminErr');
+  if (!input) return;
+  const canAdmin = serverAllowsAdmin || await refreshAdminFromServer();
+  if (!canAdmin) {
+    closeAdminLogin();
+    setAdminUnlocked(false);
+    snarkToast('adminLock', 'Admin features are only available for the designated Windows account.', 0);
+    return;
+  }
+  if (input.value.trim().toLowerCase() === ADMIN_PASSWORD.toLowerCase()) {
+    closeAdminLogin();
+    setAdminUnlocked(true);
+    showToast('Admin unlocked.', 'success');
+  } else {
+    if (err) {
+      err.textContent = pickQuip('wrongPassword') || 'Wrong password.';
+      err.style.display = 'block';
+    }
+    input.value = '';
+    input.focus();
+  }
+}
+
+document.getElementById('adminCancelBtn')?.addEventListener('click', closeAdminLogin);
+document.getElementById('adminSubmitBtn')?.addEventListener('click', submitAdminLogin);
+document.getElementById('adminPwInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); submitAdminLogin(); }
+  if (e.key === 'Escape') { e.preventDefault(); closeAdminLogin(); }
+});
+
+document.getElementById('adminRestart').addEventListener('click', async () => {
+  restartLocalMacroGuideServer({ confirmFirst: true, source: 'admin' });
+});
+
+document.getElementById('serverRefresh')?.addEventListener('click', () => {
+  restartLocalMacroGuideServer({ confirmFirst: true, source: 'manual' });
 });
 
 async function loadUsage() {
@@ -11042,11 +12551,23 @@ document.getElementById('refreshUsersBtn').addEventListener('click', loadUsers);
 document.getElementById('closeUsersBtn').addEventListener('click', () => { usersOverlay.style.display = 'none'; });
 usersOverlay.addEventListener('click', e => { if (e.target === usersOverlay) usersOverlay.style.display = 'none'; });
 
-if (adminToggle) {
-  adminToggle.addEventListener('click', () => {
-    showToast('This is the public read-only preview. Open the Macro Guide from PDM to use the live app.', 'info');
-  });
-}
+// Clicking the admin toggle:
+//   - if currently unlocked: lock back down (no prompt)
+//   - if locked + server allows admin: open password modal
+//   - if locked + server denies: snark
+adminToggle.addEventListener('click', async () => {
+  if (document.body.classList.contains('is-admin')) {
+    setAdminUnlocked(false);
+    showToast('Admin locked.', 'info');
+    return;
+  }
+  const can = await refreshAdminFromServer();
+  if (!can) {
+    snarkToast('adminLock', 'Admin features are only available for the designated Windows account.', 0);
+    return;
+  }
+  openAdminLogin();
+});
 
 // ── Init ──────────────────────────────────────────────────────────────────
 // Capture Windows username passed in URL by the VBS launcher (?user=USERNAME)
@@ -11058,6 +12579,11 @@ if (adminToggle) {
 })();
 
 (async function initMacroGuide() {
+  // Always ask the server who we are first. Server-side OS-user check decides
+  // who *can* be admin; admin mode still starts locked on every page load.
+  clearStoredAdminUnlocks();
+  await refreshAdminFromServer();
+  setAdmin(false);
   await pokeLoadTargets({ quiet: true });
   // Auto-map Windows username -> display name after dynamic target config loads.
   crAutoIdentify();
@@ -11067,8 +12593,6 @@ if (adminToggle) {
   pokeDevAutoOpen();
   crLoadNotifyState();
   logUsageOpen();
-  // Public preview is permanently non-admin.
-  setAdmin(false);
   // Load data from server
   loadData();
 })();
