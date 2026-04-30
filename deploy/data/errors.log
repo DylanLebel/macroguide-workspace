@@ -1,0 +1,20 @@
+﻿[2026-04-29 14:22:02] [dlebel@D-1077] [HEAD /] Exception calling "Write" with "3" argument(s): "Bytes to be written to the stream exceed the Content-Length bytes size specified." | at Send-JsonResponse, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 981
+at Handle-Request, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 2261
+at Start-Server, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 2370
+at <ScriptBlock>, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 2433
+[2026-04-29 14:54:52] [engineerpdm@D-1054] [GET /api/changelog] Exception calling "Write" with "3" argument(s): "The specified network name is no longer available" | at Send-JsonResponse, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 981
+at Handle-Request, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 1033
+at Start-Server, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 2394
+at <ScriptBlock>, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 2457
+[2026-04-29 14:54:52] [engineerpdm@D-1054] [GET /api/tickets] Exception calling "Write" with "3" argument(s): "The specified network name is no longer available" | at Send-JsonResponse, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 981
+at Handle-Request, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 1040
+at Start-Server, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 2394
+at <ScriptBlock>, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 2457
+[2026-04-29 14:54:52] [engineerpdm@D-1054] [GET /api/crashes] Exception calling "Write" with "3" argument(s): "The specified network name is no longer available" | at Send-JsonResponse, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 981
+at Handle-Request, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 1047
+at Start-Server, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 2394
+at <ScriptBlock>, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 2457
+[2026-04-29 14:54:52] [engineerpdm@D-1054] [GET /api/changelog] Exception calling "Write" with "3" argument(s): "The specified network name is no longer available" | at Send-JsonResponse, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 981
+at Handle-Request, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 1033
+at Start-Server, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 2394
+at <ScriptBlock>, Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\macro-guide-server.ps1: line 2457

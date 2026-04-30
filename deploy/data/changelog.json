@@ -1,0 +1,79 @@
+[
+  {
+    "id": 1,
+    "macroId": "all",
+    "macroName": "All Macros",
+    "macroIcon": "⚙️",
+    "macroColor": "#4f8ef7",
+    "date": "2026-03-16T08:00:00.000Z",
+    "type": "doc",
+    "description": "Macro Guide created. This interactive reference page launched for the team.",
+    "author": ""
+  },
+  {
+    "id": 2,
+    "macroId": "cadlink",
+    "macroName": "Prepare for CADLink",
+    "macroIcon": "🚀",
+    "macroColor": "#a855f7",
+    "date": "2026-03-19T09:00:00.000Z",
+    "type": "bug",
+    "description": "v102: Fixed wrong dimensions on imperial (inch-based) parts. SolidWorks internally reports a part's bounding box in meters, and the macro wasn't converting that to inches for imperial models, so properties like Width, Height, Length, Stock Size, and Mtl Part Number came out completely wrong (e.g. a 4\" x 4\" x 1/4\" plate showed Width=0.006, Length=1/8). Now it converts correctly no matter what units the model uses.",
+    "author": "Dylan"
+  },
+  {
+    "id": 3,
+    "macroId": "cadlink",
+    "macroName": "Prepare for CADLink",
+    "macroIcon": "🚀",
+    "macroColor": "#a855f7",
+    "date": "2026-03-19T10:00:00.000Z",
+    "type": "feature",
+    "description": "v103: Added H-Beam support for structural members (Stock Size and Mtl Part Number now generate correctly for H-beams). Fixed flat bar conversion prompt forcing SolidWorks into full-screen mode on dual-monitor setups. Redesigned the flat bar fallback dialog from a confusing 3-popup chain into a single clear prompt with labeled buttons, plus one optional follow-up for skip preferences.",
+    "author": "Dylan"
+  },
+  {
+    "id": 4,
+    "macroId": "cadlink",
+    "macroName": "Prepare for CADLink",
+    "macroIcon": "🚀",
+    "macroColor": "#a855f7",
+    "date": "2026-03-19T11:00:00.000Z",
+    "type": "enhancement",
+    "description": "v104: Empty Revision fields now default to 1 instead of failing validation. Previously, new files not yet checked into PDM would have a blank Revision, which triggered an error in the results form. The macro now sets it to 1 automatically.",
+    "author": "Dylan"
+  },
+  {
+    "id": 5,
+    "macroId": "cadlink",
+    "macroName": "Prepare for CADLink",
+    "macroIcon": "🚀",
+    "macroColor": "#a855f7",
+    "date": "2026-04-20T09:00:00.000Z",
+    "type": "feature",
+    "description": "v105: SolidWorks 2025 compatibility, plus new features and bug fixes. SolidWorks 2025 compatibility: after the shop upgrade from SW 2023 to SW 2025, the macro wouldn't load and threw a 'Compile error' before anything could run. This release clears those errors and updates the internal SolidWorks calls so it works properly on 2025. Nothing changes about how you use the macro: same buttons, same workflow, same results. Revision sync from drawings: the macro now checks if there's a matching drawing for the part or assembly and pulls the Revision from it. The drawing is treated as the source of truth, which stops the Revision in the title block from disagreeing with the Revision on the model during review. Bug fixes: the macro no longer errors out when it tries to save a model that isn't checked out (it just skips the save now), 'Created By' gets filled in automatically on parts (previously only 'Author' was), fixed a crash when the macro rebuilt drawing views (caused by two internal variables accidentally sharing a name), and better error handling in the results window. Small side benefit: if a DXF export ever hits a PDM snag (can't lock the file, can't move it to Obsolete, etc.), the log now records the specific PDM error number, which makes it much faster to track down the cause instead of staring at a generic 'operation failed' message.",
+    "author": "Dylan"
+  },
+  {
+    "id": 6,
+    "macroId": "cadlink",
+    "macroName": "Prepare for CADLink",
+    "macroIcon": "🚀",
+    "macroColor": "#a855f7",
+    "date": "2026-04-21T09:00:00.000Z",
+    "type": "bug",
+    "description": "v106: Empty Revision now correctly defaults to 1 instead of 2. v104 was supposed to default blank Revisions to 1, but when a file already existed in PDM the macro was still asking PDM for the 'next' revision number, which came back as 2 (PDM version + 1). For a brand-new file with no Revision set, that's not what we want — the fix was already in place, it just wasn't being reached. Now the empty-Revision path skips the PDM lookup entirely and sets 1 directly. Files with an existing Revision and files synced from a drawing are unaffected.",
+    "author": "Dylan"
+  },
+  {
+    "id": 7,
+    "macroId": "cadlink",
+    "macroName": "Prepare for CADLink",
+    "macroIcon": "🚀",
+    "macroColor": "#a855f7",
+    "date": "2026-04-28T15:15:00.000Z",
+    "type": "bug",
+    "description": "v107: Plate path-based unit overrides now still run material and size validation. This prevents unrecognized plate materials such as BHN500 from being marked Manufactured just because the project path forces inches. Final Type defaulting also preserves deliberate Type P results instead of changing them back to M.",
+    "author": "Dylan"
+  }
+]
