@@ -6,9 +6,25 @@ node_modules/
 macro-guide-server.js
 LaunchMacroGuide.bat
 
-# Root data files stay local. Macro Guide seed data may live under deploy/data.
+# Root data files stay local.
 /data/
 *.lock
+
+# Macro Guide runtime data — these files are written by the running server
+# and contain real user activity, identities, and uploaded captcha images.
+# They MUST NOT be committed. The PowerShell server seeds fresh files on
+# first launch using the defaults baked into the script.
+deploy/data/admin-access.log
+deploy/data/errors.log
+deploy/data/usage.log
+deploy/data/tickets.json
+deploy/data/crashes.json
+deploy/data/crash-notifications.json
+deploy/data/presence.json
+deploy/data/captcha-queue.json
+deploy/data/poke-resets.json
+deploy/data/poke-targets.json
+deploy/data/attachments/
 
 # OS files
 Thumbs.db
