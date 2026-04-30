@@ -103,6 +103,77 @@ $EmailEnabled = $true
 $EmailTo      = 'dlebel@nmtech.com'
 
 # ════════════════════════════════════════════════════════════════════════
+#  IDENTITY & AUTHORIZATION
+# ════════════════════════════════════════════════════════════════════════
+# Each user runs their own copy of this server on their own Windows account.
+# We derive identity from $env:USERNAME (the OS user who started this process)
+# rather than trusting any value the browser supplies in a request body or
+# query string — those are spoofable from DevTools.
+
+$AdminUsernames = @('dlebel')
+
+function Get-CallerUser {
+    # The unforgeable identity of the user this server is running as.
+    $u = $env:USERNAME
+    if (-not $u) { return '' }
+    return $u.Trim().ToLowerInvariant()
+}
+
+function Test-CallerIsAdmin {
+    $caller = Get-CallerUser
+    if (-not $caller) { return $false }
+    foreach ($admin in $AdminUsernames) {
+        if ($caller -eq $admin.ToLowerInvariant()) { return $true }
+    }
+    return $false
+}
+
+function Test-RequestIsLocal {
+    # Defense in depth: HttpListener with `localhost:` prefix already restricts
+    # binding to the loopback adapter, but we also reject any request whose
+    # Host header is not localhost/127.0.0.1, which makes it harder for an
+    # off-host page (or DNS rebinding) to talk to us.
+    param($Request)
+    try {
+        $remote = $Request.RemoteEndPoint.Address.ToString()
+        if ($remote -ne '127.0.0.1' -and $remote -ne '::1') { return $false }
+    } catch { return $false }
+    try {
+        $hdrHost = ($Request.Headers['Host'])
+        if (-not $hdrHost) { return $true }  # Some clients (curl) may omit; remote IP already verified.
+        $hostName = ($hdrHost -split ':')[0].Trim().ToLowerInvariant()
+        if ($hostName -ne 'localhost' -and $hostName -ne '127.0.0.1') { return $false }
+    } catch {}
+    return $true
+}
+
+function Test-RequestOriginAllowed {
+    # CSRF defense for state-changing methods. We only accept Origin/Referer
+    # values pointing back at our own loopback origin. GETs/HEADs are exempt
+    # because they're idempotent (data fetches), but every mutating call must
+    # come from a page served by us.
+    param($Request)
+    $method = $Request.HttpMethod
+    if ($method -in @('GET', 'HEAD', 'OPTIONS')) { return $true }
+    $origin = ''
+    try { $origin = [string]$Request.Headers['Origin'] } catch {}
+    if (-not $origin) {
+        try { $origin = [string]$Request.Headers['Referer'] } catch {}
+    }
+    if (-not $origin) {
+        # No Origin/Referer — could be a non-browser caller (e.g. the .vbs
+        # launcher's probe, or curl). Allow only if remote is loopback.
+        return Test-RequestIsLocal $Request
+    }
+    try {
+        $u = [Uri]$origin
+        if ($u.Scheme -ne 'http' -and $u.Scheme -ne 'https') { return $false }
+        $h = $u.Host.ToLowerInvariant()
+        return ($h -eq 'localhost' -or $h -eq '127.0.0.1')
+    } catch { return $false }
+}
+
+# ════════════════════════════════════════════════════════════════════════
 #  ERROR LOG (shared, so Dylan can see what's failing on any user's box)
 # ════════════════════════════════════════════════════════════════════════
 
@@ -968,13 +1039,23 @@ function Initialize-DataFiles {
 #  HTTP HELPERS
 # ════════════════════════════════════════════════════════════════════════
 
+function Add-SecurityHeaders {
+    param($Response)
+    # CORS — loopback only. We don't echo arbitrary Origin values.
+    $Response.AddHeader('Access-Control-Allow-Origin', 'http://localhost')
+    $Response.AddHeader('Vary', 'Origin')
+    $Response.AddHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS')
+    $Response.AddHeader('Access-Control-Allow-Headers', 'Content-Type')
+    $Response.AddHeader('X-Content-Type-Options', 'nosniff')
+    $Response.AddHeader('X-Frame-Options', 'DENY')
+    $Response.AddHeader('Referrer-Policy', 'no-referrer')
+}
+
 function Send-JsonResponse {
     param($Response, [int]$StatusCode, $Data)
     $Response.StatusCode = $StatusCode
     $Response.ContentType = 'application/json; charset=utf-8'
-    $Response.AddHeader('Access-Control-Allow-Origin', '*')
-    $Response.AddHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS')
-    $Response.AddHeader('Access-Control-Allow-Headers', 'Content-Type')
+    Add-SecurityHeaders $Response
     $json = ConvertTo-Json $Data -Depth 10 -Compress
     $buffer = [System.Text.Encoding]::UTF8.GetBytes($json)
     $Response.ContentLength64 = $buffer.Length
@@ -987,7 +1068,21 @@ function Send-HtmlResponse {
     $Response.StatusCode = 200
     $Response.ContentType = 'text/html; charset=utf-8'
     $Response.AddHeader('Cache-Control', 'no-cache')
-    $Response.AddHeader('Access-Control-Allow-Origin', '*')
+    Add-SecurityHeaders $Response
+    # Restrictive CSP. The page is self-hosted, uses inline <style>/<script>
+    # blocks (necessary for a single-file HTML app), and embeds images as
+    # data: URIs. No external resources are loaded, so we lock everything
+    # else down.
+    $Response.AddHeader('Content-Security-Policy',
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline'; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "img-src 'self' data: blob:; " +
+        "font-src 'self' data:; " +
+        "connect-src 'self'; " +
+        "frame-ancestors 'none'; " +
+        "base-uri 'self'; " +
+        "form-action 'self'")
     $buffer = [System.IO.File]::ReadAllBytes($FilePath)
     $Response.ContentLength64 = $buffer.Length
     $Response.OutputStream.Write($buffer, 0, $buffer.Length)
@@ -1011,13 +1106,42 @@ function Handle-Request {
     $url = $req.Url.AbsolutePath
     $method = $req.HttpMethod
 
+    # ── Reject anything that didn't come from loopback ──
+    # Belt + suspenders. HttpListener prefix is `localhost:` (loopback only),
+    # but we double-check the remote IP and Host header to defend against
+    # DNS rebinding and accidental binding misconfig.
+    if (-not (Test-RequestIsLocal $req)) {
+        $res.StatusCode = 403
+        $res.OutputStream.Close()
+        return
+    }
+
+    # ── CSRF defense for state-changing methods ─────────
+    if (-not (Test-RequestOriginAllowed $req)) {
+        Send-JsonResponse $res 403 @{ error = 'Origin not allowed.' }
+        return
+    }
+
     # ── OPTIONS (CORS preflight) ────────────────────────
     if ($method -eq 'OPTIONS') {
-        $res.AddHeader('Access-Control-Allow-Origin', '*')
-        $res.AddHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS')
-        $res.AddHeader('Access-Control-Allow-Headers', 'Content-Type')
+        Add-SecurityHeaders $res
         $res.StatusCode = 204
         $res.OutputStream.Close()
+        return
+    }
+
+    # ── GET /api/whoami ─────────────────────────────────
+    # The single source of truth for "who is the user". Identity is taken
+    # from the OS account that started this server (unforgeable from the
+    # browser), and admin status is the same OS account membership in
+    # $AdminUsernames. The client should call this on load and never
+    # decide its own admin status.
+    if ($method -eq 'GET' -and $url -eq '/api/whoami') {
+        Send-JsonResponse $res 200 @{
+            windowsUser = (Get-CallerUser)
+            isAdmin     = (Test-CallerIsAdmin)
+            machine     = $env:COMPUTERNAME
+        }
         return
     }
 
@@ -1065,6 +1189,10 @@ function Handle-Request {
     # -- PATCH /api/admin/poke-targets --------------------------
     # Saves the shared list used by the poke gauntlet and admin test panel.
     if ($method -eq 'PATCH' -and $url -eq '/api/admin/poke-targets') {
+        if (-not (Test-CallerIsAdmin)) {
+            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
+            return
+        }
         $body = Read-RequestBody $req
         $parsed = $null
         try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
@@ -1090,7 +1218,7 @@ function Handle-Request {
 
     # ── GET /api/crash-notifications/me ────────────────
     if ($method -eq 'GET' -and $url -eq '/api/crash-notifications/me') {
-        $who = [string]$req.QueryString['windowsUser']
+        $who = Get-CallerUser
         $display = [string]$req.QueryString['displayName']
         $state = Get-CrashNotificationState -WindowsUser $who -DisplayName $display
         Send-JsonResponse $res 200 $state
@@ -1099,6 +1227,10 @@ function Handle-Request {
 
     # ── GET /api/admin/crash-notifications ─────────────
     if ($method -eq 'GET' -and $url -eq '/api/admin/crash-notifications') {
+        if (-not (Test-CallerIsAdmin)) {
+            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
+            return
+        }
         $subscribers = @(Get-CrashNotificationSubscribers)
         Send-JsonResponse $res 200 @{
             subscribers = $subscribers
@@ -1116,7 +1248,8 @@ function Handle-Request {
             Send-JsonResponse $res 400 @{ error = 'Invalid JSON body.' }
             return
         }
-        if (-not $parsed.PSObject.Properties['windowsUser'] -or -not $parsed.windowsUser) {
+        $who = Get-CallerUser
+        if (-not $who) {
             Send-JsonResponse $res 400 @{ error = 'Windows user is required.' }
             return
         }
@@ -1125,7 +1258,7 @@ function Handle-Request {
         $enabled = $false
         if ($parsed.PSObject.Properties['enabled']) { $enabled = $parsed.enabled }
         try {
-            $state = Set-CrashNotificationState -WindowsUser ([string]$parsed.windowsUser) -DisplayName $display -Enabled $enabled
+            $state = Set-CrashNotificationState -WindowsUser $who -DisplayName $display -Enabled $enabled
             Send-JsonResponse $res 200 $state
         } catch {
             Send-JsonResponse $res 400 @{ error = $_.Exception.Message }
@@ -1137,9 +1270,17 @@ function Handle-Request {
     if ($method -eq 'POST' -and $url -eq '/api/crashes/add') {
         $body = Read-RequestBody $req
         $crash = $body | ConvertFrom-Json
-        if (-not $crash.user) {
+        # Always stamp the crash with the actual OS user. Whatever the client
+        # sent for `user` / `windowsUser` is overridden so a user can't log
+        # crashes pretending to be someone else.
+        $caller = Get-CallerUser
+        if (-not $caller) {
             Send-JsonResponse $res 400 @{ error = 'Missing required field (user).' }
             return
+        }
+        $crash | Add-Member -NotePropertyName windowsUser -NotePropertyValue $caller -Force
+        if (-not $crash.user) {
+            $crash | Add-Member -NotePropertyName user -NotePropertyValue $caller -Force
         }
         $updated = Invoke-LockedMutate $CrFile {
             param($data)
@@ -1164,11 +1305,37 @@ function Handle-Request {
     }
 
     # ── DELETE /api/crashes/{id} ─────────────────────────
+    # Admin can delete any crash. Non-admin can only delete their own crash row.
     if ($method -eq 'DELETE' -and $url -match '^/api/crashes/(\d+)$') {
         $crashId = [int]$matches[1]
+        $caller = Get-CallerUser
+        $isAdmin = Test-CallerIsAdmin
+        $forbidden = $false
         $updated = Invoke-LockedMutate $CrFile {
             param($data)
-            return @($data | Where-Object { [int]$_.id -ne $crashId })
+            $kept = @()
+            foreach ($c in $data) {
+                if ($c.PSObject.Properties['id'] -and [int]$c.id -eq $crashId) {
+                    if (-not $isAdmin) {
+                        $owner = ''
+                        if ($c.PSObject.Properties['windowsUser']) { $owner = ([string]$c.windowsUser).Trim().ToLowerInvariant() }
+                        if (-not $owner -and $c.PSObject.Properties['user']) { $owner = ([string]$c.user).Trim().ToLowerInvariant() }
+                        if ($owner -ne $caller) {
+                            Set-Variable -Name forbidden -Value $true -Scope 2
+                            $kept += $c
+                            continue
+                        }
+                    }
+                    # drop this one
+                    continue
+                }
+                $kept += $c
+            }
+            return $kept
+        }
+        if ($forbidden) {
+            Send-JsonResponse $res 403 @{ error = 'You can only delete your own crash log.' }
+            return
         }
         Send-JsonResponse $res 200 @{ ok = $true; count = $updated.Count; entries = @($updated) }
         return
@@ -1176,6 +1343,10 @@ function Handle-Request {
 
     # ── PATCH /api/crashes/{id} — admin edit (user, severity, timestamp) ──
     if ($method -eq 'PATCH' -and $url -match '^/api/crashes/(\d+)$') {
+        if (-not (Test-CallerIsAdmin)) {
+            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
+            return
+        }
         $crashId = [int]$matches[1]
         $body = Read-RequestBody $req
         $patch = $body | ConvertFrom-Json
@@ -1211,8 +1382,12 @@ function Handle-Request {
         return
     }
 
-    # ── POST /api/changelog/add ─────────────────────────
+    # ── POST /api/changelog/add (admin only) ────────────
     if ($method -eq 'POST' -and $url -eq '/api/changelog/add') {
+        if (-not (Test-CallerIsAdmin)) {
+            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
+            return
+        }
         $body = Read-RequestBody $req
         $entry = $body | ConvertFrom-Json
         if (-not $entry.date -or -not $entry.description) {
@@ -1241,6 +1416,11 @@ function Handle-Request {
             Send-JsonResponse $res 400 @{ error = 'Missing required field (title).' }
             return
         }
+        # Stamp the ticket creator with the actual OS user. Whatever the
+        # client supplied for windowsUser is overridden here so it can't
+        # be spoofed.
+        $caller = Get-CallerUser
+        $ticket | Add-Member -NotePropertyName windowsUser -NotePropertyValue $caller -Force
         $updated = Invoke-LockedMutate $TkFile {
             param($data)
             $data += $ticket
@@ -1252,8 +1432,12 @@ function Handle-Request {
         return
     }
 
-    # ── PATCH /api/tickets/{id}/status ──────────────────
+    # ── PATCH /api/tickets/{id}/status (admin only) ─────
     if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/status$') {
+        if (-not (Test-CallerIsAdmin)) {
+            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
+            return
+        }
         $id = [long]$Matches[1]
         $body = Read-RequestBody $req
         $parsed = $body | ConvertFrom-Json
@@ -1290,7 +1474,7 @@ function Handle-Request {
         return
     }
 
-    # ── PATCH /api/tickets/{id}/cancel ──────────────────
+    # ── PATCH /api/tickets/{id}/cancel (creator or admin) ──
     if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/cancel$') {
         $id = [long]$Matches[1]
         $body = Read-RequestBody $req
@@ -1299,22 +1483,37 @@ function Handle-Request {
             Send-JsonResponse $res 400 @{ error = 'A cancellation reason is required.' }
             return
         }
+        $caller = Get-CallerUser
+        $isAdmin = Test-CallerIsAdmin
         $found = $false
+        $forbidden = $false
         $updated = Invoke-LockedMutate $TkFile {
             param($data)
             foreach ($tk in $data) {
                 if ([string]$tk.id -eq [string]$id) {
+                    Set-Variable -Name found -Value $true -Scope 2
+                    if (-not $isAdmin) {
+                        $owner = ''
+                        if ($tk.PSObject.Properties['windowsUser']) { $owner = ([string]$tk.windowsUser).Trim().ToLowerInvariant() }
+                        if ($owner -ne $caller) {
+                            Set-Variable -Name forbidden -Value $true -Scope 2
+                            return $data
+                        }
+                    }
                     $tk.status = 'canceled'
                     $tk | Add-Member -NotePropertyName cancelReason -NotePropertyValue $parsed.reason.Trim() -Force
-                    $tk | Add-Member -NotePropertyName canceledBy -NotePropertyValue $(if ($parsed.canceledBy) { $parsed.canceledBy } else { '' }) -Force
+                    $tk | Add-Member -NotePropertyName canceledBy -NotePropertyValue $caller -Force
                     $tk | Add-Member -NotePropertyName canceledDate -NotePropertyValue (Get-Date -Format 'yyyy-MM-dd') -Force
-                    Set-Variable -Name found -Value $true -Scope 2
                 }
             }
             return $data
         }
         if (-not $found) {
             Send-JsonResponse $res 404 @{ error = 'Ticket not found.' }
+            return
+        }
+        if ($forbidden) {
+            Send-JsonResponse $res 403 @{ error = 'You can only cancel your own requests.' }
             return
         }
         Send-JsonResponse $res 200 @{ ok = $true; entries = @($updated) }
@@ -1324,15 +1523,9 @@ function Handle-Request {
     # ── PATCH /api/tickets/{id}/vote ────────────────────
     if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/vote$') {
         $id = [long]$Matches[1]
-        $body = Read-RequestBody $req
-        $parsed = $null
-        $voterUser = $null
-        if ($body -and $body.Trim().Length -gt 0) {
-            try { $parsed = $body | ConvertFrom-Json } catch {}
-        }
-        if ($parsed -and $parsed.PSObject.Properties['windowsUser'] -and $parsed.windowsUser) {
-            $voterUser = $parsed.windowsUser
-        }
+        # Voter identity is taken from the OS user; the request body is ignored
+        # for identity purposes so a user can't cast a vote as someone else.
+        $voterUser = Get-CallerUser
         $found = $false
         $completed = $false
         $votedTicket = $null
@@ -1392,9 +1585,9 @@ function Handle-Request {
     # ── PATCH /api/tickets/{id}/poke ─────────────────────
     if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/poke$') {
         $id = [long]$Matches[1]
-        $body = Read-RequestBody $req
-        $parsed = $body | ConvertFrom-Json
-        $pokerUser = if ($parsed.PSObject.Properties['windowsUser'] -and $parsed.windowsUser) { $parsed.windowsUser } else { '' }
+        # Poker identity is taken from the OS user. The request body's
+        # windowsUser, if any, is ignored.
+        $pokerUser = Get-CallerUser
         $found = $false
         $completed = $false
         $pokedTicket = $null
@@ -1444,12 +1637,13 @@ function Handle-Request {
         return
     }
 
-    # ── PATCH /api/tickets/{id}/edit ─────────────────────
+    # ── PATCH /api/tickets/{id}/edit (creator or admin) ─
     if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/edit$') {
         $id = [long]$Matches[1]
         $body = Read-RequestBody $req
         $parsed = $body | ConvertFrom-Json
-        $windowsUser = if ($parsed.PSObject.Properties['windowsUser']) { $parsed.windowsUser } else { '' }
+        $windowsUser = Get-CallerUser
+        $isAdmin = Test-CallerIsAdmin
         $found = $false
         $forbidden = $false
         $badStatus = $false
@@ -1458,7 +1652,8 @@ function Handle-Request {
             foreach ($tk in $data) {
                 if ([string]$tk.id -eq [string]$id) {
                     Set-Variable -Name found -Value $true -Scope 2
-                    if (-not $windowsUser -or $tk.windowsUser -ne $windowsUser) {
+                    $owner = if ($tk.PSObject.Properties['windowsUser']) { ([string]$tk.windowsUser).Trim().ToLowerInvariant() } else { '' }
+                    if (-not $isAdmin -and ($owner -ne $windowsUser -or -not $windowsUser)) {
                         Set-Variable -Name forbidden -Value $true -Scope 2
                         return $data
                     }
@@ -1549,7 +1744,7 @@ function Handle-Request {
         $contentType = if ($mimeTypes.ContainsKey($ext)) { $mimeTypes[$ext] } else { 'application/octet-stream' }
         $res.StatusCode = 200
         $res.ContentType = $contentType
-        $res.AddHeader('Access-Control-Allow-Origin', '*')
+        Add-SecurityHeaders $res
         $res.AddHeader('Cache-Control', 'public, max-age=3600')
         # For non-image files, suggest download
         $isImage = $ext -in @('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg')
@@ -1568,6 +1763,8 @@ function Handle-Request {
         $id = [long]$Matches[1]
         $body = Read-RequestBody $req
         $parsed = $body | ConvertFrom-Json
+        $caller = Get-CallerUser
+        $isAdmin = Test-CallerIsAdmin
         $found = $false
         $forbidden = $false
         $duplicate = $false
@@ -1576,28 +1773,32 @@ function Handle-Request {
             foreach ($tk in $data) {
                 if ([string]$tk.id -eq [string]$id) {
                     Set-Variable -Name found -Value $true -Scope 2
-                    # Check authorization: must be ticket creator or a voter
-                    $isCreator = ($parsed.windowsUser -and $tk.windowsUser -eq $parsed.windowsUser)
+                    # Authorization: ticket creator, voter, or admin.
+                    $owner = if ($tk.PSObject.Properties['windowsUser']) { ([string]$tk.windowsUser).Trim().ToLowerInvariant() } else { '' }
+                    $isCreator = ($caller -and $owner -eq $caller)
                     $isVoter = $false
-                    if ($parsed.windowsUser -and $tk.PSObject.Properties['voters'] -and $tk.voters) {
-                        $isVoter = $parsed.windowsUser -in @($tk.voters)
+                    if ($caller -and $tk.PSObject.Properties['voters'] -and $tk.voters) {
+                        foreach ($v in @($tk.voters)) {
+                            if (([string]$v).Trim().ToLowerInvariant() -eq $caller) { $isVoter = $true; break }
+                        }
                     }
-                    if (-not $isCreator -and -not $isVoter) {
+                    if (-not $isCreator -and -not $isVoter -and -not $isAdmin) {
                         Set-Variable -Name forbidden -Value $true -Scope 2
                         return $data
                     }
                     # Check for existing comment from this user
                     if ($tk.PSObject.Properties['comments'] -and $tk.comments) {
                         foreach ($c in @($tk.comments)) {
-                            if ($c.windowsUser -eq $parsed.windowsUser) {
+                            $cu = if ($c.PSObject.Properties['windowsUser']) { ([string]$c.windowsUser).Trim().ToLowerInvariant() } else { '' }
+                            if ($cu -eq $caller) {
                                 Set-Variable -Name duplicate -Value $true -Scope 2
                                 return $data
                             }
                         }
                     }
-                    # Create comment
+                    # Create comment — windowsUser is set from the OS user, not the body.
                     $comment = @{
-                        windowsUser = $parsed.windowsUser
+                        windowsUser = $caller
                         displayName = $parsed.displayName
                         text        = $parsed.text
                         gifUrl      = $parsed.gifUrl
@@ -1635,6 +1836,7 @@ function Handle-Request {
         $id = [long]$Matches[1]
         $body = Read-RequestBody $req
         $parsed = $body | ConvertFrom-Json
+        $caller = Get-CallerUser
         $found = $false
         $commentFound = $false
         $updated = Invoke-LockedMutate $TkFile {
@@ -1644,7 +1846,8 @@ function Handle-Request {
                     Set-Variable -Name found -Value $true -Scope 2
                     if ($tk.PSObject.Properties['comments'] -and $tk.comments) {
                         foreach ($c in @($tk.comments)) {
-                            if ($c.windowsUser -eq $parsed.windowsUser) {
+                            $cu = if ($c.PSObject.Properties['windowsUser']) { ([string]$c.windowsUser).Trim().ToLowerInvariant() } else { '' }
+                            if ($cu -eq $caller) {
                                 $c.text = $parsed.text
                                 $c | Add-Member -NotePropertyName gifUrl -NotePropertyValue $parsed.gifUrl -Force
                                 $c | Add-Member -NotePropertyName editedDate -NotePropertyValue (Get-Date -Format 'yyyy-MM-dd') -Force
@@ -1668,12 +1871,16 @@ function Handle-Request {
         return
     }
 
-    # ── DELETE /api/tickets/{id}/comment (admin delete comment) ──
+    # ── DELETE /api/tickets/{id}/comment (admin only) ──
     if ($method -eq 'DELETE' -and $url -match '^/api/tickets/(\d+)/comment$') {
+        if (-not (Test-CallerIsAdmin)) {
+            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
+            return
+        }
         $id = [long]$Matches[1]
         $body = Read-RequestBody $req
         $parsed = $body | ConvertFrom-Json
-        $targetUser = $parsed.windowsUser
+        $targetUser = ([string]$parsed.windowsUser).Trim().ToLowerInvariant()
         $found = $false
         $commentFound = $false
         $updated = Invoke-LockedMutate $TkFile {
@@ -1682,7 +1889,7 @@ function Handle-Request {
                 if ([string]$tk.id -eq [string]$id) {
                     Set-Variable -Name found -Value $true -Scope 2
                     if ($tk.PSObject.Properties['comments'] -and $tk.comments) {
-                        $newComments = @($tk.comments | Where-Object { $_.windowsUser -ne $targetUser })
+                        $newComments = @($tk.comments | Where-Object { ([string]$_.windowsUser).Trim().ToLowerInvariant() -ne $targetUser })
                         if ($newComments.Count -lt @($tk.comments).Count) {
                             Set-Variable -Name commentFound -Value $true -Scope 2
                         }
@@ -1709,6 +1916,10 @@ function Handle-Request {
     # pokers, along with the display names they've used. Lets the admin panel
     # surface "jgagnon is posting as Mike Jackson" so Dylan can rename them.
     if ($method -eq 'GET' -and $url -eq '/api/admin/users') {
+        if (-not (Test-CallerIsAdmin)) {
+            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
+            return
+        }
         $tickets = @(Read-JsonFile $TkFile)
 
         $byUser = @{}
@@ -1809,6 +2020,10 @@ function Handle-Request {
     # shows for existing entries. New comments still use whatever the client
     # types — admin can rename again if needed.
     if ($method -eq 'PATCH' -and $url -match '^/api/admin/users/(.+)$') {
+        if (-not (Test-CallerIsAdmin)) {
+            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
+            return
+        }
         $targetUser = [System.Uri]::UnescapeDataString($Matches[1])
         $body = Read-RequestBody $req
         $parsed = $null
@@ -1857,25 +2072,20 @@ function Handle-Request {
         return
     }
 
-    # ── POST /api/admin/poke-reset (dlebel only) ────────
+    # ── POST /api/admin/poke-reset (admin only) ─────────
     # Marks a target display name as "reset". Their next page load wipes their
     # local poke history + today's poked-tickets cache.
     if ($method -eq 'POST' -and $url -eq '/api/admin/poke-reset') {
-        $body = Read-RequestBody $req
-        $parsed = $null
-        try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
-        $caller = ''
-        $target = ''
-        if ($parsed) {
-            if ($parsed.PSObject.Properties['windowsUser']) { $caller = [string]$parsed.windowsUser }
-            if ($parsed.PSObject.Properties['target']) { $target = [string]$parsed.target }
-        }
-        $caller = $caller.Trim().ToLowerInvariant()
-        $target = $target.Trim().ToLowerInvariant()
-        if ($caller -ne 'dlebel') {
+        if (-not (Test-CallerIsAdmin)) {
             Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
             return
         }
+        $body = Read-RequestBody $req
+        $parsed = $null
+        try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
+        $target = ''
+        if ($parsed -and $parsed.PSObject.Properties['target']) { $target = [string]$parsed.target }
+        $target = $target.Trim().ToLowerInvariant()
         if ([string]::IsNullOrWhiteSpace($target)) {
             Send-JsonResponse $res 400 @{ error = 'target is required.' }
             return
@@ -1927,6 +2137,10 @@ function Handle-Request {
 
     # ── PATCH /api/tickets/{id}/delete (admin) ──────────
     if ($method -eq 'PATCH' -and $url -match '^/api/tickets/(\d+)/delete$') {
+        if (-not (Test-CallerIsAdmin)) {
+            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
+            return
+        }
         $id = [long]$Matches[1]
         $found = $false
         $updated = Invoke-LockedMutate $TkFile {
@@ -1967,36 +2181,39 @@ function Handle-Request {
 
     # ── POST /api/usage/open ─────────────────────────────
     # Browser calls this once on page load so Dylan can see who viewed the guide.
-    # Body: { windowsUser: "dlebel", page: "tickets" }
+    # The user is taken from the OS account; only `page` is read from the body.
     if ($method -eq 'POST' -and $url -eq '/api/usage/open') {
         $body = Read-RequestBody $req
         $parsed = $null
         try {
             if ($body) { $parsed = $body | ConvertFrom-Json }
         } catch {}
-        $who = ''
+        $who = Get-CallerUser
         $page = ''
-        if ($parsed) {
-            if ($parsed.PSObject.Properties['windowsUser'] -and $parsed.windowsUser) { $who = [string]$parsed.windowsUser }
-            if ($parsed.PSObject.Properties['page'] -and $parsed.page) { $page = [string]$parsed.page }
-        }
+        if ($parsed -and $parsed.PSObject.Properties['page'] -and $parsed.page) { $page = [string]$parsed.page }
         Write-UsageLog -WindowsUser $who -Action 'OPEN' -Page $page -UserAgent $req.UserAgent
         Send-JsonResponse $res 200 @{ ok = $true }
         return
     }
 
-    # ── GET /api/usage ───────────────────────────────────
+    # ── GET /api/usage (admin only) ──────────────────────
     # Returns recent usage rows and a unique-user summary for the admin panel.
     if ($method -eq 'GET' -and $url -eq '/api/usage') {
+        if (-not (Test-CallerIsAdmin)) {
+            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
+            return
+        }
         $usage = Read-UsageLog -MaxEntries 300
         Send-JsonResponse $res 200 $usage
         return
     }
 
     # ── POST /api/admin/log-attempt ──────────────────────
-    # Browser calls this for every admin login attempt (success + fail) so
-    # there's a single shared audit trail of who logged in and who tried.
-    # Body: { windowsUser: "dlebel", success: true/false, machine?: "DLEBEL-PC", detail?: "..." }
+    # Kept for backward compatibility. Identity comes from the OS user; only
+    # the outcome flag from the body is honored. There is no longer a
+    # client-side "admin password attempt" — admin status is determined by
+    # /api/whoami based on the OS account — so this endpoint just records
+    # any client-driven audit ping for traceability.
     if ($method -eq 'POST' -and $url -eq '/api/admin/log-attempt') {
         $body = Read-RequestBody $req
         try {
@@ -2006,9 +2223,9 @@ function Handle-Request {
             return
         }
         $outcome = if ($parsed.success) { 'SUCCESS' } else { 'FAIL' }
-        $who     = if ($parsed.windowsUser) { [string]$parsed.windowsUser } else { '' }
-        $mach    = if ($parsed.PSObject.Properties['machine'] -and $parsed.machine) { [string]$parsed.machine } else { '' }
-        $detail  = if ($parsed.PSObject.Properties['detail']  -and $parsed.detail)  { [string]$parsed.detail }  else { '' }
+        $who     = Get-CallerUser
+        $mach    = $env:COMPUTERNAME
+        $detail  = if ($parsed.PSObject.Properties['detail'] -and $parsed.detail) { [string]$parsed.detail } else { '' }
         Write-AdminAccessLog -Outcome $outcome -WindowsUser $who -Machine $mach -Detail $detail
         Send-JsonResponse $res 200 @{ ok = $true }
         return
@@ -2038,11 +2255,11 @@ function Handle-Request {
         $body = Read-RequestBody $req
         $parsed = $null
         try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
-        $who = ''
+        # Identity is from the OS user — body windowsUser is ignored.
+        $who = Get-CallerUser
         $name = ''
         $sessionId = ''
         if ($parsed) {
-            if ($parsed.PSObject.Properties['windowsUser'] -and $parsed.windowsUser) { $who = ([string]$parsed.windowsUser).Trim() }
             if ($parsed.PSObject.Properties['displayName'] -and $parsed.displayName) { $name = ([string]$parsed.displayName).Trim() }
             if ($parsed.PSObject.Properties['sessionId'] -and $parsed.sessionId) { $sessionId = ([string]$parsed.sessionId).Trim() }
         }
@@ -2133,11 +2350,9 @@ function Handle-Request {
         $body = Read-RequestBody $req
         $parsed = $null
         try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
-        $who = ''
+        # Identity is from the OS user — body windowsUser is ignored.
+        $who = Get-CallerUser
         $sessionId = ''
-        if ($parsed -and $parsed.PSObject.Properties['windowsUser'] -and $parsed.windowsUser) {
-            $who = ([string]$parsed.windowsUser).Trim().ToLowerInvariant()
-        }
         if ($parsed -and $parsed.PSObject.Properties['sessionId'] -and $parsed.sessionId) {
             $sessionId = ([string]$parsed.sessionId).Trim()
         }
@@ -2170,12 +2385,10 @@ function Handle-Request {
         return
     }
 
-    # ── GET /api/admin/presence (dlebel only) ────────────
+    # ── GET /api/admin/presence (admin only) ────────────
     # Returns users seen in the last 90 seconds, plus pending captcha-queue ids.
     if ($method -eq 'GET' -and $url -eq '/api/admin/presence') {
-        $callerParam = ''
-        try { $callerParam = [string]$req.QueryString['windowsUser'] } catch {}
-        if ($callerParam.Trim().ToLowerInvariant() -ne 'dlebel') {
+        if (-not (Test-CallerIsAdmin)) {
             Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
             return
         }
@@ -2212,27 +2425,26 @@ function Handle-Request {
         return
     }
 
-    # ── POST /api/admin/captcha-send (dlebel only) ───────
+    # ── POST /api/admin/captcha-send (admin only) ───────
     # Queues a captcha gauntlet for the target user. Their browser picks it up
     # on the next /api/captcha-check poll.
-    # Body: { windowsUser: "dlebel", target: "dshank", count: 3 }
+    # Body: { target: "dshank", count: 3 }
     if ($method -eq 'POST' -and $url -eq '/api/admin/captcha-send') {
+        if (-not (Test-CallerIsAdmin)) {
+            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
+            return
+        }
+        $caller = Get-CallerUser
         $body = Read-RequestBody $req
         $parsed = $null
         try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
-        $caller = ''
         $target = ''
         $count = 3
         $challenge = ''
         if ($parsed) {
-            if ($parsed.PSObject.Properties['windowsUser']) { $caller = [string]$parsed.windowsUser }
-            if ($parsed.PSObject.Properties['target'])      { $target = [string]$parsed.target }
-            if ($parsed.PSObject.Properties['count'])       { try { $count = [int]$parsed.count } catch {} }
-            if ($parsed.PSObject.Properties['challenge'])   { $challenge = ([string]$parsed.challenge).Trim() }
-        }
-        if ($caller.Trim().ToLowerInvariant() -ne 'dlebel') {
-            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
-            return
+            if ($parsed.PSObject.Properties['target'])    { $target = [string]$parsed.target }
+            if ($parsed.PSObject.Properties['count'])     { try { $count = [int]$parsed.count } catch {} }
+            if ($parsed.PSObject.Properties['challenge']) { $challenge = ([string]$parsed.challenge).Trim() }
         }
         if ([string]::IsNullOrWhiteSpace($target)) {
             Send-JsonResponse $res 400 @{ error = 'target is required.' }
@@ -2245,7 +2457,7 @@ function Handle-Request {
             target      = $target.Trim()
             count       = $count
             challenge   = $challenge
-            queuedBy    = $caller.Trim()
+            queuedBy    = $caller
             queuedAt    = (Get-Date).ToUniversalTime().ToString('o')
             status      = 'pending'
             firedAt     = $null
