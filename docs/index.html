@@ -3908,19 +3908,7 @@
   </div>
 </div>
 
-<!-- ══ ADMIN LOGIN MODAL ══ -->
-<div id="adminOverlay">
-  <div class="admin-modal">
-    <h2>🔒 Admin Login</h2>
-    <p>Enter the admin password to unlock editing features.</p>
-    <div class="admin-err" id="adminErr">Incorrect password. Try again.</div>
-    <input type="password" id="adminPw" placeholder="Password" autocomplete="off" />
-    <div class="admin-actions">
-      <button class="btn-cancel" id="cancelAdminBtn" style="flex:1">Cancel</button>
-      <button class="btn-save" id="submitAdminBtn" style="flex:1">Unlock</button>
-    </div>
-  </div>
-</div>
+<!-- Admin login modal removed: the public preview is read-only. -->
 
 <!-- ══ USAGE VIEW MODAL ══ -->
 <div id="usageOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:275;align-items:center;justify-content:center;padding:24px">
@@ -4041,7 +4029,8 @@
   document.documentElement.classList.add('github-preview');
   if (!sessionStorage.getItem('winUser')) sessionStorage.setItem('winUser', 'github-preview');
   if (!localStorage.getItem('mgUserName')) localStorage.setItem('mgUserName', 'Preview User');
-  if (!sessionStorage.getItem('nmtAdmin')) sessionStorage.setItem('nmtAdmin', '1');
+  // The public GitHub Pages preview is read-only; no client-side admin flag.
+  sessionStorage.removeItem('nmtAdmin');
 
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
@@ -4495,13 +4484,7 @@
 </script>
 <script>
 // ── Admin gate ──────────────────────────────────────────────────────────
-// NOTE: This is an honor-system gate, NOT real security. The hash sits in the
-// page source (View Source reveals it) and the check runs client-side, so a
-// determined user could reverse it. The admin panel only edits the changelog
-// and ticket statuses on the internal guide — nothing destructive — so this
-// is intentional. If the admin panel ever gains riskier actions (deleting
-// data, running scripts, etc.) move the check to a server endpoint instead.
-const ADMIN_HASH = '9d3ff1035dda2a249dcab41e3984007b61e16833567deafd1ba319c3fcf1b878'; // SHA-256 of the shared admin password
+// The GitHub Pages preview is read-only. There is no admin in the preview.
 
 // ── Toast notifications ─────────────────────────────────────────────────
 function showToast(message, type = 'info') {
@@ -5087,7 +5070,7 @@ function closeDetailModal() {
 
 document.getElementById('closeBtn').addEventListener('click', closeDetailModal);
 overlay.addEventListener('click', e => { if (e.target === overlay) closeDetailModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDetailModal(); closeAddModal(); closeTkModal(); closeCancelModal(); closeEditModal(); document.getElementById('adminOverlay').style.display='none'; document.getElementById('usageOverlay').style.display='none'; document.getElementById('usersOverlay').style.display='none'; document.getElementById('pokeTargetsOverlay').style.display='none'; document.getElementById('crAlertOverlay').style.display='none'; document.getElementById('lightbox').classList.remove('open'); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDetailModal(); closeAddModal(); closeTkModal(); closeCancelModal(); closeEditModal(); const u1=document.getElementById('usageOverlay'); if(u1) u1.style.display='none'; const u2=document.getElementById('usersOverlay'); if(u2) u2.style.display='none'; const p=document.getElementById('pokeTargetsOverlay'); if(p) p.style.display='none'; const c=document.getElementById('crAlertOverlay'); if(c) c.style.display='none'; const lb=document.getElementById('lightbox'); if(lb) lb.classList.remove('open'); } });
 document.addEventListener('click', e => {
   if (!e.target.closest('.emoji-picker') && !e.target.closest('.tk-comment-tool-btn')) {
     document.querySelectorAll('.emoji-picker.open').forEach(p => p.classList.remove('open'));
@@ -5641,12 +5624,8 @@ function pokeIsTargeted() {
 }
 
 // One-shot bypass that skips the math captcha. Armed via the dev panel button.
-function pokeBypassArm() { sessionStorage.setItem('mgPokeBypass', '1'); }
-function pokeBypassConsume() {
-  if (sessionStorage.getItem('mgPokeBypass') !== '1') return false;
-  sessionStorage.removeItem('mgPokeBypass');
-  return true;
-}
+// Captcha bypass removed in the preview as well.
+function pokeBypassConsume() { return false; }
 
 // Hidden trigger to open the poke dev panel.
 // Type this word (lowercase) anywhere on the page outside an input. Single-purpose,
@@ -5662,7 +5641,7 @@ const POKE_DEV_SECRET = 'backstage';
     buf = (buf + e.key.toLowerCase()).slice(-POKE_DEV_SECRET.length);
     if (buf === POKE_DEV_SECRET) {
       buf = '';
-      pokeOpenDevPanel();
+      // Dev panel disabled in the public preview.
     }
   });
 })();
@@ -7200,7 +7179,7 @@ function pokeOpenDevPanel() {
   function refresh() {
     pretendEl.checked = pokeTestPretendShank();
     pretendTargetEl.value = pokeTestPretendTarget();
-    const armed = sessionStorage.getItem('mgPokeBypass') === '1' ? ' · bypass: armed' : '';
+    const armed = '';
     const target = pokeCurrentTarget();
     const presence = __presenceLastStatus ? ` · ${__presenceLastStatus}` : '';
     statusEl.textContent = `targeted: ${!!target}${target ? ` (${target.label})` : ''} · ids: ${pokeIdentityKeys().join(', ') || 'none'} · pokes/1h: ${pokeRecentHistory().length}${armed}${presence}`;
@@ -7344,8 +7323,8 @@ function pokeOpenDevPanel() {
         break;
       }
       case 'bypass':
-        pokeBypassArm();
-        showToast('Bypass armed (skips next math captcha)', 'success'); break;
+        showToast('Captcha bypass disabled in the preview.', 'info');
+        break;
       case 'seed-pokes': {
         const now = Date.now();
         const hist = [now - 8*60*1000, now - 4*60*1000, now - 60*1000];
@@ -10611,23 +10590,20 @@ checkVersion();
 setInterval(checkVersion, 60000);
 
 // ── Admin auth ──────────────────────────────────────────────────────────
-const adminOverlay = document.getElementById('adminOverlay');
+// adminOverlay removed: no admin login flow in the public preview.
 const adminToggle  = document.getElementById('adminToggle');
 const usageOverlay = document.getElementById('usageOverlay');
 const adminUsageBtn = document.getElementById('adminUsage');
 
-async function sha256(msg) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
-  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-function setAdmin(on) {
-  document.body.classList.toggle('is-admin', on);
-  adminToggle.classList.toggle('authed', on);
-  adminToggle.textContent = on ? '🔓' : '🔒';
-  adminToggle.title = on ? 'Admin mode active (click to log out)' : 'Admin login';
-  if (on) sessionStorage.setItem('nmtAdmin', '1');
-  else sessionStorage.removeItem('nmtAdmin');
+// In the public preview, admin is permanently off and there's no client-
+// side path to enable it.
+function setAdmin(_on) {
+  document.body.classList.remove('is-admin');
+  if (adminToggle) {
+    adminToggle.classList.remove('authed');
+    adminToggle.textContent = '🔒';
+    adminToggle.title = 'Read-only preview';
+  }
   renderChangelog();
   renderTickets();
   renderCrashes();
@@ -11066,51 +11042,11 @@ document.getElementById('refreshUsersBtn').addEventListener('click', loadUsers);
 document.getElementById('closeUsersBtn').addEventListener('click', () => { usersOverlay.style.display = 'none'; });
 usersOverlay.addEventListener('click', e => { if (e.target === usersOverlay) usersOverlay.style.display = 'none'; });
 
-adminToggle.addEventListener('click', () => {
-  if (document.body.classList.contains('is-admin')) { setAdmin(false); return; }
-  adminOverlay.classList.add('open');
-  document.getElementById('adminPw').value = '';
-  document.getElementById('adminErr').style.display = 'none';
-  setTimeout(() => document.getElementById('adminPw').focus(), 100);
-});
-
-document.getElementById('cancelAdminBtn').addEventListener('click', () => adminOverlay.classList.remove('open'));
-adminOverlay.addEventListener('click', e => { if (e.target === adminOverlay) adminOverlay.classList.remove('open'); });
-
-// Fire-and-forget — never block the login UI on the audit log.
-async function logAdminAttempt(success, detail) {
-  try {
-    const winUser = sessionStorage.getItem('winUser') || '';
-    await fetch(API_BASE + '/api/admin/log-attempt', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        windowsUser: winUser,
-        success: !!success,
-        machine: '',           // server fills in its own COMPUTERNAME if blank
-        detail: detail || ''
-      })
-    });
-  } catch { /* logging failure must never break login */ }
+if (adminToggle) {
+  adminToggle.addEventListener('click', () => {
+    showToast('This is the public read-only preview. Open the Macro Guide from PDM to use the live app.', 'info');
+  });
 }
-
-async function tryAdminLogin() {
-  const pw = document.getElementById('adminPw').value;
-  const hash = await sha256(pw);
-  if (hash === ADMIN_HASH) {
-    logAdminAttempt(true, '');
-    adminOverlay.classList.remove('open');
-    setAdmin(true);
-  } else {
-    logAdminAttempt(false, 'wrong password');
-    document.getElementById('adminErr').style.display = 'block';
-    document.getElementById('adminPw').value = '';
-    document.getElementById('adminPw').focus();
-  }
-}
-
-document.getElementById('submitAdminBtn').addEventListener('click', tryAdminLogin);
-document.getElementById('adminPw').addEventListener('keydown', e => { if (e.key === 'Enter') tryAdminLogin(); });
 
 // ── Init ──────────────────────────────────────────────────────────────────
 // Capture Windows username passed in URL by the VBS launcher (?user=USERNAME)
@@ -11131,8 +11067,8 @@ document.getElementById('adminPw').addEventListener('keydown', e => { if (e.key 
   pokeDevAutoOpen();
   crLoadNotifyState();
   logUsageOpen();
-  // Restore admin session if previously logged in
-  if (sessionStorage.getItem('nmtAdmin') === '1') setAdmin(true);
+  // Public preview is permanently non-admin.
+  setAdmin(false);
   // Load data from server
   loadData();
 })();

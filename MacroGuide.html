@@ -3875,19 +3875,8 @@
   </div>
 </div>
 
-<!-- ══ ADMIN LOGIN MODAL ══ -->
-<div id="adminOverlay">
-  <div class="admin-modal">
-    <h2>🔒 Admin Login</h2>
-    <p>Enter the admin password to unlock editing features.</p>
-    <div class="admin-err" id="adminErr">Incorrect password. Try again.</div>
-    <input type="password" id="adminPw" placeholder="Password" autocomplete="off" />
-    <div class="admin-actions">
-      <button class="btn-cancel" id="cancelAdminBtn" style="flex:1">Cancel</button>
-      <button class="btn-save" id="submitAdminBtn" style="flex:1">Unlock</button>
-    </div>
-  </div>
-</div>
+<!-- Admin login modal removed: admin status is now decided server-side from
+     the OS user, so there's no client-side password to enter. -->
 
 <!-- ══ USAGE VIEW MODAL ══ -->
 <div id="usageOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:275;align-items:center;justify-content:center;padding:24px">
@@ -4001,13 +3990,10 @@
 
 <script>
 // ── Admin gate ──────────────────────────────────────────────────────────
-// NOTE: This is an honor-system gate, NOT real security. The hash sits in the
-// page source (View Source reveals it) and the check runs client-side, so a
-// determined user could reverse it. The admin panel only edits the changelog
-// and ticket statuses on the internal guide — nothing destructive — so this
-// is intentional. If the admin panel ever gains riskier actions (deleting
-// data, running scripts, etc.) move the check to a server endpoint instead.
-const ADMIN_HASH = '9d3ff1035dda2a249dcab41e3984007b61e16833567deafd1ba319c3fcf1b878'; // SHA-256 of the shared admin password
+// Admin status is decided by the server based on the OS user that started
+// the local server (see /api/whoami). There is no client-side password and
+// no client-stored admin flag — flipping bits in DevTools cannot grant
+// admin because every admin endpoint re-checks identity server-side.
 
 // ── Toast notifications ─────────────────────────────────────────────────
 function showToast(message, type = 'info') {
@@ -4593,7 +4579,7 @@ function closeDetailModal() {
 
 document.getElementById('closeBtn').addEventListener('click', closeDetailModal);
 overlay.addEventListener('click', e => { if (e.target === overlay) closeDetailModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDetailModal(); closeAddModal(); closeTkModal(); closeCancelModal(); closeEditModal(); document.getElementById('adminOverlay').style.display='none'; document.getElementById('usageOverlay').style.display='none'; document.getElementById('usersOverlay').style.display='none'; document.getElementById('pokeTargetsOverlay').style.display='none'; document.getElementById('crAlertOverlay').style.display='none'; document.getElementById('lightbox').classList.remove('open'); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDetailModal(); closeAddModal(); closeTkModal(); closeCancelModal(); closeEditModal(); const u1=document.getElementById('usageOverlay'); if(u1) u1.style.display='none'; const u2=document.getElementById('usersOverlay'); if(u2) u2.style.display='none'; const p=document.getElementById('pokeTargetsOverlay'); if(p) p.style.display='none'; const c=document.getElementById('crAlertOverlay'); if(c) c.style.display='none'; const lb=document.getElementById('lightbox'); if(lb) lb.classList.remove('open'); } });
 document.addEventListener('click', e => {
   if (!e.target.closest('.emoji-picker') && !e.target.closest('.tk-comment-tool-btn')) {
     document.querySelectorAll('.emoji-picker.open').forEach(p => p.classList.remove('open'));
@@ -5146,13 +5132,9 @@ function pokeIsTargeted() {
   return !!pokeCurrentTarget();
 }
 
-// One-shot bypass that skips the math captcha. Armed via the dev panel button.
-function pokeBypassArm() { sessionStorage.setItem('mgPokeBypass', '1'); }
-function pokeBypassConsume() {
-  if (sessionStorage.getItem('mgPokeBypass') !== '1') return false;
-  sessionStorage.removeItem('mgPokeBypass');
-  return true;
-}
+// Captcha bypass removed. There is no longer any client-side path to skip
+// the math captcha — it runs as part of the poke flow and cannot be
+// disabled from the page.
 
 // Hidden trigger to open the poke dev panel.
 // Type this word (lowercase) anywhere on the page outside an input. Single-purpose,
@@ -5168,7 +5150,11 @@ const POKE_DEV_SECRET = 'backstage';
     buf = (buf + e.key.toLowerCase()).slice(-POKE_DEV_SECRET.length);
     if (buf === POKE_DEV_SECRET) {
       buf = '';
-      pokeOpenDevPanel();
+      // Dev panel is admin-only. Non-admin users typing the keyword get nothing,
+      // so the keyword is no longer a backdoor — admin status itself is the gate.
+      if (document.body.classList.contains('is-admin')) {
+        pokeOpenDevPanel();
+      }
     }
   });
 })();
@@ -6459,9 +6445,8 @@ function pokeShowLockout(seconds, opts = {}) {
   });
 }
 
-// Random math captcha — an armed bypass skips this.
+// Random math captcha. There is no bypass — every poke runs this challenge.
 async function pokeMathCaptcha() {
-  if (pokeBypassConsume()) return true;
   const a = 2 + Math.floor(Math.random() * 12);
   const b = 2 + Math.floor(Math.random() * 12);
   const ans = prompt(`Quick math, ${pokeTargetShortName()}. What's ${a} × ${b}?`);
@@ -6706,10 +6691,9 @@ function pokeOpenDevPanel() {
   function refresh() {
     pretendEl.checked = pokeTestPretendShank();
     pretendTargetEl.value = pokeTestPretendTarget();
-    const armed = sessionStorage.getItem('mgPokeBypass') === '1' ? ' · bypass: armed' : '';
     const target = pokeCurrentTarget();
     const presence = __presenceLastStatus ? ` · ${__presenceLastStatus}` : '';
-    statusEl.textContent = `targeted: ${!!target}${target ? ` (${target.label})` : ''} · ids: ${pokeIdentityKeys().join(', ') || 'none'} · pokes/1h: ${pokeRecentHistory().length}${armed}${presence}`;
+    statusEl.textContent = `targeted: ${!!target}${target ? ` (${target.label})` : ''} · ids: ${pokeIdentityKeys().join(', ') || 'none'} · pokes/1h: ${pokeRecentHistory().length}${presence}`;
   }
   window.__pokeDevRefreshStatus = refresh;
   refresh();
@@ -6850,8 +6834,8 @@ function pokeOpenDevPanel() {
         break;
       }
       case 'bypass':
-        pokeBypassArm();
-        showToast('Bypass armed (skips next math captcha)', 'success'); break;
+        showToast('Captcha bypass has been removed — every poke runs the math challenge.', 'info');
+        break;
       case 'seed-pokes': {
         const now = Date.now();
         const hist = [now - 8*60*1000, now - 4*60*1000, now - 60*1000];
@@ -10117,26 +10101,35 @@ checkVersion();
 setInterval(checkVersion, 60000);
 
 // ── Admin auth ──────────────────────────────────────────────────────────
-const adminOverlay = document.getElementById('adminOverlay');
+// Admin state mirrors the server's /api/whoami answer. The toggle button
+// is purely a re-check affordance — clicking it does not elevate privileges;
+// only the OS user identity does that.
 const adminToggle  = document.getElementById('adminToggle');
 const usageOverlay = document.getElementById('usageOverlay');
 const adminUsageBtn = document.getElementById('adminUsage');
-
-async function sha256(msg) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
-  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
-}
 
 function setAdmin(on) {
   document.body.classList.toggle('is-admin', on);
   adminToggle.classList.toggle('authed', on);
   adminToggle.textContent = on ? '🔓' : '🔒';
-  adminToggle.title = on ? 'Admin mode active (click to log out)' : 'Admin login';
-  if (on) sessionStorage.setItem('nmtAdmin', '1');
-  else sessionStorage.removeItem('nmtAdmin');
+  adminToggle.title = on ? 'Admin mode active (server-confirmed)' : 'Admin not available for this Windows account';
   renderChangelog();
   renderTickets();
   renderCrashes();
+}
+
+async function refreshAdminFromServer() {
+  try {
+    const w = await apiFetch('/api/whoami');
+    if (w && typeof w.windowsUser === 'string') {
+      sessionStorage.setItem('winUser', w.windowsUser);
+    }
+    setAdmin(!!(w && w.isAdmin));
+    return !!(w && w.isAdmin);
+  } catch {
+    setAdmin(false);
+    return false;
+  }
 }
 
 document.getElementById('adminRestart').addEventListener('click', async () => {
@@ -10572,51 +10565,17 @@ document.getElementById('refreshUsersBtn').addEventListener('click', loadUsers);
 document.getElementById('closeUsersBtn').addEventListener('click', () => { usersOverlay.style.display = 'none'; });
 usersOverlay.addEventListener('click', e => { if (e.target === usersOverlay) usersOverlay.style.display = 'none'; });
 
-adminToggle.addEventListener('click', () => {
-  if (document.body.classList.contains('is-admin')) { setAdmin(false); return; }
-  adminOverlay.classList.add('open');
-  document.getElementById('adminPw').value = '';
-  document.getElementById('adminErr').style.display = 'none';
-  setTimeout(() => document.getElementById('adminPw').focus(), 100);
-});
-
-document.getElementById('cancelAdminBtn').addEventListener('click', () => adminOverlay.classList.remove('open'));
-adminOverlay.addEventListener('click', e => { if (e.target === adminOverlay) adminOverlay.classList.remove('open'); });
-
-// Fire-and-forget — never block the login UI on the audit log.
-async function logAdminAttempt(success, detail) {
-  try {
-    const winUser = sessionStorage.getItem('winUser') || '';
-    await fetch(API_BASE + '/api/admin/log-attempt', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        windowsUser: winUser,
-        success: !!success,
-        machine: '',           // server fills in its own COMPUTERNAME if blank
-        detail: detail || ''
-      })
-    });
-  } catch { /* logging failure must never break login */ }
-}
-
-async function tryAdminLogin() {
-  const pw = document.getElementById('adminPw').value;
-  const hash = await sha256(pw);
-  if (hash === ADMIN_HASH) {
-    logAdminAttempt(true, '');
-    adminOverlay.classList.remove('open');
-    setAdmin(true);
+// Clicking the admin toggle just re-checks with the server. Admin status is
+// determined entirely by the OS user that started the local server — there
+// is nothing to type in.
+adminToggle.addEventListener('click', async () => {
+  const isAdmin = await refreshAdminFromServer();
+  if (!isAdmin) {
+    showToast('Admin features are only available for the designated Windows account.', 'info');
   } else {
-    logAdminAttempt(false, 'wrong password');
-    document.getElementById('adminErr').style.display = 'block';
-    document.getElementById('adminPw').value = '';
-    document.getElementById('adminPw').focus();
+    showToast('Admin mode active.', 'success');
   }
-}
-
-document.getElementById('submitAdminBtn').addEventListener('click', tryAdminLogin);
-document.getElementById('adminPw').addEventListener('keydown', e => { if (e.key === 'Enter') tryAdminLogin(); });
+});
 
 // ── Init ──────────────────────────────────────────────────────────────────
 // Capture Windows username passed in URL by the VBS launcher (?user=USERNAME)
@@ -10628,6 +10587,9 @@ document.getElementById('adminPw').addEventListener('keydown', e => { if (e.key 
 })();
 
 (async function initMacroGuide() {
+  // Always ask the server who we are first. Admin status is decided server-
+  // side based on the OS user — sessionStorage is never trusted for it.
+  await refreshAdminFromServer();
   await pokeLoadTargets({ quiet: true });
   // Auto-map Windows username -> display name after dynamic target config loads.
   crAutoIdentify();
@@ -10637,8 +10599,6 @@ document.getElementById('adminPw').addEventListener('keydown', e => { if (e.key 
   pokeDevAutoOpen();
   crLoadNotifyState();
   logUsageOpen();
-  // Restore admin session if previously logged in
-  if (sessionStorage.getItem('nmtAdmin') === '1') setAdmin(true);
   // Load data from server
   loadData();
 })();
