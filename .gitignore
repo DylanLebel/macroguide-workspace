@@ -20,6 +20,8 @@ deploy/data/usage.log
 deploy/data/tickets.json
 deploy/data/crashes.json
 deploy/data/crash-notifications.json
+deploy/data/crash-tie-poll.json
+deploy/data/polls.json
 deploy/data/presence.json
 deploy/data/captcha-queue.json
 deploy/data/poke-resets.json

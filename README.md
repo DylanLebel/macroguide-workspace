@@ -1,83 +1,149 @@
-# Nordic Minesteel — SolidWorks Macros
+# Nordic Macro Forge
 
-A collection of SolidWorks VBA macros used at Nordic Minesteel, along with an interactive **Macro Guide** web app for the team.
+Nordic Macro Forge is the working home for Nordic Minesteel's SolidWorks and
+PDM automation macros, plus the browser-based Macro Guide that makes those
+tools easier for the team to find, understand, request changes for, and support.
 
-**Author & Maintainer:** Dylan Lebel
-**Contact:** dlebel@nmtech.com
+The repository is intentionally practical: VBA macro source lives beside the
+single-file guide app, deployment scripts, icon assets, and preview build tools.
+That keeps the shop-floor tooling, the engineering automation, and the user
+documentation moving together.
 
----
+## What Is In Here
 
-## Macros
+| Area | Purpose |
+| --- | --- |
+| `MacroGuide.html` | Single-file dark-mode web app for macro documentation, requests, changelog, crash tracking, polls, and admin tools. |
+| `deploy/macro-guide-server.ps1` | Local PowerShell HTTP server that serves the guide and reads/writes shared JSON data. |
+| `deploy/Open Macro Guide.vbs` | Launcher used by team members to start the local server and open the guide. |
+| `deploy/Deploy-MacroGuide.ps1` | Deployment workflow for copying the guide/server/launcher to the shared PDM location. |
+| `docs/index.html` | Generated GitHub Pages preview built from `MacroGuide.html`. |
+| Macro folders | Exported SolidWorks VBA source grouped by macro/project. |
 
-| Macro | What It Does |
-|-------|-------------|
-| **PDMPDF** | Generates PDFs from SolidWorks drawings with PDM integration. Supports single files, full assembly audits, batch processing, and command-line mode. |
-| **Prepare for CADLink** | Fills in required properties (dimensions, weight, material, type, etc.) and validates everything against CADLink's rules. Works from parts, assemblies, or drawings. |
-| **MoveToPDM** | Migrates legacy files into the PDM vault, mapping old properties to the new format. |
-| **NewPL** | Determines if a flat plate or bar stock part should be manufactured in-house or purchased, based on shop limits and material. |
-| **PDMDXF** | Exports DXF files for flat pattern/laser cutting directly into PDM. Handles single parts and full assemblies. |
-| **DateFixer** | Corrects the "Date Created" field on drawings by reading the actual date from the revision table. |
-| **DrawingTemplateUpdate** | Swaps old drawing templates/sheet formats to the current company standard in bulk. |
-| **ModelToImperial** | Converts metric models to imperial units (IPS) with proper dimension updates. |
+## Macro Inventory
 
-## Macro Guide (Web App)
+| Macro | Summary |
+| --- | --- |
+| `PDMPDF` | Creates and audits drawing PDFs with PDM-aware revision handling, batch modes, assembly traversal, obsolete-file handling, and audit reporting. |
+| `PDMDXF` | Exports DXF burn profiles from selected faces and puts them in the expected PDM folder with revision-aware naming. |
+| `Prepare_for_CADLink_1234` | Prepares parts, assemblies, and drawings for CADLink by filling and validating properties such as dimensions, material, weight, type, author, and UOM. |
+| `MoveToPDM` | Helps migrate legacy files into the PDM vault while preserving or remapping useful metadata. |
+| `NewPL` | Evaluates flat plate/bar-stock parts for in-house manufacturing versus purchasing decisions. |
+| `DateFixer` | Replaces bad dynamic drawing creation dates with the correct static revision-table date. |
+| `DrawingTemplateUpdate` | Updates drawing sheet formats/templates in bulk. |
+| `ModelToImperial` | Converts metric SolidWorks models to IPS units with supporting property and dimension cleanup. |
 
-An interactive browser-based guide that helps the team understand and use the macros — no technical background required.
+## Macro Guide Features
 
-**Features:**
-- Searchable macro cards with tips, use cases, and step-by-step info
-- Getting Started guide for new employees (how to add macros to SolidWorks)
-- Changelog with version tracking
-- Request/ticket system where anyone can submit bug reports, feature requests, or change requests
-- Upvoting so popular requests get visibility
-- Admin controls for managing tickets and changelog
+- Searchable macro cards with plain-language explanations and usage notes.
+- Getting Started guide for installing and using the macros in SolidWorks.
+- Changelog for macro updates and fixes.
+- Request board for bugs, improvements, new macro ideas, comments, votes, and attachments.
+- Team crash tracker with monthly standings, notifications, stats, and tie-break polling.
+- Team polls for quick operational decisions.
+- Admin tools for managing guide data, requests, users, and deployment state.
+- Local-only server model: users open a localhost page; shared JSON files hold team data.
 
-### How It Works
+## How The Guide Runs
 
-The guide runs as a lightweight local server (PowerShell — built into Windows, nothing to install).
+The launcher starts a hidden PowerShell process that hosts the guide on localhost:
 
-**For users:** Double-click `Open Macro Guide.vbs` from PDM. That's it.
-
-**What happens behind the scenes:**
-1. The VBS launcher starts a local PowerShell HTTP server (hidden, no console window)
-2. Opens `http://localhost:8123` in your browser
-3. The server reads/writes data to JSON files on the shared Y: drive
-4. Server auto-shuts down after inactivity
-
-### File Layout
-
-```
-C:\AllMacros\                          ← Macro source code (this repo)
-├── DateFixer\
-├── DrawingTemplateUpdate\
-├── ModelToImperial\
-├── MoveToPDM\
-├── NewPL\
-├── PDMDXF\
-├── PDMPDF\
-├── Prepare_for_CADLink_1234\
-├── MacroGuide.html                    ← The web app
-└── deploy\                            ← Files that go on the shared drive
-    ├── macro-guide-server.ps1
-    └── Open Macro Guide.vbs
-
-Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\   ← Deployed location
-├── MacroGuide.html
-├── macro-guide-server.ps1
-├── Open Macro Guide.vbs               ← Also in PDM for easy access
-└── data\
-    ├── changelog.json
-    └── tickets.json
+```text
+Open Macro Guide.vbs
+  -> macro-guide-server.ps1
+  -> http://localhost:8123
+  -> MacroGuide.html
+  -> shared JSON data files
 ```
 
-### Deploying Updates
+The server binds only to loopback, verifies local request origins for mutating
+API calls, and derives the caller from the Windows account running the server.
 
-After making changes locally:
+## Repository Layout
 
-1. Edit files in `C:\AllMacros\`
-2. Copy updated files to `Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\`
-3. Users restart the guide to pick up changes (just close the tab and re-open from PDM)
+```text
+.
+|-- MacroGuide.html
+|-- README.md
+|-- DateFixer/
+|-- DrawingTemplateUpdate/
+|-- ModelToImperial/
+|-- MoveToPDM/
+|-- NewPL/
+|-- PDMDXF/
+|-- PDMPDF/
+|-- Prepare_for_CADLink_1234/
+|-- deploy/
+|   |-- macro-guide-server.ps1
+|   |-- Open Macro Guide.vbs
+|   |-- Deploy-MacroGuide.ps1
+|   |-- Build-GitHubPreview.ps1
+|   |-- Build-MacroGuideIcon.ps1
+|   |-- data/
+|   `-- icon and preview assets
+`-- docs/
+    |-- index.html
+    `-- .nojekyll
+```
 
-### Admin
+## Runtime Data Policy
 
-The guide has admin mode for managing changelog entries and ticket statuses. Admin login is accessed via the lock icon in the bottom-right corner.
+Files under `deploy/data/` are runtime data, not source code. They may contain
+real team activity, names, comments, crash logs, poll votes, usage logs, or
+attachments. Keep those files local/shared only unless a specific sanitized
+fixture is intentionally added.
+
+The `.gitignore` keeps the active runtime files out of Git, including:
+
+- request, crash, presence, usage, and notification JSON files
+- poll and tie-break poll JSON files
+- logs, locks, and uploaded attachments
+
+## Local Checks
+
+These checks are useful before committing guide or server changes:
+
+```powershell
+git diff --check
+node -e "const fs=require('fs'); const html=fs.readFileSync('MacroGuide.html','utf8'); const re=/<script[^>]*>([\s\S]*?)<\/script>/g; let m,i=0,bad=0; while((m=re.exec(html))){ i++; try{ new Function(m[1]); } catch(e){ bad++; console.log('script #'+i+' SYNTAX ERROR: '+e.message); } } console.log('checked '+i+' script blocks, '+bad+' errors'); process.exit(bad ? 1 : 0);"
+$tokens=$null; $errors=$null; [System.Management.Automation.Language.Parser]::ParseFile('deploy\macro-guide-server.ps1',[ref]$tokens,[ref]$errors) | Out-Null; $errors
+```
+
+## Building The GitHub Preview
+
+The GitHub Pages preview is generated from the source HTML:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File deploy\Build-GitHubPreview.ps1
+```
+
+Do not edit `docs/index.html` by hand. Regenerate it from `MacroGuide.html`.
+
+## Deploying To The Team
+
+Deployment copies the guide, server, launcher, and shortcut/icon assets to the
+shared Macro Guide location used by the team:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File deploy\Deploy-MacroGuide.ps1
+```
+
+The deployment script backs up existing shared files before copying new ones.
+After deployment, users pick up the new version by restarting the guide or using
+the in-app refresh/update prompt.
+
+## Development Notes
+
+- Keep `MacroGuide.html` self-contained unless there is a strong deployment
+  reason to split assets out.
+- Prefer changing the source HTML first, then regenerating the preview.
+- Keep runtime JSON out of commits.
+- Use the existing PowerShell server patterns for API endpoints and JSON file
+  locking.
+- Keep UI work consistent with the rest of the dark, utility-focused guide:
+  constrained content width, readable density, restrained accents, and controls
+  that feel like tools rather than marketing panels.
+
+## Maintainer
+
+Maintained by Dylan Lebel for Nordic Minesteel Technologies.

@@ -2489,6 +2489,189 @@
       }
     }
 
+    /* ── User-created polls ─────────────────────────────────────────── */
+    #tab-polls {
+      max-width: 960px;
+      margin: 28px auto 80px;
+      padding: 0 24px;
+    }
+    .poll-section {
+      display: grid;
+      gap: 18px;
+    }
+    .poll-tab-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 16px; margin: 0; padding-bottom: 18px; flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+    }
+    .poll-tab-head-copy { display: grid; gap: 3px; min-width: 0; }
+    .poll-tab-head h2 { margin: 0; font-size: 1.1rem; color: var(--text); font-weight: 700; }
+    .poll-tab-head p { margin: 0; color: var(--muted); font-size: 0.88rem; max-width: 560px; line-height: 1.55; }
+    .poll-new-btn {
+      background: color-mix(in srgb, var(--accent) 14%, transparent);
+      color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 70%, var(--border));
+      border-radius: 9px;
+      padding: 10px 16px; font-weight: 600; font-size: 0.92rem; cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+      box-shadow: 0 8px 20px rgba(79,142,247,0.08);
+    }
+    .poll-new-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .poll-new-btn:active { transform: translateY(1px); }
+    .poll-new-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .poll-list { display: grid; gap: 14px; }
+    .poll-empty {
+      min-height: 132px; display: flex; align-items: center; justify-content: center;
+      text-align: center; padding: 34px 18px; color: var(--muted);
+      background: color-mix(in srgb, var(--surface) 58%, transparent);
+      border: 1px dashed color-mix(in srgb, var(--border) 78%, var(--accent));
+      border-radius: 12px; font-size: 0.95rem;
+    }
+
+    .poll-card {
+      background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, var(--accent)), var(--surface));
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 18px 20px; display: grid; gap: 14px;
+      box-shadow: 0 14px 36px rgba(0,0,0,0.14);
+    }
+    .poll-card.is-closed { opacity: 0.85; }
+    .poll-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+    .poll-card-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 0.78rem; color: var(--muted); }
+    .poll-card-meta .poll-pill {
+      padding: 2px 9px; border-radius: 999px; background: var(--surface2);
+      border: 1px solid var(--border); font-weight: 500;
+    }
+    .poll-card-meta .poll-pill.is-open { color: #34d399; border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.12); }
+    .poll-card-meta .poll-pill.is-closed { color: #fbbf24; border-color: rgba(251,191,36,0.32); background: rgba(251,191,36,0.12); }
+    .poll-card-question { margin: 0; font-size: 1.08rem; color: var(--text); font-weight: 600; line-height: 1.35; }
+    .poll-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .poll-card-icon-btn {
+      background: transparent; border: 1px solid var(--border); border-radius: 8px;
+      width: 30px; height: 30px; display: inline-flex; align-items: center;
+      justify-content: center; cursor: pointer; color: var(--muted);
+      font-size: 0.85rem; transition: background 0.15s ease, color 0.15s ease;
+    }
+    .poll-card-icon-btn:hover { background: var(--surface2); color: var(--text); }
+    .poll-card-icon-btn.is-danger:hover { background: rgba(239,68,68,0.14); color: #fca5a5; border-color: rgba(239,68,68,0.34); }
+
+    .poll-card-options { display: grid; gap: 8px; }
+    .poll-option-row {
+      display: grid; grid-template-columns: auto 1fr auto; gap: 12px;
+      align-items: center; padding: 10px 12px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface2);
+      cursor: pointer; text-align: left; font: inherit; color: inherit;
+      transition: border-color 0.15s ease, background 0.15s ease;
+      position: relative; overflow: hidden;
+    }
+    .poll-option-row:hover:not(:disabled) { border-color: var(--accent); }
+    .poll-option-row:disabled { cursor: default; }
+    .poll-option-row.is-voted { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface2)); }
+    .poll-option-row.is-leading::before {
+      content: ''; position: absolute; inset: 0; left: auto; width: 4px; background: var(--accent);
+    }
+    .poll-option-icon {
+      width: 28px; height: 28px; border-radius: 8px; display: inline-flex;
+      align-items: center; justify-content: center; background: var(--surface);
+      border: 1px solid var(--border); font-size: 0.95rem;
+    }
+    .poll-option-body { display: grid; gap: 2px; min-width: 0; }
+    .poll-option-title { font-weight: 600; color: var(--text); font-size: 0.95rem; line-height: 1.3; }
+    .poll-option-meta { font-size: 0.75rem; color: var(--muted); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .poll-option-tally { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--muted); white-space: nowrap; }
+    .poll-option-tally strong { color: var(--text); font-weight: 600; }
+    .poll-option-bar {
+      grid-column: 1 / -1; height: 4px; background: var(--surface);
+      border-radius: 999px; overflow: hidden; margin-top: 2px;
+    }
+    .poll-option-fill { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.3s ease; }
+
+    .poll-add-option { display: flex; gap: 8px; flex-wrap: wrap; }
+    .poll-add-option input {
+      flex: 1; min-width: 180px; padding: 8px 10px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--surface2); color: var(--text); font: inherit;
+    }
+    .poll-add-option button {
+      padding: 8px 14px; border-radius: 8px; border: 1px solid var(--accent);
+      background: transparent; color: var(--accent); cursor: pointer; font-weight: 600; font-size: 0.85rem;
+    }
+    .poll-add-option button:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+    .poll-add-option button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .poll-card-foot {
+      display: flex; justify-content: space-between; gap: 10px;
+      font-size: 0.78rem; color: var(--muted); flex-wrap: wrap;
+    }
+
+    /* Create-poll modal */
+    .poll-create-overlay {
+      position: fixed; inset: 0; background: rgba(15,23,42,0.55);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1100; padding: 20px;
+    }
+    .poll-create-overlay.open { display: flex; }
+    .poll-create-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      width: min(560px, 100%); max-height: 90vh; overflow-y: auto;
+      display: grid; grid-template-rows: auto 1fr; box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    .poll-create-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+    }
+    .poll-create-head h2 { margin: 0; font-size: 1.15rem; }
+    .poll-create-close {
+      background: transparent; border: 0; font-size: 1.6rem; line-height: 1;
+      color: var(--muted); cursor: pointer; padding: 0 4px;
+    }
+    .poll-create-form { padding: 18px 20px; display: grid; gap: 16px; }
+    .poll-field { display: grid; gap: 6px; font-size: 0.85rem; color: var(--muted); }
+    .poll-field span { font-weight: 600; color: var(--text); font-size: 0.85rem; }
+    .poll-field input[type="text"], .poll-field input[type="datetime-local"] {
+      padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--text); font: inherit;
+    }
+    .poll-field input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .poll-field-checkbox { flex-direction: row; display: flex; align-items: center; gap: 8px; }
+    .poll-field-checkbox input { width: 16px; height: 16px; }
+    .poll-field-checkbox span { color: var(--text); font-weight: 500; }
+
+    .poll-create-options { display: grid; gap: 6px; }
+    .poll-create-option-row { display: flex; gap: 6px; align-items: center; }
+    .poll-create-option-row input.poll-create-option-icon {
+      width: 50px; flex-shrink: 0; text-align: center;
+    }
+    .poll-create-option-row input.poll-create-option-title { flex: 1; }
+    .poll-create-option-row button {
+      background: transparent; border: 1px solid var(--border); border-radius: 8px;
+      width: 32px; height: 32px; cursor: pointer; color: var(--muted);
+    }
+    .poll-create-option-row button:hover { color: #b3300a; border-color: #b3300a40; }
+    .poll-create-add-option {
+      align-self: flex-start; background: transparent; border: 1px dashed var(--border);
+      color: var(--muted); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;
+    }
+    .poll-create-add-option:hover { color: var(--accent); border-color: var(--accent); }
+
+    .poll-create-foot {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 10px; flex-wrap: wrap; padding-top: 4px;
+    }
+    .poll-create-error { color: #b3300a; font-size: 0.85rem; min-height: 1em; }
+    .poll-create-submit {
+      background: var(--accent); color: #fff; border: 0; border-radius: 10px;
+      padding: 10px 18px; font-weight: 600; cursor: pointer;
+    }
+    .poll-create-submit:hover { filter: brightness(1.08); }
+    .poll-create-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    @media (max-width: 600px) {
+      #tab-polls { margin-top: 22px; padding: 0 16px; }
+      .poll-tab-head { flex-direction: column; align-items: stretch; }
+      .poll-new-btn { width: 100%; }
+      .poll-option-row { grid-template-columns: auto 1fr; }
+      .poll-option-tally { grid-column: 1 / -1; justify-content: flex-end; }
+    }
+
     /* ── Konami crash-fest overlay ──────────────────────────────────── */
     body.cr-konami {
       animation: crKonamiShake 0.25s ease-in-out 3;
@@ -3364,6 +3547,10 @@
     🔥 Crashes
     <span class="tab-count" id="crCount">0</span>
   </button>
+  <button class="nav-tab" data-tab="polls" id="pollTab">
+    🗳️ Polls
+    <span class="tab-count" id="pollCount">0</span>
+  </button>
 </div>
 
 <!-- ══ MACROS TAB ══ -->
@@ -3883,6 +4070,55 @@
     </div>
   </div>
 </div><!-- /tab-crashes -->
+
+<!-- ══ POLLS TAB ══ -->
+<div class="page-section" id="tab-polls">
+  <div class="poll-section">
+    <div class="poll-tab-head">
+      <div class="poll-tab-head-copy">
+        <h2>Team polls</h2>
+        <p id="pollLimitNote">Anyone can run one open poll at a time. Polls close after 7 days unless you set a custom deadline.</p>
+      </div>
+      <button type="button" id="pollNewBtn" class="poll-new-btn">+ Create poll</button>
+    </div>
+    <div id="pollList" class="poll-list">
+      <div class="poll-empty">Loading polls…</div>
+    </div>
+  </div>
+</div><!-- /tab-polls -->
+
+<!-- ══ POLL CREATE MODAL ══ -->
+<div class="poll-create-overlay" id="pollCreateOverlay" aria-modal="true" role="dialog" aria-labelledby="pollCreateTitle">
+  <div class="poll-create-card">
+    <div class="poll-create-head">
+      <h2 id="pollCreateTitle">Create a poll</h2>
+      <button type="button" class="poll-create-close" id="pollCreateClose" aria-label="Close">×</button>
+    </div>
+    <form id="pollCreateForm" class="poll-create-form" autocomplete="off">
+      <label class="poll-field">
+        <span>Question</span>
+        <input type="text" id="pollCreateQuestion" maxlength="200" required placeholder="e.g. What snack should we order?">
+      </label>
+      <div class="poll-field">
+        <span>Options (at least 2)</span>
+        <div id="pollCreateOptions" class="poll-create-options"></div>
+        <button type="button" id="pollCreateAddOption" class="poll-create-add-option">+ Add option</button>
+      </div>
+      <label class="poll-field poll-field-checkbox">
+        <input type="checkbox" id="pollCreateAllowUserOptions">
+        <span>Let voters add their own options</span>
+      </label>
+      <label class="poll-field">
+        <span>Closes (optional — defaults to 7 days from now)</span>
+        <input type="datetime-local" id="pollCreateCloses">
+      </label>
+      <div class="poll-create-foot">
+        <span class="poll-create-error" id="pollCreateError"></span>
+        <button type="submit" id="pollCreateSubmit" class="poll-create-submit">Create poll</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <!-- ══ CRASHES TIE-BREAK POLL ══ -->
 <div class="cr-tie-poll-overlay" id="crTiePollOverlay" aria-modal="true" role="dialog" aria-labelledby="crTiePollTitle">
@@ -11315,6 +11551,380 @@ document.querySelectorAll('.cr-month-btn').forEach(btn => {
   });
 });
 
+// ── User-created polls ───────────────────────────────────────────────────
+let pollState = { polls: [], caller: '', isAdmin: false };
+let pollSavingId = null;
+
+function pollFingerprint(list) {
+  if (!list || !list.length) return '0';
+  return list.map(p => `${p.id}:${p.isClosed ? 1 : 0}:${p.totalVotes}:${(p.options || []).map(o => o.id + ':' + (p.totals?.[o.id] || 0)).join(',')}:${p.userVote || ''}`).join('|');
+}
+let __pollLastFp = '';
+
+function pollFormatRelative(closesAt, isClosed) {
+  if (!closesAt) return '';
+  const t = new Date(closesAt).getTime();
+  if (!t) return '';
+  const ms = t - Date.now();
+  if (isClosed || ms <= 0) {
+    return `Closed ${new Date(t).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`;
+  }
+  const days = Math.floor(ms / 86400000);
+  const hours = Math.floor((ms % 86400000) / 3600000);
+  const mins = Math.floor((ms % 3600000) / 60000);
+  if (days >= 2) return `Closes in ${days} days`;
+  if (days === 1) return `Closes in 1 day ${hours}h`;
+  if (hours >= 1) return `Closes in ${hours}h ${mins}m`;
+  return `Closes in ${mins}m`;
+}
+
+function pollWinningOptionId(p) {
+  let best = null, bestVotes = -1;
+  for (const opt of (p.options || [])) {
+    const v = Number(p.totals?.[opt.id] || 0);
+    if (v > bestVotes) { bestVotes = v; best = opt.id; }
+  }
+  return bestVotes > 0 ? best : null;
+}
+
+function renderPollList() {
+  const host = document.getElementById('pollList');
+  const countEl = document.getElementById('pollCount');
+  const limitNote = document.getElementById('pollLimitNote');
+  const newBtn = document.getElementById('pollNewBtn');
+  if (!host) return;
+
+  const polls = pollState.polls || [];
+  const openCount = polls.filter(p => !p.isClosed).length;
+  if (countEl) countEl.textContent = openCount;
+
+  if (limitNote) {
+    if (pollState.isAdmin) {
+      limitNote.textContent = 'Admins can run any number of open polls. Polls close after 7 days unless you set a custom deadline.';
+    } else {
+      const yourOpen = polls.filter(p => !p.isClosed && p.createdBy === pollState.caller).length;
+      limitNote.textContent = yourOpen >= 1
+        ? 'You already have an open poll. Close it (or wait for it to expire) before creating another.'
+        : 'You can run one open poll at a time. Polls close after 7 days unless you set a custom deadline.';
+    }
+  }
+  if (newBtn) {
+    const yourOpen = polls.filter(p => !p.isClosed && p.createdBy === pollState.caller).length;
+    newBtn.disabled = !pollState.isAdmin && yourOpen >= 1;
+  }
+
+  if (!polls.length) {
+    host.innerHTML = '<div class="poll-empty">No polls yet. Create the first one!</div>';
+    return;
+  }
+
+  host.innerHTML = polls.map(p => renderPollCard(p)).join('');
+}
+
+function renderPollCard(p) {
+  const isClosed = !!p.isClosed;
+  const winnerId = pollWinningOptionId(p);
+  const totalVotes = Number(p.totalVotes || 0);
+  const maxVotes = Math.max(1, ...(p.options || []).map(o => Number(p.totals?.[o.id] || 0)));
+  const canManage = !!(pollState.isAdmin || (pollState.caller && p.createdBy === pollState.caller));
+  const allowAdd = !!p.allowUserOptions && !isClosed;
+  const saving = pollSavingId === p.id;
+
+  const optionsHtml = (p.options || []).map(opt => {
+    const votes = Number(p.totals?.[opt.id] || 0);
+    const pct = totalVotes ? Math.round((votes / Math.max(1, totalVotes)) * 100) : 0;
+    const fillW = Math.round((votes / maxVotes) * 100);
+    const isVoted = p.userVote === opt.id;
+    const isLeading = !isClosed && winnerId === opt.id && totalVotes > 0;
+    const isWinner = isClosed && winnerId === opt.id && totalVotes > 0;
+    const tagline = isWinner ? '🏆 Winner' : (isLeading ? 'Leading' : '');
+    const meta = opt.addedByName || opt.addedBy ? `Added by ${escHtml(opt.addedByName || opt.addedBy)}` : '';
+    return `
+      <button type="button"
+              class="poll-option-row ${isVoted ? 'is-voted' : ''} ${isLeading ? 'is-leading' : ''}"
+              data-poll="${escHtml(p.id)}" data-option="${escHtml(opt.id)}"
+              ${(isClosed || saving) ? 'disabled' : ''}>
+        <span class="poll-option-icon">${escHtml(opt.icon || '🗳️')}</span>
+        <span class="poll-option-body">
+          <span class="poll-option-title">${escHtml(opt.title)}${tagline ? ` <em style="font-style:normal;font-size:0.75rem;color:var(--accent);margin-left:6px;">${tagline}</em>` : ''}</span>
+          ${meta ? `<span class="poll-option-meta">${meta}</span>` : ''}
+        </span>
+        <span class="poll-option-tally"><strong>${votes}</strong> (${pct}%)</span>
+        <span class="poll-option-bar"><span class="poll-option-fill" style="width:${fillW}%"></span></span>
+      </button>
+    `;
+  }).join('');
+
+  const addOptionHtml = allowAdd ? `
+    <div class="poll-add-option">
+      <input type="text" maxlength="80" placeholder="Add your own option…" data-poll-add-input="${escHtml(p.id)}">
+      <button type="button" data-poll-add-btn="${escHtml(p.id)}" ${saving ? 'disabled' : ''}>Add</button>
+    </div>
+  ` : '';
+
+  const actionsHtml = canManage ? `
+    <div class="poll-card-actions">
+      ${!isClosed ? `<button type="button" class="poll-card-icon-btn" title="Close poll now" data-poll-close="${escHtml(p.id)}">✓</button>` : ''}
+      <button type="button" class="poll-card-icon-btn is-danger" title="Delete poll" data-poll-delete="${escHtml(p.id)}">🗑</button>
+    </div>` : '';
+
+  return `
+    <div class="poll-card ${isClosed ? 'is-closed' : ''}" data-poll-card="${escHtml(p.id)}">
+      <div class="poll-card-head">
+        <div style="min-width:0;">
+          <div class="poll-card-meta">
+            <span class="poll-pill ${isClosed ? 'is-closed' : 'is-open'}">${isClosed ? 'Closed' : 'Open'}</span>
+            <span>By ${escHtml(p.createdByName || p.createdBy || 'someone')}</span>
+            <span>•</span>
+            <span>${pollFormatRelative(p.closesAt, isClosed)}</span>
+            ${p.allowUserOptions ? '<span>• Voters can add options</span>' : ''}
+          </div>
+          <h3 class="poll-card-question">${escHtml(p.question)}</h3>
+        </div>
+        ${actionsHtml}
+      </div>
+      <div class="poll-card-options">${optionsHtml}</div>
+      ${addOptionHtml}
+      <div class="poll-card-foot">
+        <span>${totalVotes} vote${totalVotes === 1 ? '' : 's'}${p.userVote ? ' • You voted' : ''}</span>
+        <span></span>
+      </div>
+    </div>
+  `;
+}
+
+async function fetchPolls() {
+  try {
+    const data = await apiFetch('/api/polls', { cache: 'no-store' });
+    if (data && Array.isArray(data.polls)) {
+      pollState = { polls: data.polls, caller: data.caller || '', isAdmin: !!data.isAdmin };
+    }
+    return data;
+  } catch (err) {
+    return null;
+  }
+}
+
+async function refreshPolls(force = false) {
+  const before = pollFingerprint(pollState.polls);
+  const data = await fetchPolls();
+  // Always render at least once on initial load so the host doesn't stay
+  // stuck on "Loading polls…" if the request failed or returned an empty list.
+  const host = document.getElementById('pollList');
+  const stillLoading = host && host.querySelector('.poll-empty')?.textContent?.includes('Loading');
+  if (!data) {
+    if (force || stillLoading) {
+      host && (host.innerHTML = '<div class="poll-empty">Could not reach server — polls will refresh automatically when it\'s back.</div>');
+    }
+    return;
+  }
+  const after = pollFingerprint(pollState.polls);
+  if (force || stillLoading || before !== after || before === '0') {
+    __pollLastFp = after;
+    renderPollList();
+  }
+}
+
+async function pollVote(pollId, optionId) {
+  if (pollSavingId) return;
+  pollSavingId = pollId;
+  renderPollList();
+  try {
+    const updated = await apiFetch(`/api/polls/${encodeURIComponent(pollId)}/vote`, {
+      method: 'POST',
+      body: JSON.stringify({
+        optionId,
+        displayName: sessionStorage.getItem('winUserDisplay') || ''
+      })
+    });
+    pollState.polls = pollState.polls.map(p => p.id === pollId ? updated : p);
+    showToast('Vote recorded.', 'success');
+  } catch (err) {
+    showToast(err.message || 'Could not record vote.', 'error');
+  } finally {
+    pollSavingId = null;
+    renderPollList();
+  }
+}
+
+async function pollAddOption(pollId, title) {
+  if (!title || pollSavingId) return;
+  pollSavingId = pollId;
+  renderPollList();
+  try {
+    const updated = await apiFetch(`/api/polls/${encodeURIComponent(pollId)}/options`, {
+      method: 'POST',
+      body: JSON.stringify({
+        title,
+        displayName: sessionStorage.getItem('winUserDisplay') || ''
+      })
+    });
+    pollState.polls = pollState.polls.map(p => p.id === pollId ? updated : p);
+    showToast('Option added.', 'success');
+  } catch (err) {
+    showToast(err.message || 'Could not add option.', 'error');
+  } finally {
+    pollSavingId = null;
+    renderPollList();
+  }
+}
+
+async function pollClose(pollId) {
+  if (!confirm('Close this poll now? Voting will stop and the result will be final.')) return;
+  try {
+    const updated = await apiFetch(`/api/polls/${encodeURIComponent(pollId)}/close`, { method: 'POST' });
+    pollState.polls = pollState.polls.map(p => p.id === pollId ? updated : p);
+    renderPollList();
+    showToast('Poll closed.', 'success');
+  } catch (err) {
+    showToast(err.message || 'Could not close poll.', 'error');
+  }
+}
+
+async function pollDelete(pollId) {
+  if (!confirm('Delete this poll and all its votes? This cannot be undone.')) return;
+  try {
+    await apiFetch(`/api/polls/${encodeURIComponent(pollId)}`, { method: 'DELETE' });
+    pollState.polls = pollState.polls.filter(p => p.id !== pollId);
+    renderPollList();
+    showToast('Poll deleted.', 'success');
+  } catch (err) {
+    showToast(err.message || 'Could not delete poll.', 'error');
+  }
+}
+
+// Create-poll modal
+function pollOpenCreate() {
+  const overlay = document.getElementById('pollCreateOverlay');
+  if (!overlay) return;
+  document.getElementById('pollCreateForm')?.reset();
+  document.getElementById('pollCreateError').textContent = '';
+  pollResetCreateOptions();
+  overlay.classList.add('open');
+  setTimeout(() => document.getElementById('pollCreateQuestion')?.focus(), 50);
+}
+
+function pollCloseCreate() {
+  document.getElementById('pollCreateOverlay')?.classList.remove('open');
+}
+
+function pollResetCreateOptions() {
+  const host = document.getElementById('pollCreateOptions');
+  if (!host) return;
+  host.innerHTML = '';
+  pollAddCreateOptionRow();
+  pollAddCreateOptionRow();
+}
+
+function pollAddCreateOptionRow(title = '', icon = '') {
+  const host = document.getElementById('pollCreateOptions');
+  if (!host) return;
+  const row = document.createElement('div');
+  row.className = 'poll-create-option-row';
+  row.innerHTML = `
+    <input type="text" class="poll-create-option-icon" maxlength="4" placeholder="🗳️" value="${escHtml(icon)}">
+    <input type="text" class="poll-create-option-title" maxlength="80" placeholder="Option text" value="${escHtml(title)}">
+    <button type="button" title="Remove">×</button>
+  `;
+  row.querySelector('button').addEventListener('click', () => {
+    if (host.children.length <= 2) {
+      showToast('A poll needs at least two options.', 'info');
+      return;
+    }
+    row.remove();
+  });
+  host.appendChild(row);
+}
+
+async function pollSubmitCreate(ev) {
+  ev.preventDefault();
+  const errorEl = document.getElementById('pollCreateError');
+  const submitBtn = document.getElementById('pollCreateSubmit');
+  errorEl.textContent = '';
+
+  const question = document.getElementById('pollCreateQuestion').value.trim();
+  if (!question) { errorEl.textContent = 'Question is required.'; return; }
+
+  const rows = document.querySelectorAll('#pollCreateOptions .poll-create-option-row');
+  const options = [];
+  rows.forEach(r => {
+    const title = r.querySelector('.poll-create-option-title').value.trim();
+    const icon = r.querySelector('.poll-create-option-icon').value.trim();
+    if (title) options.push({ title, icon });
+  });
+  if (options.length < 2) { errorEl.textContent = 'Add at least two options.'; return; }
+
+  const allowUserOptions = document.getElementById('pollCreateAllowUserOptions').checked;
+  const closesLocal = document.getElementById('pollCreateCloses').value;
+  const closesAt = closesLocal ? new Date(closesLocal).toISOString() : '';
+
+  submitBtn.disabled = true;
+  try {
+    const created = await apiFetch('/api/polls', {
+      method: 'POST',
+      body: JSON.stringify({
+        question,
+        options,
+        allowUserOptions,
+        closesAt,
+        displayName: sessionStorage.getItem('winUserDisplay') || ''
+      })
+    });
+    pollState.polls = [created, ...pollState.polls.filter(p => p.id !== created.id)];
+    renderPollList();
+    pollCloseCreate();
+    showToast('Poll created.', 'success');
+  } catch (err) {
+    errorEl.textContent = err.message || 'Could not create poll.';
+  } finally {
+    submitBtn.disabled = false;
+  }
+}
+
+// Wire up event listeners
+document.getElementById('pollNewBtn')?.addEventListener('click', pollOpenCreate);
+document.getElementById('pollCreateClose')?.addEventListener('click', pollCloseCreate);
+document.getElementById('pollCreateOverlay')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) pollCloseCreate();
+});
+document.getElementById('pollCreateAddOption')?.addEventListener('click', () => pollAddCreateOptionRow());
+document.getElementById('pollCreateForm')?.addEventListener('submit', pollSubmitCreate);
+
+document.getElementById('pollList')?.addEventListener('click', (e) => {
+  const voteBtn = e.target.closest('[data-option]');
+  if (voteBtn) {
+    pollVote(voteBtn.dataset.poll, voteBtn.dataset.option);
+    return;
+  }
+  const closeBtn = e.target.closest('[data-poll-close]');
+  if (closeBtn) {
+    pollClose(closeBtn.dataset.pollClose);
+    return;
+  }
+  const delBtn = e.target.closest('[data-poll-delete]');
+  if (delBtn) {
+    pollDelete(delBtn.dataset.pollDelete);
+    return;
+  }
+  const addBtn = e.target.closest('[data-poll-add-btn]');
+  if (addBtn) {
+    const pollId = addBtn.dataset.pollAddBtn;
+    const input = document.querySelector(`[data-poll-add-input="${CSS.escape(pollId)}"]`);
+    const title = input ? input.value.trim() : '';
+    if (!title) { showToast('Type an option first.', 'info'); return; }
+    pollAddOption(pollId, title);
+  }
+});
+document.getElementById('pollList')?.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+  const input = e.target.closest('[data-poll-add-input]');
+  if (!input) return;
+  e.preventDefault();
+  const pollId = input.dataset.pollAddInput;
+  const title = input.value.trim();
+  if (title) pollAddOption(pollId, title);
+});
+
 // ── Data loading from server ─────────────────────────────────────────────
 async function fetchCrashTiePoll() {
   try {
@@ -11349,6 +11959,8 @@ async function loadData() {
     renderChangelog();
     renderTickets();
     renderCrashes();
+    // User-created polls — non-fatal; failure here shouldn't block the rest.
+    refreshPolls(true).catch(() => {});
   } catch (err) {
     showToast('Could not load data from server: ' + err.message, 'error');
   }
@@ -11411,6 +12023,7 @@ async function refreshNow() {
       crTiePoll = pollData;
       renderCrashes();
     }
+    refreshPolls().catch(() => {});
   } catch { /* silent — will retry next interval */ }
 }
 setInterval(refreshNow, 15000);

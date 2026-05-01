@@ -50,6 +50,9 @@ $DataSource = 'shared'  # 'shared' or 'local' — set by Initialize-DataFiles
 
 $HtmlFile = Join-Path $ScriptDir 'MacroGuide.html'
 if (-not (Test-Path $HtmlFile)) {
+    $HtmlFile = Join-Path (Split-Path -Parent $ScriptDir) 'MacroGuide.html'
+}
+if (-not (Test-Path $HtmlFile)) {
     $HtmlFile = 'C:\AllMacros\MacroGuide.html'
 }
 
@@ -58,6 +61,7 @@ $TkFile = Join-Path $DataDir 'tickets.json'
 $CrFile = Join-Path $DataDir 'crashes.json'
 $CrashNotifyFile = Join-Path $DataDir 'crash-notifications.json'
 $CrashTiePollFile = Join-Path $DataDir 'crash-tie-poll.json'
+$PollsFile = Join-Path $DataDir 'polls.json'
 $PokeResetFile = Join-Path $DataDir 'poke-resets.json'
 $PokeTargetsFile = Join-Path $DataDir 'poke-targets.json'
 $PresenceFile = Join-Path $DataDir 'presence.json'
@@ -590,6 +594,141 @@ function Test-CrashTiePollClosed {
     return ((Get-Date) -ge $CrashTiePollClosesAt)
 }
 
+# ════════════════════════════════════════════════════════════════════════
+#  USER-CREATED POLLS
+# ════════════════════════════════════════════════════════════════════════
+# Anyone on the team can create a poll (non-admins capped at 1 open poll
+# at a time; admins unlimited). Polls default to a 7-day lifetime. Poll
+# creators can opt to let voters add their own options on the fly.
+
+$PollDefaultLifetimeDays = 7
+$PollMaxLifetimeDays = 60
+$PollNonAdminOpenCap = 1
+$PollMaxQuestionLen = 200
+$PollMaxOptionLen = 80
+$PollMaxOptionsPerPoll = 20
+$PollMaxIconLen = 8
+
+function New-PollId {
+    $stamp = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+    $rand = -join ((48..57) + (97..122) | Get-Random -Count 5 | ForEach-Object { [char]$_ })
+    return "p_${stamp}_$rand"
+}
+
+function New-PollOptionId {
+    $stamp = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+    $rand = -join ((48..57) + (97..122) | Get-Random -Count 4 | ForEach-Object { [char]$_ })
+    return "o_${stamp}_$rand"
+}
+
+function ConvertTo-PollClosesAt {
+    param($Raw)
+    if ([string]::IsNullOrWhiteSpace($Raw)) {
+        return (Get-Date).AddDays($PollDefaultLifetimeDays)
+    }
+    try {
+        $parsed = [datetime]::Parse([string]$Raw)
+        $maxAllowed = (Get-Date).AddDays($PollMaxLifetimeDays)
+        if ($parsed -gt $maxAllowed) { return $maxAllowed }
+        $minAllowed = (Get-Date).AddMinutes(5)
+        if ($parsed -lt $minAllowed) { return $minAllowed }
+        return $parsed
+    } catch {
+        return (Get-Date).AddDays($PollDefaultLifetimeDays)
+    }
+}
+
+function Format-PollClosesLabel {
+    param([datetime]$When)
+    return $When.ToString('MMM d, h:mm tt')
+}
+
+function Test-PollIsClosed {
+    param($Poll)
+    if ($null -eq $Poll) { return $true }
+    if ($Poll.PSObject.Properties['isClosed'] -and $Poll.isClosed) { return $true }
+    if ($Poll.PSObject.Properties['closesAt']) {
+        try {
+            $closes = [datetime]::Parse([string]$Poll.closesAt)
+            if ((Get-Date) -ge $closes) { return $true }
+        } catch {}
+    }
+    return $false
+}
+
+function Get-PollHydrated {
+    param($Poll, [string]$Caller)
+    if ($null -eq $Poll) { return $null }
+    $totals = @{}
+    $options = @()
+    foreach ($opt in @($Poll.options)) {
+        if ($null -eq $opt) { continue }
+        $oid = [string]$opt.id
+        $totals[$oid] = 0
+        $options += [pscustomobject][ordered]@{
+            id          = $oid
+            title       = [string]$opt.title
+            icon        = if ($opt.PSObject.Properties['icon']) { [string]$opt.icon } else { '' }
+            description = if ($opt.PSObject.Properties['description']) { [string]$opt.description } else { '' }
+            addedBy     = if ($opt.PSObject.Properties['addedBy']) { [string]$opt.addedBy } else { '' }
+            addedByName = if ($opt.PSObject.Properties['addedByName']) { [string]$opt.addedByName } else { '' }
+        }
+    }
+    $userVote = ''
+    $totalVotes = 0
+    foreach ($vote in @($Poll.votes)) {
+        if ($null -eq $vote) { continue }
+        $who = if ($vote.PSObject.Properties['windowsUser']) { Normalize-WindowsUser ([string]$vote.windowsUser) } else { '' }
+        $oid = if ($vote.PSObject.Properties['optionId']) { [string]$vote.optionId } else { '' }
+        if (-not $oid) { continue }
+        if (-not $totals.ContainsKey($oid)) { continue }   # vote for now-removed option
+        $totals[$oid] = [int]$totals[$oid] + 1
+        $totalVotes++
+        if ($who -and $who -eq $Caller) { $userVote = $oid }
+    }
+    $closesAt = $null
+    try { $closesAt = [datetime]::Parse([string]$Poll.closesAt) } catch {}
+    $closedLabel = if ($closesAt) { Format-PollClosesLabel $closesAt } else { '' }
+    $isClosed = Test-PollIsClosed $Poll
+    return [pscustomobject][ordered]@{
+        id               = [string]$Poll.id
+        question         = [string]$Poll.question
+        createdBy        = [string]$Poll.createdBy
+        createdByName    = if ($Poll.PSObject.Properties['createdByName']) { [string]$Poll.createdByName } else { '' }
+        createdAt        = [string]$Poll.createdAt
+        closesAt         = if ($closesAt) { $closesAt.ToString('o') } else { '' }
+        closedLabel      = $closedLabel
+        isClosed         = [bool]$isClosed
+        allowUserOptions = [bool]($Poll.PSObject.Properties['allowUserOptions'] -and $Poll.allowUserOptions)
+        options          = @($options)
+        totals           = $totals
+        totalVotes       = $totalVotes
+        userVote         = $userVote
+    }
+}
+
+function Get-PollsState {
+    param([array]$Polls, [string]$Caller)
+    $hydrated = @()
+    foreach ($p in @($Polls)) {
+        $h = Get-PollHydrated $p $Caller
+        if ($h) { $hydrated += $h }
+    }
+    # Newest first
+    $sorted = @($hydrated | Sort-Object createdAt -Descending)
+    return $sorted
+}
+
+function Test-PollOptionTitleClash {
+    param($Poll, [string]$Title)
+    $norm = $Title.Trim().ToLowerInvariant()
+    if (-not $norm) { return $true }
+    foreach ($opt in @($Poll.options)) {
+        if ([string]$opt.title -and ([string]$opt.title).Trim().ToLowerInvariant() -eq $norm) { return $true }
+    }
+    return $false
+}
+
 function Get-CrashMonthLockAt {
     param([datetime]$When = (Get-Date))
     $lastDay = [datetime]::DaysInMonth($When.Year, $When.Month)
@@ -1061,6 +1200,7 @@ function Initialize-DataFiles {
             $script:CrFile  = Join-Path $LocalDataDir 'crashes.json'
             $script:CrashNotifyFile = Join-Path $LocalDataDir 'crash-notifications.json'
             $script:CrashTiePollFile = Join-Path $LocalDataDir 'crash-tie-poll.json'
+            $script:PollsFile = Join-Path $LocalDataDir 'polls.json'
             $script:PokeResetFile = Join-Path $LocalDataDir 'poke-resets.json'
             $script:PokeTargetsFile = Join-Path $LocalDataDir 'poke-targets.json'
             $script:PresenceFile = Join-Path $LocalDataDir 'presence.json'
@@ -1089,6 +1229,10 @@ function Initialize-DataFiles {
     if (-not (Test-Path $CrashTiePollFile)) {
         [System.IO.File]::WriteAllText($CrashTiePollFile, '[]', [System.Text.Encoding]::UTF8)
         Write-Host "  Created crash-tie-poll.json (empty)"
+    }
+    if (-not (Test-Path $PollsFile)) {
+        [System.IO.File]::WriteAllText($PollsFile, '[]', [System.Text.Encoding]::UTF8)
+        Write-Host "  Created polls.json (empty)"
     }
     if (-not (Test-Path $PokeResetFile)) {
         [System.IO.File]::WriteAllText($PokeResetFile, '[]', [System.Text.Encoding]::UTF8)
@@ -1332,6 +1476,382 @@ function Handle-Request {
             return $next
         }
         Send-JsonResponse $res 200 (Get-CrashTiePollState $updated)
+        return
+    }
+
+    # ── GET /api/polls ──────────────────────────────────
+    # User-created polls. Every caller sees totals + their own vote.
+    if ($method -eq 'GET' -and $url -eq '/api/polls') {
+        $caller = Get-CallerUser
+        $polls = @(Read-JsonFile $PollsFile)
+        Send-JsonResponse $res 200 @{
+            polls   = @(Get-PollsState $polls $caller)
+            caller  = $caller
+            isAdmin = (Test-CallerIsAdmin)
+        }
+        return
+    }
+
+    # ── POST /api/polls ─────────────────────────────────
+    # Create a new poll. Non-admins capped at 1 open poll at a time.
+    if ($method -eq 'POST' -and $url -eq '/api/polls') {
+        $caller = Get-CallerUser
+        if ([string]::IsNullOrWhiteSpace($caller)) {
+            Send-JsonResponse $res 400 @{ error = 'Open Macro Guide from the launcher before creating a poll.' }
+            return
+        }
+        $body = Read-RequestBody $req
+        $parsed = $null
+        try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
+        if (-not $parsed) {
+            Send-JsonResponse $res 400 @{ error = 'Invalid request body.' }
+            return
+        }
+        $question = ''
+        $displayName = ''
+        $allowUserOptions = $false
+        $closesAtRaw = ''
+        $optionTitles = @()
+        if ($parsed.PSObject.Properties['question'])         { $question = ([string]$parsed.question).Trim() }
+        if ($parsed.PSObject.Properties['displayName'])      { $displayName = ([string]$parsed.displayName).Trim() }
+        if ($parsed.PSObject.Properties['allowUserOptions']) { $allowUserOptions = [bool]$parsed.allowUserOptions }
+        if ($parsed.PSObject.Properties['closesAt'])         { $closesAtRaw = [string]$parsed.closesAt }
+        if ($parsed.PSObject.Properties['options'])          { $optionTitles = @($parsed.options) }
+
+        if (-not $question)             { Send-JsonResponse $res 400 @{ error = 'Question is required.' }; return }
+        if ($question.Length -gt $PollMaxQuestionLen) {
+            Send-JsonResponse $res 400 @{ error = "Question is too long (max $PollMaxQuestionLen chars)." }
+            return
+        }
+        $cleaned = @()
+        $seen = @{}
+        foreach ($raw in $optionTitles) {
+            if ($null -eq $raw) { continue }
+            $title = ''
+            $icon = ''
+            if ($raw -is [string]) {
+                $title = $raw.Trim()
+            } elseif ($raw.PSObject.Properties['title']) {
+                $title = ([string]$raw.title).Trim()
+                if ($raw.PSObject.Properties['icon']) { $icon = ([string]$raw.icon).Trim() }
+            }
+            if (-not $title) { continue }
+            if ($title.Length -gt $PollMaxOptionLen) { $title = $title.Substring(0, $PollMaxOptionLen) }
+            if ($icon.Length -gt $PollMaxIconLen) { $icon = $icon.Substring(0, $PollMaxIconLen) }
+            $key = $title.ToLowerInvariant()
+            if ($seen.ContainsKey($key)) { continue }
+            $seen[$key] = $true
+            $cleaned += [pscustomobject][ordered]@{
+                id          = New-PollOptionId
+                title       = $title
+                icon        = $icon
+                description = ''
+                addedBy     = $caller
+                addedByName = $displayName
+            }
+            if ($cleaned.Count -ge $PollMaxOptionsPerPoll) { break }
+        }
+        if ($cleaned.Count -lt 2) {
+            Send-JsonResponse $res 400 @{ error = 'Add at least two options.' }
+            return
+        }
+
+        $closesAt = ConvertTo-PollClosesAt $closesAtRaw
+        $isAdmin = Test-CallerIsAdmin
+        $newPoll = [pscustomobject][ordered]@{
+            id               = New-PollId
+            question         = $question
+            createdBy        = $caller
+            createdByName    = $displayName
+            createdAt        = (Get-Date).ToUniversalTime().ToString('o')
+            closesAt         = $closesAt.ToUniversalTime().ToString('o')
+            isClosed         = $false
+            allowUserOptions = [bool]$allowUserOptions
+            options          = @($cleaned)
+            votes            = @()
+        }
+
+        try {
+            $updated = Invoke-LockedMutate $PollsFile {
+                param($data)
+                $list = @($data)
+                if (-not $isAdmin) {
+                    $openByCaller = 0
+                    foreach ($p in $list) {
+                        if ($null -eq $p) { continue }
+                        $who = if ($p.PSObject.Properties['createdBy']) { Normalize-WindowsUser ([string]$p.createdBy) } else { '' }
+                        if ($who -ne $caller) { continue }
+                        if (Test-PollIsClosed $p) { continue }
+                        $openByCaller++
+                    }
+                    if ($openByCaller -ge $PollNonAdminOpenCap) {
+                        throw "You already have $openByCaller open poll. Close it first, or wait for it to expire, before creating another."
+                    }
+                }
+                $list += $newPoll
+                return $list
+            }
+            $hydrated = Get-PollHydrated $newPoll $caller
+            Send-JsonResponse $res 201 $hydrated
+        } catch {
+            Send-JsonResponse $res 409 @{ error = $_.Exception.Message }
+        }
+        return
+    }
+
+    # ── POST /api/polls/{id}/vote ───────────────────────
+    if ($method -eq 'POST' -and $url -match '^/api/polls/([^/]+)/vote$') {
+        $pollId = $matches[1]
+        $caller = Get-CallerUser
+        if ([string]::IsNullOrWhiteSpace($caller)) {
+            Send-JsonResponse $res 400 @{ error = 'Open Macro Guide from the launcher before voting.' }
+            return
+        }
+        $body = Read-RequestBody $req
+        $parsed = $null
+        try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
+        $optionId = ''
+        $displayName = ''
+        if ($parsed) {
+            if ($parsed.PSObject.Properties['optionId'])    { $optionId = ([string]$parsed.optionId).Trim() }
+            if ($parsed.PSObject.Properties['displayName']) { $displayName = ([string]$parsed.displayName).Trim() }
+        }
+        if (-not $optionId) {
+            Send-JsonResponse $res 400 @{ error = 'Choose an option to vote for.' }
+            return
+        }
+        $out = @{ poll = $null; error = $null; status = 200 }
+        Invoke-LockedMutate $PollsFile {
+            param($data)
+            $list = @($data)
+            $found = $false
+            for ($i = 0; $i -lt $list.Count; $i++) {
+                $p = $list[$i]
+                if ($null -eq $p) { continue }
+                if ([string]$p.id -ne $pollId) { continue }
+                $found = $true
+                if (Test-PollIsClosed $p) {
+                    $out.error = 'This poll is closed.'
+                    $out.status = 409
+                    break
+                }
+                $optExists = $false
+                foreach ($opt in @($p.options)) {
+                    if ([string]$opt.id -eq $optionId) { $optExists = $true; break }
+                }
+                if (-not $optExists) {
+                    $out.error = 'That option no longer exists. Refresh and try again.'
+                    $out.status = 409
+                    break
+                }
+                $cleanedVotes = @()
+                foreach ($v in @($p.votes)) {
+                    if ($null -eq $v) { continue }
+                    $vWho = if ($v.PSObject.Properties['windowsUser']) { Normalize-WindowsUser ([string]$v.windowsUser) } else { '' }
+                    if ($vWho -eq $caller) { continue }
+                    $cleanedVotes += $v
+                }
+                $cleanedVotes += [pscustomobject][ordered]@{
+                    windowsUser = $caller
+                    displayName = $displayName
+                    optionId    = $optionId
+                    votedAt     = (Get-Date).ToUniversalTime().ToString('o')
+                }
+                $p | Add-Member -NotePropertyName votes -NotePropertyValue @($cleanedVotes) -Force
+                $list[$i] = $p
+                $out.poll = $p
+                break
+            }
+            if (-not $found) {
+                $out.error = 'Poll not found.'
+                $out.status = 404
+            }
+            return $list
+        } | Out-Null
+        if ($out.error) {
+            Send-JsonResponse $res $out.status @{ error = $out.error }
+        } else {
+            Send-JsonResponse $res 200 (Get-PollHydrated $out.poll $caller)
+        }
+        return
+    }
+
+    # ── POST /api/polls/{id}/options ────────────────────
+    # Voter adds a new option (only when the creator opted in).
+    if ($method -eq 'POST' -and $url -match '^/api/polls/([^/]+)/options$') {
+        $pollId = $matches[1]
+        $caller = Get-CallerUser
+        if ([string]::IsNullOrWhiteSpace($caller)) {
+            Send-JsonResponse $res 400 @{ error = 'Open Macro Guide from the launcher before voting.' }
+            return
+        }
+        $body = Read-RequestBody $req
+        $parsed = $null
+        try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
+        $title = ''
+        $icon = ''
+        $displayName = ''
+        if ($parsed) {
+            if ($parsed.PSObject.Properties['title'])       { $title = ([string]$parsed.title).Trim() }
+            if ($parsed.PSObject.Properties['icon'])        { $icon = ([string]$parsed.icon).Trim() }
+            if ($parsed.PSObject.Properties['displayName']) { $displayName = ([string]$parsed.displayName).Trim() }
+        }
+        if (-not $title) {
+            Send-JsonResponse $res 400 @{ error = 'Option text is required.' }
+            return
+        }
+        if ($title.Length -gt $PollMaxOptionLen) { $title = $title.Substring(0, $PollMaxOptionLen) }
+        if ($icon.Length -gt $PollMaxIconLen) { $icon = $icon.Substring(0, $PollMaxIconLen) }
+        $out = @{ poll = $null; error = $null; status = 200 }
+        Invoke-LockedMutate $PollsFile {
+            param($data)
+            $list = @($data)
+            $found = $false
+            for ($i = 0; $i -lt $list.Count; $i++) {
+                $p = $list[$i]
+                if ($null -eq $p) { continue }
+                if ([string]$p.id -ne $pollId) { continue }
+                $found = $true
+                $allowed = $p.PSObject.Properties['allowUserOptions'] -and $p.allowUserOptions
+                if (-not $allowed) {
+                    $out.error = "The poll creator didn't enable voter-added options for this poll."
+                    $out.status = 403
+                    break
+                }
+                if (Test-PollIsClosed $p) {
+                    $out.error = 'This poll is closed.'
+                    $out.status = 409
+                    break
+                }
+                if (@($p.options).Count -ge $PollMaxOptionsPerPoll) {
+                    $out.error = "This poll already has the max of $PollMaxOptionsPerPoll options."
+                    $out.status = 409
+                    break
+                }
+                if (Test-PollOptionTitleClash $p $title) {
+                    $out.error = 'That option already exists.'
+                    $out.status = 409
+                    break
+                }
+                $newOpt = [pscustomobject][ordered]@{
+                    id          = New-PollOptionId
+                    title       = $title
+                    icon        = $icon
+                    description = ''
+                    addedBy     = $caller
+                    addedByName = $displayName
+                }
+                $newOptions = @($p.options) + $newOpt
+                $p | Add-Member -NotePropertyName options -NotePropertyValue @($newOptions) -Force
+                $list[$i] = $p
+                $out.poll = $p
+                break
+            }
+            if (-not $found) {
+                $out.error = 'Poll not found.'
+                $out.status = 404
+            }
+            return $list
+        } | Out-Null
+        if ($out.error) {
+            Send-JsonResponse $res $out.status @{ error = $out.error }
+        } else {
+            Send-JsonResponse $res 200 (Get-PollHydrated $out.poll $caller)
+        }
+        return
+    }
+
+    # ── POST /api/polls/{id}/close ──────────────────────
+    # Creator or admin can end a poll early.
+    if ($method -eq 'POST' -and $url -match '^/api/polls/([^/]+)/close$') {
+        $pollId = $matches[1]
+        $caller = Get-CallerUser
+        $isAdmin = Test-CallerIsAdmin
+        if ([string]::IsNullOrWhiteSpace($caller)) {
+            Send-JsonResponse $res 400 @{ error = 'Open Macro Guide from the launcher first.' }
+            return
+        }
+        $out = @{ poll = $null; error = $null; status = 200 }
+        Invoke-LockedMutate $PollsFile {
+            param($data)
+            $list = @($data)
+            $found = $false
+            for ($i = 0; $i -lt $list.Count; $i++) {
+                $p = $list[$i]
+                if ($null -eq $p) { continue }
+                if ([string]$p.id -ne $pollId) { continue }
+                $found = $true
+                $owner = if ($p.PSObject.Properties['createdBy']) { Normalize-WindowsUser ([string]$p.createdBy) } else { '' }
+                if (-not $isAdmin -and $owner -ne $caller) {
+                    $out.error = "Only the poll's creator (or an admin) can close it."
+                    $out.status = 403
+                    break
+                }
+                $p | Add-Member -NotePropertyName isClosed -NotePropertyValue $true -Force
+                $p | Add-Member -NotePropertyName closesAt -NotePropertyValue ((Get-Date).ToUniversalTime().ToString('o')) -Force
+                $list[$i] = $p
+                $out.poll = $p
+                break
+            }
+            if (-not $found) {
+                $out.error = 'Poll not found.'
+                $out.status = 404
+            }
+            return $list
+        } | Out-Null
+        if ($out.error) {
+            Send-JsonResponse $res $out.status @{ error = $out.error }
+        } else {
+            Send-JsonResponse $res 200 (Get-PollHydrated $out.poll $caller)
+        }
+        return
+    }
+
+    # ── DELETE /api/polls/{id} ──────────────────────────
+    # Creator or admin can delete a poll outright.
+    if ($method -eq 'DELETE' -and $url -match '^/api/polls/([^/]+)$') {
+        $pollId = $matches[1]
+        $caller = Get-CallerUser
+        $isAdmin = Test-CallerIsAdmin
+        if ([string]::IsNullOrWhiteSpace($caller)) {
+            Send-JsonResponse $res 400 @{ error = 'Open Macro Guide from the launcher first.' }
+            return
+        }
+        $out = @{ error = $null; status = 200 }
+        Invoke-LockedMutate $PollsFile {
+            param($data)
+            $list = @($data)
+            $kept = @()
+            $found = $false
+            $denied = $false
+            foreach ($p in $list) {
+                if ($null -eq $p) { continue }
+                if ([string]$p.id -eq $pollId) {
+                    $found = $true
+                    $owner = if ($p.PSObject.Properties['createdBy']) { Normalize-WindowsUser ([string]$p.createdBy) } else { '' }
+                    if (-not $isAdmin -and $owner -ne $caller) {
+                        $denied = $true
+                        $kept += $p
+                        continue
+                    }
+                    continue   # drop it
+                }
+                $kept += $p
+            }
+            if (-not $found) {
+                $out.error = 'Poll not found.'
+                $out.status = 404
+            } elseif ($denied) {
+                $out.error = "Only the poll's creator (or an admin) can delete it."
+                $out.status = 403
+            }
+            return $kept
+        } | Out-Null
+        if ($out.error) {
+            Send-JsonResponse $res $out.status @{ error = $out.error }
+        } else {
+            Send-JsonResponse $res 200 @{ ok = $true }
+        }
         return
     }
 
@@ -2914,6 +3434,7 @@ function Start-Server {
     Release-Lock $TkFile
     Release-Lock $PokeTargetsFile
     Release-Lock $CrashTiePollFile
+    Release-Lock $PollsFile
     # Only remove the port file if it still points at our port. On restart the
     # replacement child may have already written its own value — don't clobber.
     try {
