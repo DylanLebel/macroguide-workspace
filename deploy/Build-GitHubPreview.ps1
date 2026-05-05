@@ -231,11 +231,72 @@ $previewShim = @'
           attachments: []
         }
       ],
+      crashes: [
+        {
+          id: 1,
+          user: 'Paul Lemelin',
+          severity: 'major',
+          timestamp: '2026-04-03T14:20:00.000Z',
+          createdBy: 'Paul Lemelin',
+          windowsUser: 'plemelin'
+        },
+        {
+          id: 2,
+          user: 'Paul Lemelin',
+          severity: 'minor',
+          timestamp: '2026-04-09T17:35:00.000Z',
+          createdBy: 'Paul Lemelin',
+          windowsUser: 'plemelin'
+        },
+        {
+          id: 3,
+          user: 'Krupal Patel',
+          severity: 'minor',
+          timestamp: '2026-04-12T13:10:00.000Z',
+          createdBy: 'Krupal Patel',
+          windowsUser: 'kpatel'
+        },
+        {
+          id: 4,
+          user: 'Paul Lemelin',
+          severity: 'catastrophic',
+          timestamp: '2026-04-24T19:45:00.000Z',
+          createdBy: 'Paul Lemelin',
+          windowsUser: 'plemelin'
+        },
+        {
+          id: 5,
+          user: 'Ayugma Acharya',
+          severity: 'major',
+          timestamp: '2026-05-01T14:10:00.000Z',
+          createdBy: 'Ayugma Acharya',
+          windowsUser: 'aacharya'
+        },
+        {
+          id: 6,
+          user: 'Ayugma Acharya',
+          severity: 'minor',
+          timestamp: '2026-05-02T16:05:00.000Z',
+          createdBy: 'Ayugma Acharya',
+          windowsUser: 'aacharya'
+        }
+      ],
+      donutStatuses: [
+        {
+          monthKey: '2026-04',
+          paid: false,
+          updatedAt: '2026-05-01T13:00:00.000Z',
+          updatedBy: 'dlebel',
+          updatedByName: 'Dylan',
+          paidAt: ''
+        }
+      ],
       usage: [
         { timestamp: '2026-04-16 09:12:40', windowsUser: 'dlebel', machine: 'D-1077', page: 'tickets', action: 'OPEN' },
         { timestamp: '2026-04-16 09:18:21', windowsUser: 'plemelin', machine: 'P-2044', page: 'macros', action: 'OPEN' },
         { timestamp: '2026-04-16 09:35:04', windowsUser: 'github-preview', machine: 'GitHub Pages', page: 'tickets', action: 'OPEN' }
       ],
+      captchaQueue: [],
       pokeResets: [],
       pokeTargets: defaultPokeTargets(),
       tiePollVotes: [],
@@ -251,6 +312,9 @@ $previewShim = @'
         data.pokeResets = Array.isArray(data.pokeResets) ? data.pokeResets : [];
         data.pokeTargets = Array.isArray(data.pokeTargets) ? data.pokeTargets : defaultPokeTargets();
         data.tiePollVotes = Array.isArray(data.tiePollVotes) ? data.tiePollVotes : [];
+        data.captchaQueue = Array.isArray(data.captchaQueue) ? data.captchaQueue : [];
+        data.crashes = Array.isArray(data.crashes) ? data.crashes : [];
+        data.donutStatuses = Array.isArray(data.donutStatuses) ? data.donutStatuses : [];
         return data;
       }
     } catch {}
@@ -452,6 +516,14 @@ $previewShim = @'
 
     if (method === 'GET' && path === '/api/changelog') return jsonResponse(clone(data.changelog));
     if (method === 'GET' && path === '/api/tickets') return jsonResponse(clone(data.tickets));
+    if (method === 'GET' && path === '/api/crashes') {
+      data.crashes = Array.isArray(data.crashes) ? data.crashes : [];
+      return jsonResponse(clone(data.crashes));
+    }
+    if (method === 'GET' && path === '/api/crash-donut-status') {
+      data.donutStatuses = Array.isArray(data.donutStatuses) ? data.donutStatuses : [];
+      return jsonResponse(clone(data.donutStatuses));
+    }
     if (method === 'GET' && path === '/api/whoami') return jsonResponse({
       windowsUser: sessionStorage.getItem('winUser') || 'github-preview',
       isAdmin: true,
@@ -460,6 +532,32 @@ $previewShim = @'
     if (method === 'GET' && path === '/api/version') return jsonResponse({ version: data.version });
     if (method === 'GET' && path === '/api/usage') return jsonResponse(usageSummary(data.usage || []));
     if (method === 'GET' && path === '/api/restart') return jsonResponse({ ok: true, preview: true });
+    if (method === 'PATCH' && path.match(/^\/api\/crash-donut-status\/\d{4}-\d{2}$/)) {
+      const monthKey = path.split('/').pop();
+      const body = parseBody(init);
+      data.donutStatuses = Array.isArray(data.donutStatuses) ? data.donutStatuses : [];
+      const paid = !!body.paid;
+      const stamp = new Date().toISOString();
+      const existing = data.donutStatuses.find(s => s.monthKey === monthKey);
+      if (existing) {
+        existing.paid = paid;
+        existing.updatedAt = stamp;
+        existing.updatedBy = sessionStorage.getItem('winUser') || 'github-preview';
+        existing.updatedByName = body.displayName || localStorage.getItem('mgUserName') || 'Preview User';
+        existing.paidAt = paid ? stamp : '';
+      } else {
+        data.donutStatuses.push({
+          monthKey,
+          paid,
+          updatedAt: stamp,
+          updatedBy: sessionStorage.getItem('winUser') || 'github-preview',
+          updatedByName: body.displayName || localStorage.getItem('mgUserName') || 'Preview User',
+          paidAt: paid ? stamp : ''
+        });
+      }
+      saveData(data);
+      return jsonResponse({ ok: true, statuses: clone(data.donutStatuses) });
+    }
     if (method === 'GET' && path === '/api/crash-tie-poll') return jsonResponse(tiePollState(data));
     if (method === 'POST' && path === '/api/crash-tie-poll/vote') {
       const body = parseBody(init);
@@ -494,11 +592,74 @@ $previewShim = @'
         machine: 'GitHub Pages',
         lastSeen: new Date().toISOString()
       }],
-      queue: []
+      queue: clone(data.captchaQueue || []),
+      targets: clone(data.pokeTargets || defaultPokeTargets())
     });
     if (method === 'GET' && path === '/api/captcha-check') return jsonResponse({ id: null });
     if (method === 'POST' && path === '/api/captcha-ack') return jsonResponse({ ok: true, preview: true });
-    if (method === 'POST' && path === '/api/admin/captcha-send') return jsonResponse({ ok: true, preview: true, id: 'preview-captcha', queuedAt: new Date().toISOString() });
+    if (method === 'GET' && path === '/api/captcha-lite/state') {
+      const caller = (sessionStorage.getItem('winUser') || 'github-preview').trim().toLowerCase();
+      if (!['dshank', 'dlebel', 'github-preview'].includes(caller)) return jsonResponse({ error: 'Not authorized.' }, 403);
+      const protectedTargets = new Set(['dlebel']);
+      const allowedTarget = value => value && !protectedTargets.has(String(value).trim().toLowerCase());
+      const filteredTargets = clone(data.pokeTargets || defaultPokeTargets()).map(t => ({
+        ...t,
+        windowsUsers: (Array.isArray(t.windowsUsers) ? t.windowsUsers : []).filter(allowedTarget)
+      })).filter(t => t.windowsUsers.length > 0);
+      const queue = clone(data.captchaQueue || []).filter(q => allowedTarget(q.target));
+      return jsonResponse({
+        ok: true,
+        preview: true,
+        caller,
+        active: [{
+          windowsUser: caller,
+          displayName: localStorage.getItem('mgUserName') || 'Preview User',
+          machine: 'GitHub Pages',
+          lastSeen: new Date().toISOString()
+        }].filter(u => allowedTarget(u.windowsUser)),
+        queue,
+        targets: filteredTargets,
+        protected: Array.from(protectedTargets)
+      });
+    }
+    if (method === 'POST' && path === '/api/admin/captcha-send') {
+      const body = parseBody(init);
+      data.captchaQueue = Array.isArray(data.captchaQueue) ? data.captchaQueue : [];
+      const queuedAt = new Date().toISOString();
+      data.captchaQueue.push({
+        id: 'preview-captcha-' + Date.now(),
+        target: String(body.target || 'preview').trim().toLowerCase(),
+        count: Math.max(1, Math.min(7, parseInt(body.count || '3', 10) || 3)),
+        challenge: String(body.challenge || '').trim(),
+        queuedBy: sessionStorage.getItem('winUser') || 'github-preview',
+        queuedAt,
+        status: 'pending'
+      });
+      saveData(data);
+      return jsonResponse({ ok: true, preview: true, id: 'preview-captcha', queuedAt });
+    }
+    if (method === 'POST' && path === '/api/captcha-lite/send') {
+      const caller = (sessionStorage.getItem('winUser') || 'github-preview').trim().toLowerCase();
+      if (!['dshank', 'dlebel', 'github-preview'].includes(caller)) return jsonResponse({ error: 'Not authorized.' }, 403);
+      const body = parseBody(init);
+      const target = String(body.target || '').trim().toLowerCase();
+      if (!target) return jsonResponse({ error: 'target is required.' }, 400);
+      if (target === 'dlebel') return jsonResponse({ error: 'That target is protected.' }, 403);
+      data.captchaQueue = Array.isArray(data.captchaQueue) ? data.captchaQueue : [];
+      const queuedAt = new Date().toISOString();
+      const id = 'preview-lite-captcha-' + Date.now();
+      data.captchaQueue.push({
+        id,
+        target,
+        count: Math.max(1, Math.min(7, parseInt(body.count || '3', 10) || 3)),
+        challenge: String(body.challenge || '').trim(),
+        queuedBy: caller,
+        queuedAt,
+        status: 'pending'
+      });
+      saveData(data);
+      return jsonResponse({ ok: true, preview: true, id, queuedAt });
+    }
     if (method === 'POST' && path === '/api/admin/log-attempt') return jsonResponse({ ok: true, preview: true });
     if (method === 'GET' && (path === '/api/poke-targets' || path === '/api/admin/poke-targets')) {
       data.pokeTargets = Array.isArray(data.pokeTargets) ? data.pokeTargets : defaultPokeTargets();
@@ -578,6 +739,42 @@ $previewShim = @'
       data.tickets.push(ticket);
       saveData(data);
       return jsonResponse({ ok: true, count: data.tickets.length, entries: clone(data.tickets) });
+    }
+
+    if (method === 'POST' && path === '/api/crashes/add') {
+      const crash = parseBody(init);
+      data.crashes = Array.isArray(data.crashes) ? data.crashes : [];
+      crash.id = maxId(data.crashes) + 1;
+      crash.user = crash.user || localStorage.getItem('mgUserName') || 'Preview User';
+      crash.severity = crash.severity || 'minor';
+      crash.timestamp = crash.timestamp || new Date().toISOString();
+      crash.createdBy = crash.createdBy || crash.user;
+      crash.windowsUser = sessionStorage.getItem('winUser') || 'github-preview';
+      data.crashes.push(crash);
+      saveData(data);
+      return jsonResponse({ ok: true, count: data.crashes.length, entries: clone(data.crashes) });
+    }
+
+    if (path.match(/^\/api\/crashes\/\d+$/)) {
+      const id = path.split('/').pop();
+      data.crashes = Array.isArray(data.crashes) ? data.crashes : [];
+      const crash = byId(data.crashes, id);
+      if (method === 'DELETE') {
+        data.crashes = data.crashes.filter(c => String(c.id) !== String(id));
+        saveData(data);
+        return jsonResponse({ ok: true, count: data.crashes.length, entries: clone(data.crashes) });
+      }
+      if (method === 'PATCH') {
+        if (!crash) return jsonResponse({ error: 'Crash not found.' }, 404);
+        const patch = parseBody(init);
+        if (patch.user) crash.user = patch.user;
+        if (patch.severity) crash.severity = patch.severity;
+        if (patch.timestamp) crash.timestamp = patch.timestamp;
+        if (patch.windowsUser != null) crash.windowsUser = patch.windowsUser;
+        if (patch.createdBy) crash.createdBy = patch.createdBy;
+        saveData(data);
+        return jsonResponse({ ok: true, count: data.crashes.length, entries: clone(data.crashes) });
+      }
     }
 
     if (path.startsWith('/api/tickets/')) {

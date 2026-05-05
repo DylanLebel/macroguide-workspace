@@ -1176,6 +1176,9 @@
       box-shadow: 0 12px 32px rgba(0,0,0,0.5);
       font-family: inherit; font-size: 0.82rem;
       padding: 10px 12px;
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
     }
     .tk-poke-dev-header {
       display: flex; justify-content: space-between; align-items: center;
@@ -1225,6 +1228,291 @@
     .tk-poke-dev-status {
       margin-top: 6px; padding-top: 6px; border-top: 1px solid #334155;
       font-size: 0.72rem; color: #94a3b8;
+    }
+
+    /* Full-screen dshank captcha command center */
+    .tk-captcha-lite {
+      position: fixed; inset: 0; z-index: 99997;
+      display: flex; align-items: stretch; justify-content: center;
+      padding: clamp(16px, 3vw, 34px);
+      background:
+        repeating-linear-gradient(90deg, rgba(148,163,184,0.05) 0 1px, transparent 1px 72px),
+        repeating-linear-gradient(0deg, rgba(148,163,184,0.04) 0 1px, transparent 1px 72px),
+        linear-gradient(135deg, rgba(3,7,18,0.98), rgba(12,22,36,0.98) 48%, rgba(24,13,18,0.98));
+      color: #eef6ff;
+      font-family: inherit;
+      overflow: auto;
+    }
+    .tk-captcha-lite-shell {
+      width: min(1180px, 100%);
+      min-height: min(760px, calc(100vh - 48px));
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      gap: 18px;
+      margin: auto;
+    }
+    .tk-captcha-lite-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(148,163,184,0.24);
+    }
+    .tk-captcha-lite-kicker {
+      color: #5eead4;
+      font-size: 0.76rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .tk-captcha-lite-title {
+      margin-top: 6px;
+      color: #ffffff;
+      font-size: 4.2rem;
+      line-height: 0.95;
+      font-weight: 950;
+    }
+    .tk-captcha-lite-sub {
+      margin-top: 10px;
+      max-width: 720px;
+      color: #bdd4e8;
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+    .tk-captcha-lite-close {
+      width: 44px; height: 44px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(148,163,184,0.35);
+      border-radius: 50%;
+      background: rgba(15,23,42,0.72);
+      color: #e2e8f0;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .tk-captcha-lite-close:hover { background: rgba(30,41,59,0.9); color: #fff; }
+    .tk-captcha-lite-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .tk-captcha-lite-stat {
+      min-width: 0;
+      border: 1px solid rgba(148,163,184,0.24);
+      background: rgba(15,23,42,0.62);
+      border-radius: 8px;
+      padding: 14px 16px;
+      box-shadow: 0 14px 36px rgba(0,0,0,0.24);
+    }
+    .tk-captcha-lite-stat-label {
+      color: #91a8ba;
+      font-size: 0.68rem;
+      font-weight: 900;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+    }
+    .tk-captcha-lite-stat-value {
+      margin-top: 8px;
+      color: #fff;
+      font-size: 2.45rem;
+      line-height: 1;
+      font-weight: 950;
+      font-variant-numeric: tabular-nums;
+    }
+    .tk-captcha-lite-main {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.8fr);
+      gap: 16px;
+    }
+    .tk-captcha-lite-panel {
+      min-height: 0;
+      border: 1px solid rgba(148,163,184,0.24);
+      background: rgba(2,6,23,0.56);
+      border-radius: 8px;
+      box-shadow: 0 20px 58px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    .tk-captcha-lite-panel-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 14px;
+      padding: 15px 16px;
+      border-bottom: 1px solid rgba(148,163,184,0.18);
+      background: rgba(15,23,42,0.54);
+    }
+    .tk-captcha-lite-panel-title {
+      color: #f8fafc;
+      font-size: 0.86rem;
+      font-weight: 950;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+    }
+    .tk-captcha-lite-controls {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      color: #cbd5e1;
+      font-size: 0.78rem;
+    }
+    .tk-captcha-lite-count {
+      width: 58px;
+      background: #08111f;
+      color: #fff;
+      border: 1px solid rgba(148,163,184,0.34);
+      border-radius: 6px;
+      padding: 7px 8px;
+      font: inherit;
+      font-weight: 800;
+    }
+    .tk-captcha-lite-list {
+      max-height: min(58vh, 560px);
+      overflow: auto;
+      padding: 8px;
+    }
+    .tk-captcha-lite-empty,
+    .tk-captcha-lite-error {
+      padding: 18px;
+      color: #93a4b8;
+      font-size: 0.9rem;
+    }
+    .tk-captcha-lite-error { color: #fecaca; }
+    .tk-captcha-lite-section {
+      padding: 10px 8px 5px;
+      color: #7dd3fc;
+      font-size: 0.68rem;
+      font-weight: 950;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+    }
+    .tk-captcha-lite-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 8px;
+      padding: 14px;
+      border: 1px solid rgba(148,163,184,0.18);
+      background: rgba(15,23,42,0.66);
+      border-radius: 8px;
+    }
+    .tk-captcha-lite-row.offline { opacity: 0.74; }
+    .tk-captcha-lite-person {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .tk-captcha-lite-name {
+      min-width: 0;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+    .tk-captcha-lite-meta {
+      color: #9fb1c2;
+      font-size: 0.78rem;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+    .tk-captcha-lite-dot {
+      display: inline-block;
+      width: 9px; height: 9px;
+      margin-right: 7px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 16px rgba(52,211,153,0.8);
+      vertical-align: 1px;
+    }
+    .tk-captcha-lite-row.offline .tk-captcha-lite-dot {
+      background: #64748b;
+      box-shadow: none;
+    }
+    .tk-captcha-lite-statline {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-top: 3px;
+      font-size: 0.72rem;
+    }
+    .tk-captcha-lite-pill {
+      border: 1px solid rgba(148,163,184,0.2);
+      border-radius: 999px;
+      padding: 3px 7px;
+      background: rgba(2,6,23,0.42);
+      color: #cbd5e1;
+    }
+    .tk-captcha-lite-pill.pending { color: #fde68a; border-color: rgba(245,158,11,0.35); }
+    .tk-captcha-lite-pill.fired { color: #93c5fd; border-color: rgba(59,130,246,0.34); }
+    .tk-captcha-lite-pill.done { color: #86efac; border-color: rgba(34,197,94,0.3); }
+    .tk-captcha-lite-send {
+      display: grid;
+      grid-template-columns: minmax(130px, 190px) auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .tk-captcha-lite-select {
+      min-width: 0;
+      background: #08111f;
+      color: #e5f4ff;
+      border: 1px solid rgba(148,163,184,0.34);
+      border-radius: 6px;
+      padding: 8px 9px;
+      font: inherit;
+      font-size: 0.82rem;
+    }
+    .tk-captcha-lite-btn {
+      border: 1px solid rgba(94,234,212,0.42);
+      border-radius: 6px;
+      background: linear-gradient(135deg, rgba(20,184,166,0.95), rgba(14,116,144,0.95));
+      color: #ecfeff;
+      padding: 9px 13px;
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 950;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tk-captcha-lite-btn:hover { filter: brightness(1.08); }
+    .tk-captcha-lite-btn.secondary {
+      border-color: rgba(245,158,11,0.4);
+      background: rgba(120,53,15,0.64);
+      color: #ffedd5;
+    }
+    .tk-captcha-lite-side {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 12px;
+      padding: 16px;
+    }
+    .tk-captcha-lite-testpick {
+      width: 100%;
+      min-height: 190px;
+      background: #08111f;
+      color: #e5f4ff;
+      border: 1px solid rgba(148,163,184,0.34);
+      border-radius: 8px;
+      padding: 8px;
+      font: inherit;
+    }
+    .tk-captcha-lite-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .tk-captcha-lite-actions .wide { grid-column: 1 / -1; }
+    .tk-captcha-lite-status {
+      border-top: 1px solid rgba(148,163,184,0.18);
+      padding-top: 12px;
+      color: #9fb1c2;
+      font-size: 0.82rem;
+      line-height: 1.4;
+    }
+    @media (max-width: 820px) {
+      .tk-captcha-lite { padding: 12px; }
+      .tk-captcha-lite-shell { min-height: calc(100vh - 24px); }
+      .tk-captcha-lite-top { align-items: flex-start; }
+      .tk-captcha-lite-title { font-size: 2.7rem; }
+      .tk-captcha-lite-stat-value { font-size: 2rem; }
+      .tk-captcha-lite-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .tk-captcha-lite-main { grid-template-columns: 1fr; }
+      .tk-captcha-lite-list { max-height: none; }
+      .tk-captcha-lite-row { grid-template-columns: 1fr; }
+      .tk-captcha-lite-send { grid-template-columns: 1fr; }
     }
 
     /* Dense full-screen poke challenge. Every cell uses the same cursor so
@@ -1506,6 +1794,25 @@
     .cr-recap-body { flex: 1; min-width: 0; }
     .cr-recap-title { font-weight: 700; font-size: 0.98rem; line-height: 1.2; }
     .cr-recap-sub { font-size: 0.85rem; opacity: 0.85; margin-top: 2px; }
+    .cr-recap-action {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      border: 1px solid rgba(255,245,230,0.34);
+      background: rgba(255,255,255,0.08);
+      color: #fff5e6;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font: inherit;
+      font-size: 0.76rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    body.is-admin .cr-recap-action.can-edit { display: inline-flex; }
+    .cr-recap-action:hover { background: rgba(255,255,255,0.14); }
+    .cr-recap-action:disabled { opacity: 0.55; cursor: wait; }
     .cr-recap-dismiss {
       background: transparent; border: 0; color: #fff5e6;
       font-size: 1.4rem; line-height: 1; cursor: pointer;
@@ -1566,6 +1873,56 @@
       50%      { text-shadow: 0 0 38px rgba(255,200,120,0.85); }
     }
     .cr-hero-sub { color: #ffc9a0; font-size: 0.95rem; margin-top: 6px; }
+    .cr-duty-status {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: fit-content;
+      max-width: 100%;
+      margin: 12px auto 0;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,180,100,0.22);
+      color: #ffe4c8;
+      font-size: 0.82rem;
+      line-height: 1.3;
+      flex-wrap: wrap;
+    }
+    .cr-duty-status.is-open {
+      border-color: rgba(79,142,247,0.34);
+      background: rgba(79,142,247,0.12);
+      color: #cfe0ff;
+    }
+    .cr-duty-status.is-owed {
+      border-color: rgba(255,180,80,0.44);
+      background: rgba(255,154,60,0.14);
+      color: #ffdfb8;
+    }
+    .cr-duty-status.is-paid {
+      border-color: rgba(16,185,129,0.45);
+      background: rgba(16,185,129,0.14);
+      color: #bcf7da;
+    }
+    .cr-duty-status-icon { font-size: 0.95rem; line-height: 1; }
+    .cr-duty-action {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid currentColor;
+      background: rgba(255,255,255,0.08);
+      color: inherit;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font: inherit;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    body.is-admin .cr-duty-action.can-edit { display: inline-flex; }
+    .cr-duty-action:hover { background: rgba(255,255,255,0.14); }
+    .cr-duty-action:disabled { opacity: 0.55; cursor: wait; }
     .cr-countdown {
       margin: 0 0 16px;
       padding: 16px 14px 14px;
@@ -1821,6 +2178,32 @@
     .cr-row-count.leading {
       background: linear-gradient(135deg,#ff6b3d,#ff3d6b);
       color: #fff; border-color: transparent;
+    }
+    .cr-duty-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: 6px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      vertical-align: 2px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+    }
+    .cr-duty-chip.owed {
+      border-color: rgba(255,154,60,0.42);
+      background: rgba(255,154,60,0.10);
+      color: #ffbf7d;
+    }
+    .cr-duty-chip.paid {
+      border-color: rgba(16,185,129,0.42);
+      background: rgba(16,185,129,0.10);
+      color: #8ee6bd;
     }
     .cr-col-head {
       background: var(--surface2); padding: 10px 16px;
@@ -3898,6 +4281,7 @@
         <div class="cr-recap-title" id="crRecapTitle">—</div>
         <div class="cr-recap-sub" id="crRecapSub">—</div>
       </div>
+      <button class="cr-recap-action" id="crRecapPayBtn" type="button">Mark paid up</button>
       <button class="cr-recap-dismiss" id="crRecapDismiss" type="button" aria-label="Dismiss">&times;</button>
     </div>
 
@@ -3911,6 +4295,11 @@
           <div class="cr-hero-text">
             <div class="cr-hero-name" id="crWinnerName">No crashes yet</div>
             <div class="cr-hero-sub" id="crWinnerSub">Be the first to tank SolidWorks 🎉</div>
+            <div class="cr-duty-status" id="crDutyStatus" aria-live="polite">
+              <span class="cr-duty-status-icon" id="crDutyStatusIcon" aria-hidden="true">🍩</span>
+              <span id="crDutyStatusText">Donut status pending.</span>
+              <button class="cr-duty-action" id="crDutyToggle" type="button">Mark paid up</button>
+            </div>
           </div>
           <div class="cr-donut cr-donut-mirror" aria-hidden="true">🍩</div>
         </div>
@@ -5940,6 +6329,21 @@ const POKE_DEV_SECRET = 'backstage';
   });
 })();
 
+const DSHANK_CAPTCHA_SECRET = 'dshank';
+(function dshankCaptchaSecretInit() {
+  let buf = '';
+  document.addEventListener('keydown', (e) => {
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    if (e.key.length !== 1) return;
+    buf = (buf + e.key.toLowerCase()).slice(-DSHANK_CAPTCHA_SECRET.length);
+    if (buf === DSHANK_CAPTCHA_SECRET) {
+      buf = '';
+      pokeOpenCaptchaLitePanel();
+    }
+  });
+})();
+
 // On load: targeted user gets their daily per-ticket poke cap wiped EVERY
 // page load, so they can always hit the escalation ladder again.
 // (Escalation history persists — the annoying confirms/lockout still build up.)
@@ -7691,6 +8095,317 @@ function pokeShowDevUnauthorized() {
   }
 }
 
+async function pokeCaptchaLiteCallerUser() {
+  let user = (sessionStorage.getItem('winUser') || '').trim().toLowerCase();
+  if (user) return user;
+  try {
+    const w = await apiFetch('/api/whoami');
+    if (w && typeof w.windowsUser === 'string') {
+      sessionStorage.setItem('winUser', w.windowsUser);
+      user = w.windowsUser.trim().toLowerCase();
+    }
+  } catch {}
+  return user;
+}
+
+async function pokeCaptchaLiteOpenContext() {
+  const caller = await pokeCaptchaLiteCallerUser();
+  if (caller === 'dshank') return { allowed: true, caller, preview: false };
+
+  let isAdminPreview = caller === 'dlebel' || pokeDevIsAdmin() || !!serverAllowsAdmin;
+  if (!isAdminPreview && typeof refreshAdminFromServer === 'function') {
+    try { isAdminPreview = !!(await refreshAdminFromServer()); } catch {}
+  }
+  if (isAdminPreview) return { allowed: true, caller, preview: true };
+
+  return { allowed: false, caller, preview: false };
+}
+
+async function pokeOpenCaptchaLitePanel() {
+  const openContext = await pokeCaptchaLiteOpenContext();
+  if (!openContext.allowed) return;
+  if (document.getElementById('tkCaptchaLite')) return;
+
+  const panel = document.createElement('div');
+  panel.id = 'tkCaptchaLite';
+  panel.className = 'tk-captcha-lite';
+  const captchaPickOptions = `<option value="">Random</option>` +
+    POKE_CHALLENGES.map(c => `<option value="${escHtml(c.id)}">${escHtml(c.label)}</option>`).join('');
+  const captchaPreviewOptions = POKE_CHALLENGES
+    .map((c, i) => `<option value="${i}">${i + 1}. ${escHtml(c.label)}</option>`)
+    .join('');
+  panel.innerHTML = `
+    <div class="tk-captcha-lite-shell">
+      <div class="tk-captcha-lite-top">
+        <div>
+          <div class="tk-captcha-lite-kicker">${openContext.preview ? 'admin preview' : 'dshank access only'}</div>
+          <div class="tk-captcha-lite-title">Captcha Command</div>
+          <div class="tk-captcha-lite-sub">Live target board. Dylan locked.</div>
+        </div>
+        <button class="tk-captcha-lite-close" id="tkCaptchaLiteClose" title="Close" aria-label="Close">x</button>
+      </div>
+
+      <div class="tk-captcha-lite-stats" aria-live="polite">
+        <div class="tk-captcha-lite-stat">
+          <div class="tk-captcha-lite-stat-label">Online</div>
+          <div class="tk-captcha-lite-stat-value" id="tkCaptchaLiteOnline">0</div>
+        </div>
+        <div class="tk-captcha-lite-stat">
+          <div class="tk-captcha-lite-stat-label">Offline</div>
+          <div class="tk-captcha-lite-stat-value" id="tkCaptchaLiteOffline">0</div>
+        </div>
+        <div class="tk-captcha-lite-stat">
+          <div class="tk-captcha-lite-stat-label">Pending</div>
+          <div class="tk-captcha-lite-stat-value" id="tkCaptchaLitePending">0</div>
+        </div>
+        <div class="tk-captcha-lite-stat">
+          <div class="tk-captcha-lite-stat-label">Protected</div>
+          <div class="tk-captcha-lite-stat-value">1</div>
+        </div>
+      </div>
+
+      <div class="tk-captcha-lite-main">
+        <section class="tk-captcha-lite-panel">
+          <div class="tk-captcha-lite-panel-head">
+            <div class="tk-captcha-lite-panel-title">Target board</div>
+            <div class="tk-captcha-lite-controls">
+              <label for="tkCaptchaLiteCount">Trials</label>
+              <input class="tk-captcha-lite-count" id="tkCaptchaLiteCount" type="number" min="1" max="7" value="3">
+              <button class="tk-captcha-lite-btn secondary" data-act="lite-refresh">Refresh</button>
+            </div>
+          </div>
+          <div id="tkCaptchaLiteTargets" class="tk-captcha-lite-list">
+            <div class="tk-captcha-lite-empty">Loading targets...</div>
+          </div>
+        </section>
+
+        <section class="tk-captcha-lite-panel tk-captcha-lite-side">
+          <div>
+            <div class="tk-captcha-lite-panel-title">Manual test deck</div>
+            <div class="tk-captcha-lite-meta" style="margin-top:7px;">Local challenge deck.</div>
+          </div>
+          <select class="tk-captcha-lite-testpick" id="tkCaptchaLitePreviewPick" size="8">${captchaPreviewOptions}</select>
+          <div>
+            <div class="tk-captcha-lite-actions">
+              <button class="tk-captcha-lite-btn secondary" data-act="lite-preview">Preview</button>
+              <button class="tk-captcha-lite-btn secondary" data-act="lite-run-selected">Run selected</button>
+              <button class="tk-captcha-lite-btn wide" data-act="lite-run-random">Run random trials</button>
+            </div>
+            <div class="tk-captcha-lite-status" id="tkCaptchaLiteStatus">${openContext.preview ? 'Admin preview. Dylan is still protected server-side.' : 'Dylan is protected server-side.'}</div>
+          </div>
+        </section>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(panel);
+
+  const targetListEl = panel.querySelector('#tkCaptchaLiteTargets');
+  const statusEl = panel.querySelector('#tkCaptchaLiteStatus');
+  const countEl = panel.querySelector('#tkCaptchaLiteCount');
+  const previewPickEl = panel.querySelector('#tkCaptchaLitePreviewPick');
+  const onlineEl = panel.querySelector('#tkCaptchaLiteOnline');
+  const offlineEl = panel.querySelector('#tkCaptchaLiteOffline');
+  const pendingEl = panel.querySelector('#tkCaptchaLitePending');
+  previewPickEl.value = '0';
+
+  const previousBodyOverflow = document.body.style.overflow;
+  document.body.style.overflow = 'hidden';
+
+  const closePanel = () => {
+    document.removeEventListener('keydown', escapeHandler);
+    document.body.style.overflow = previousBodyOverflow;
+    panel.remove();
+  };
+  const escapeHandler = (e) => {
+    if (e.key === 'Escape' && document.getElementById('tkCaptchaLite')) closePanel();
+  };
+  document.addEventListener('keydown', escapeHandler);
+
+  const blockedTargets = new Set(['dlebel']);
+  const normalizedUser = (v) => String(v || '').trim().toLowerCase();
+  const isBlockedTarget = (v) => blockedTargets.has(normalizedUser(v));
+  const getCount = () => Math.max(1, Math.min(7, parseInt(countEl?.value || '3', 10) || 3));
+  const manualIndex = () => Math.max(0, Math.min(POKE_CHALLENGES.length - 1, parseInt(previewPickEl.value || '0', 10) || 0));
+
+  panel.querySelector('#tkCaptchaLiteClose').addEventListener('click', closePanel);
+
+  async function renderCaptchaLiteState() {
+    targetListEl.innerHTML = `<div class="tk-captcha-lite-empty">Loading targets...</div>`;
+    let data = null;
+    try {
+      const r = await fetch('/api/captcha-lite/state', { cache: 'no-store' });
+      data = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        targetListEl.innerHTML = `<div class="tk-captcha-lite-error">${escHtml(data.error || ('HTTP ' + r.status))}</div>`;
+        statusEl.textContent = 'Captcha queue unavailable.';
+        return;
+      }
+    } catch (e) {
+      targetListEl.innerHTML = `<div class="tk-captcha-lite-error">Could not reach server: ${escHtml(e.message)}</div>`;
+      statusEl.textContent = 'Server not reachable.';
+      return;
+    }
+
+    const active = ((data && data.active) || []).filter(u => !isBlockedTarget(u.windowsUser));
+    const queue = ((data && data.queue) || []).filter(q => !isBlockedTarget(q.target));
+    const targets = ((data && data.targets) || []).filter(t => t && t.enabled !== false);
+    const targetRows = [];
+    const seenTargets = new Set();
+    for (const t of targets) {
+      const names = Array.isArray(t.names) ? t.names : [];
+      const wins = Array.isArray(t.windowsUsers)
+        ? t.windowsUsers
+        : (t.windowsUser ? [t.windowsUser] : []);
+      for (const rawWin of wins) {
+        const wu = normalizedUser(rawWin);
+        if (!wu || seenTargets.has(wu) || isBlockedTarget(wu)) continue;
+        seenTargets.add(wu);
+        targetRows.push({
+          windowsUser: wu,
+          displayName: t.displayName || t.label || names[0] || wu
+        });
+      }
+    }
+
+    const statsByTarget = {};
+    let pendingTotal = 0;
+    for (const q of queue) {
+      const t = normalizedUser(q.target);
+      if (!t || isBlockedTarget(t)) continue;
+      const slot = statsByTarget[t] || (statsByTarget[t] = { pending: 0, fired: 0, completed: 0 });
+      if (q.status === 'pending') {
+        slot.pending++;
+        pendingTotal++;
+      } else if (q.status === 'fired') {
+        slot.fired++;
+      } else if (q.status === 'completed' || q.status === 'escaped') {
+        slot.completed++;
+      }
+    }
+
+    const activeKeys = new Set(active.map(u => normalizedUser(u.windowsUser)).filter(Boolean));
+    const offline = targetRows.filter(t => !activeKeys.has(t.windowsUser));
+    onlineEl.textContent = String(active.length);
+    offlineEl.textContent = String(offline.length);
+    pendingEl.textContent = String(pendingTotal);
+
+    const buildStatLine = (stats) => {
+      if (!stats || (!stats.pending && !stats.fired && !stats.completed)) return '';
+      const bits = [];
+      if (stats.pending) bits.push(`<span class="tk-captcha-lite-pill pending">${stats.pending} pending</span>`);
+      if (stats.fired) bits.push(`<span class="tk-captcha-lite-pill fired">${stats.fired} fired</span>`);
+      if (stats.completed) bits.push(`<span class="tk-captcha-lite-pill done">${stats.completed} done</span>`);
+      return `<div class="tk-captcha-lite-statline">${bits.join('')}</div>`;
+    };
+    const buildSendCol = (wu, label) => `
+      <div class="tk-captcha-lite-send">
+        <select class="tk-captcha-lite-select tk-captcha-lite-pick">${captchaPickOptions}</select>
+        <button class="tk-captcha-lite-btn" data-act="lite-send-captcha" data-target="${escHtml(wu)}" data-display="${escHtml(label || wu)}">Send</button>
+      </div>`;
+    const activeRows = active.map(u => {
+      const wu = normalizedUser(u.windowsUser);
+      const dn = (u.displayName || '').trim();
+      const machine = (u.machine || '').trim();
+      const sec = u.lastSeen ? Math.max(0, Math.round((Date.now() - new Date(u.lastSeen).getTime()) / 1000)) : '?';
+      return `
+        <div class="tk-captcha-lite-row" data-captcha-row>
+          <div class="tk-captcha-lite-person">
+            <div class="tk-captcha-lite-name"><span class="tk-captcha-lite-dot"></span>${escHtml(dn || wu || 'unknown')}</div>
+            <div class="tk-captcha-lite-meta">${escHtml(wu)}${machine ? ` @ ${escHtml(machine)}` : ''} | seen ${sec}s ago</div>
+            ${buildStatLine(statsByTarget[wu])}
+          </div>
+          ${buildSendCol(wu, dn)}
+        </div>
+      `;
+    }).join('');
+    const offlineRows = offline.map(t => {
+      const wu = normalizedUser(t.windowsUser);
+      const dn = (t.displayName || '').trim();
+      return `
+        <div class="tk-captcha-lite-row offline" data-captcha-row>
+          <div class="tk-captcha-lite-person">
+            <div class="tk-captcha-lite-name"><span class="tk-captcha-lite-dot"></span>${escHtml(dn || wu)}</div>
+            <div class="tk-captcha-lite-meta">${escHtml(wu)} | offline, fires when they return</div>
+            ${buildStatLine(statsByTarget[wu])}
+          </div>
+          ${buildSendCol(wu, dn)}
+        </div>
+      `;
+    }).join('');
+    const sectionHeader = (label, count) => `<div class="tk-captcha-lite-section">${label} (${count})</div>`;
+
+    let html = '';
+    if (active.length) html += sectionHeader('Online', active.length) + activeRows;
+    if (offline.length) html += sectionHeader('Offline', offline.length) + offlineRows;
+    if (!html) html = `<div class="tk-captcha-lite-empty">No allowed targets found.</div>`;
+    targetListEl.innerHTML = html;
+    statusEl.textContent = `${active.length} online | ${offline.length} offline | ${queue.length} queue row(s) visible | Dylan protected`;
+  }
+
+  panel.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button[data-act]');
+    if (!btn) return;
+    switch (btn.dataset.act) {
+      case 'lite-refresh':
+        await renderCaptchaLiteState();
+        break;
+      case 'lite-preview': {
+        const idx = manualIndex();
+        await pokePreviewChallenge(POKE_CHALLENGES[idx], idx);
+        break;
+      }
+      case 'lite-run-selected': {
+        const idx = manualIndex();
+        await pokeShowEscapeLockout(1, POKE_CHALLENGES[idx].id);
+        break;
+      }
+      case 'lite-run-random':
+        await pokeShowEscapeLockout(getCount());
+        break;
+      case 'lite-send-captcha': {
+        const target = normalizedUser(btn.dataset.target);
+        const display = btn.dataset.display || target;
+        if (!target || isBlockedTarget(target)) {
+          showToast('That target is blocked.', 'error');
+          break;
+        }
+        const row = btn.closest('[data-captcha-row]');
+        const challenge = (row?.querySelector('.tk-captcha-lite-pick')?.value || '').trim();
+        const count = getCount();
+        const label = challenge
+          ? (POKE_CHALLENGES.find(c => c.id === challenge)?.label || challenge)
+          : `${count} random`;
+        if (!confirm(`Queue "${label}" for ${display}?`)) break;
+        const body = challenge ? { target, count: 1, challenge } : { target, count };
+        try {
+          btn.disabled = true;
+          btn.textContent = 'Sending';
+          const r = await fetch('/api/captcha-lite/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+          const data = await r.json().catch(() => ({}));
+          if (!r.ok) {
+            showToast('Send rejected: ' + (data.error || r.status), 'error');
+          } else {
+            showToast(`${label} queued for ${display}`, 'success');
+            await renderCaptchaLiteState();
+          }
+        } catch (err) {
+          showToast('Could not reach server: ' + err.message, 'error');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Send';
+        }
+        break;
+      }
+    }
+  });
+
+  setTimeout(() => { renderCaptchaLiteState().catch(() => {}); }, 100);
+}
+
 function pokeOpenDevPanel() {
   if (!pokeDevIsAdmin()) {
     pokeShowDevUnauthorized();
@@ -7869,6 +8584,25 @@ function pokeOpenDevPanel() {
     const queue = (data && data.queue) || [];
     const targets = (data && data.targets) || [];
 
+    const targetRows = [];
+    const seenTargets = new Set();
+    for (const t of targets) {
+      if (!t || t.enabled === false) continue;
+      const names = Array.isArray(t.names) ? t.names : [];
+      const wins = Array.isArray(t.windowsUsers)
+        ? t.windowsUsers
+        : (t.windowsUser ? [t.windowsUser] : []);
+      for (const rawWin of wins) {
+        const wu = String(rawWin || '').trim().toLowerCase();
+        if (!wu || seenTargets.has(wu)) continue;
+        seenTargets.add(wu);
+        targetRows.push({
+          windowsUser: wu,
+          displayName: t.displayName || t.label || names[0] || wu
+        });
+      }
+    }
+
     // Build a map of captcha-queue stats by target (lowercased windowsUser).
     // Pending counts include captchas queued for offline users — they'll fire
     // on that user's next presence ping.
@@ -7885,10 +8619,7 @@ function pokeOpenDevPanel() {
     // Merge active users with configured poke-targets so the admin can queue
     // captchas for offline people too. Active wins on duplicates.
     const activeKeys = new Set(active.map(u => (u.windowsUser || '').trim().toLowerCase()).filter(Boolean));
-    const offline = targets
-      .filter(t => t && t.windowsUser)
-      .filter(t => t.enabled !== false)
-      .filter(t => !activeKeys.has((t.windowsUser || '').trim().toLowerCase()));
+    const offline = targetRows.filter(t => !activeKeys.has(t.windowsUser));
 
     const captchaOpts = `<option value="">Random</option>` +
       POKE_CHALLENGES.map(c => `<option value="${escHtml(c.id)}">${escHtml(c.label)}</option>`).join('');
@@ -7925,7 +8656,7 @@ function pokeOpenDevPanel() {
 
     const offlineRows = offline.map(t => {
       const wu = (t.windowsUser || '').trim();
-      const dn = (t.displayName || t.label || '').trim();
+      const dn = (t.displayName || '').trim();
       const lk = wu.toLowerCase();
       return `
         <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:4px 6px;gap:6px;border-bottom:1px solid rgba(255,255,255,0.05);opacity:0.78;">
@@ -8926,11 +9657,13 @@ document.getElementById('crAlertToggle').addEventListener('click', () => {
 });
 
 let crashEntries = [];
+let crDonutStatuses = [];
 let crSelectedMonth = null;   // 'YYYY-MM' — null means pick default (current month or latest with data)
 let crSelectedSeverity = 'minor';
 const crSevEmoji = { minor: '😐', major: '😬', catastrophic: '🔥' };
 let crTiePoll = null;
 let crTiePollSaving = false;
+let crDonutStatusSaving = false;
 let crTiePollPanelDismissed = false;
 const CR_TIE_POLL_ID = 'crash-tie-break-2026-04';
 const CR_TIE_POLL_LATER_KEY = `crTiePollLater:${CR_TIE_POLL_ID}`;
@@ -8989,6 +9722,153 @@ function crTiePollWinningOptionId() {
 
 function crTieRuleMode() {
   return crTiePollWinningOptionId() || 'split';
+}
+
+function crBool(value) {
+  if (value === true || value === false) return value;
+  const s = String(value ?? '').trim().toLowerCase();
+  return ['1', 'true', 'yes', 'on', 'paid'].includes(s);
+}
+
+function crNormalizeDonutStatuses(list) {
+  return (Array.isArray(list) ? list : []).filter(Boolean).map(row => ({
+    monthKey: String(row.monthKey || row.month || '').trim(),
+    paid: crBool(row.paid),
+    updatedAt: row.updatedAt || row.paidAt || '',
+    updatedBy: row.updatedBy || '',
+    updatedByName: row.updatedByName || ''
+  })).filter(row => /^\d{4}-\d{2}$/.test(row.monthKey));
+}
+
+function crDonutStatusForMonth(monthKey) {
+  return crDonutStatuses.find(s => s.monthKey === monthKey) || null;
+}
+
+function crMonthDeadline(monthKey) {
+  const parts = String(monthKey || '').split('-').map(Number);
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return crCurrentEndOfMonth();
+  return crEndOfMonth(parts[0], parts[1] - 1);
+}
+
+function crMonthIsLocked(monthKey) {
+  return Date.now() >= crMonthDeadline(monthKey).getTime();
+}
+
+function crStatusStampText(status) {
+  if (!status || !status.updatedAt) return '';
+  const d = new Date(status.updatedAt);
+  if (isNaN(d)) return '';
+  const who = (status.updatedByName || status.updatedBy || '').trim();
+  const when = d.toLocaleDateString('default', { month: 'short', day: 'numeric' });
+  return who ? ` by ${who} on ${when}` : ` on ${when}`;
+}
+
+function crDonutDutyStatusInfo(monthKey, prizeInfo, isCurrent) {
+  if (!prizeInfo || !prizeInfo.assignments || prizeInfo.assignments.length === 0) {
+    return { visible: false };
+  }
+  const locked = crMonthIsLocked(monthKey);
+  if (isCurrent && !locked) {
+    return {
+      visible: true,
+      canEdit: false,
+      paid: false,
+      icon: '⏳',
+      cls: 'is-open',
+      stat: '🍩',
+      statLabel: 'on the line',
+      text: 'Status: race still open — donuts are not owed yet.'
+    };
+  }
+
+  const status = crDonutStatusForMonth(monthKey);
+  if (status && status.paid) {
+    return {
+      visible: true,
+      canEdit: true,
+      paid: true,
+      icon: '✅',
+      cls: 'is-paid',
+      stat: '✅',
+      statLabel: 'paid up',
+      text: `Status: paid up — donuts confirmed${crStatusStampText(status)}.`
+    };
+  }
+
+  return {
+    visible: true,
+    canEdit: true,
+    paid: false,
+    icon: '🧾',
+    cls: 'is-owed',
+    stat: '⏳',
+    statLabel: 'still owes',
+    text: 'Status: still owes donuts — not paid up yet.'
+  };
+}
+
+function crRenderDutyStatus(monthKey, prizeInfo, isCurrent) {
+  const box = document.getElementById('crDutyStatus');
+  const icon = document.getElementById('crDutyStatusIcon');
+  const text = document.getElementById('crDutyStatusText');
+  const btn = document.getElementById('crDutyToggle');
+  if (!box || !icon || !text || !btn) return { visible: false };
+
+  const info = crDonutDutyStatusInfo(monthKey, prizeInfo, isCurrent);
+  box.classList.remove('is-open', 'is-owed', 'is-paid');
+  btn.classList.remove('can-edit');
+
+  if (!info.visible) {
+    box.style.display = 'none';
+    btn.dataset.month = '';
+    btn.dataset.paid = '';
+    return info;
+  }
+
+  box.style.display = 'inline-flex';
+  box.classList.add(info.cls);
+  icon.textContent = info.icon;
+  text.textContent = info.text;
+  btn.dataset.month = monthKey;
+  btn.dataset.paid = info.paid ? 'true' : 'false';
+  btn.textContent = info.paid ? 'Mark still owes' : 'Mark paid up';
+  btn.disabled = crDonutStatusSaving || !info.canEdit;
+  if (info.canEdit) btn.classList.add('can-edit');
+  return info;
+}
+
+function crDutyBadgeHtml(name, prizeInfo, monthKey, isCurrent) {
+  if ((isCurrent && !crMonthIsLocked(monthKey)) || !prizeInfo || !prizeInfo.assignments) return '';
+  const isAssigned = prizeInfo.assignments.some(a => crNormKey(a.name) === crNormKey(name));
+  if (!isAssigned) return '';
+  const paid = !!(crDonutStatusForMonth(monthKey)?.paid);
+  return paid
+    ? '<span class="cr-duty-chip paid" title="Donut duty is paid up">paid up</span>'
+    : '<span class="cr-duty-chip owed" title="Donut duty is still owed">owes donuts</span>';
+}
+
+async function crSetDonutStatus(monthKey, paid) {
+  if (!monthKey || crDonutStatusSaving) return;
+  crDonutStatusSaving = true;
+  renderCrashes();
+  try {
+    const res = await apiFetch('/api/crash-donut-status/' + encodeURIComponent(monthKey), {
+      method: 'PATCH',
+      body: JSON.stringify({
+        paid: !!paid,
+        displayName: localStorage.getItem('mgUserName') || crKnownName() || ''
+      })
+    });
+    crDonutStatuses = crNormalizeDonutStatuses(res.statuses || []);
+    renderCrashes();
+    showToast(paid ? 'Donut duty marked paid up.' : 'Donut duty marked still owed.', 'success');
+  } catch (err) {
+    showToast('Could not save donut status: ' + err.message, 'error');
+    renderCrashes();
+  } finally {
+    crDonutStatusSaving = false;
+    renderCrashes();
+  }
 }
 
 function crTiePollClosesAtMs() {
@@ -9576,6 +10456,7 @@ function renderCrashes() {
   const prizeLbl   = document.getElementById('crStatPrizeLbl');
 
   prizeStat.style.fontSize = ''; // reset — tie-mode inflates it
+  const dutyInfo = crDonutDutyStatusInfo(monthKey, prizeInfo, isCurrent);
 
   if (prizeInfo.assignments.length > 0) {
     if (prizeInfo.assignments.length === 1) {
@@ -9585,9 +10466,13 @@ function renderCrashes() {
       const hasCatastrophic = leaderRow && leaderRow.sev.catastrophic > 0;
       winnerName.innerHTML = escHtml(leaderName) + (hasCatastrophic
         ? ' <span class="cr-catking">🔥 CATASTROPHE KING</span>' : '');
-      winnerSub.textContent = isCurrent
-        ? `${prizeInfo.leaderCount} crash${prizeInfo.leaderCount === 1 ? '' : 'es'} — donuts are on you if nothing changes 🍩`
-        : `${prizeInfo.leaderCount} crashes — brought 🍩 donuts`;
+      if (isCurrent && !crMonthIsLocked(monthKey)) {
+        winnerSub.textContent = `${prizeInfo.leaderCount} crash${prizeInfo.leaderCount === 1 ? '' : 'es'} — donuts are on you if nothing changes 🍩`;
+      } else if (dutyInfo.paid) {
+        winnerSub.textContent = `${prizeInfo.leaderCount} crash${prizeInfo.leaderCount === 1 ? '' : 'es'} — paid up with 🍩 donuts`;
+      } else {
+        winnerSub.textContent = `${prizeInfo.leaderCount} crash${prizeInfo.leaderCount === 1 ? '' : 'es'} — still owes 🍩 donuts`;
+      }
       prizeStat.textContent = '🍩';
       prizeLbl.textContent = isCurrent ? 'on the line' : 'brought';
     } else {
@@ -9619,6 +10504,12 @@ function renderCrashes() {
     winnerSub.textContent = isCurrent ? 'Be the first to tank SolidWorks 🎉' : 'Nothing logged for this month.';
     prizeStat.textContent = '🍩';
     prizeLbl.textContent = 'on the line';
+  }
+  const renderedDutyInfo = crRenderDutyStatus(monthKey, prizeInfo, isCurrent);
+  if (renderedDutyInfo.visible) {
+    prizeStat.style.fontSize = '';
+    prizeStat.textContent = renderedDutyInfo.stat;
+    prizeLbl.textContent = renderedDutyInfo.statLabel;
   }
 
   // Show/hide countdown based on whether we're looking at the current month
@@ -9717,12 +10608,13 @@ function renderCrashes() {
       const rankClass = rank <= 3 ? `cr-rank-${rank}` : '';
       const achvs = crComputeAchievements(row, agg, prevMonthKey);
       const sevHtml = crSevPipsHtml(row.sev);
+      const dutyBadge = crDutyBadgeHtml(row.name, prizeInfo, monthKey, isCurrent);
       const rowEl = document.createElement('div');
       rowEl.className = 'cr-row' + (isMe ? ' me' : '');
       rowEl.innerHTML = `
         <div class="cr-rank ${rankClass}" title="${row.tied ? `Tied for #${rank}` : `Rank #${rank}`}">${rankDisplay}</div>
         <div>
-          <div class="cr-row-name">${escHtml(row.name)}${isMe ? ' <span style="color:var(--accent);font-size:0.75rem">(you)</span>' : ''}${crAchvHtml(achvs)}</div>
+          <div class="cr-row-name">${escHtml(row.name)}${isMe ? ' <span style="color:var(--accent);font-size:0.75rem">(you)</span>' : ''}${dutyBadge}${crAchvHtml(achvs)}</div>
           <div class="cr-row-meta">Last crash ${row.lastTs ? crRelTime(row.lastTs) : '—'}</div>
           ${sevHtml}
         </div>
@@ -9868,16 +10760,26 @@ function crRenderRecapBanner(isCurrent) {
   const prevLabel = crMonthKeyToLabel(prevKey, { short: true });
   const titleEl = document.getElementById('crRecapTitle');
   const subEl = document.getElementById('crRecapSub');
+  const dutyInfo = crDonutDutyStatusInfo(prevKey, prize, false);
+  const dutyText = dutyInfo.paid ? 'paid up ✅' : 'still owes donuts';
+  const payBtn = document.getElementById('crRecapPayBtn');
+  if (payBtn) {
+    payBtn.dataset.month = prevKey;
+    payBtn.dataset.paid = dutyInfo.paid ? 'true' : 'false';
+    payBtn.textContent = dutyInfo.paid ? 'Mark still owes' : 'Mark paid up';
+    payBtn.disabled = crDonutStatusSaving;
+    payBtn.classList.toggle('can-edit', !!dutyInfo.canEdit);
+  }
 
   if (prize.assignments.length === 1) {
     const a = prize.assignments[0];
     titleEl.textContent = `${prevLabel} winner: ${a.name}`;
-    subEl.textContent = `${prize.leaderCount} crash${prize.leaderCount === 1 ? '' : 'es'} — ${a.prize} on the way 🎉`;
+    subEl.textContent = `${prize.leaderCount} crash${prize.leaderCount === 1 ? '' : 'es'} — ${dutyText}`;
   } else {
     titleEl.textContent = `${prevLabel} — ${prize.assignments.length}-way tie`;
     subEl.innerHTML = prize.assignments
       .map(a => `<strong>${escHtml(a.name)}</strong> → ${escHtml(a.prize)}`)
-      .join(' &nbsp;·&nbsp; ');
+      .join(' &nbsp;·&nbsp; ') + ` &nbsp;·&nbsp; ${escHtml(dutyText)}`;
   }
   el.style.display = '';
 }
@@ -9886,6 +10788,22 @@ document.getElementById('crRecapDismiss')?.addEventListener('click', () => {
   const prevKey = crPreviousMonthKey(crCurrentMonthKey());
   localStorage.setItem('crRecapDismissed', prevKey);
   document.getElementById('crRecap').style.display = 'none';
+});
+
+document.getElementById('crDutyToggle')?.addEventListener('click', () => {
+  const btn = document.getElementById('crDutyToggle');
+  const monthKey = btn?.dataset.month || '';
+  const isPaid = btn?.dataset.paid === 'true';
+  if (!monthKey) return;
+  crSetDonutStatus(monthKey, !isPaid);
+});
+
+document.getElementById('crRecapPayBtn')?.addEventListener('click', () => {
+  const btn = document.getElementById('crRecapPayBtn');
+  const monthKey = btn?.dataset.month || '';
+  const isPaid = btn?.dataset.paid === 'true';
+  if (!monthKey) return;
+  crSetDonutStatus(monthKey, !isPaid);
 });
 
 function crShowConfetti() {
@@ -11944,18 +12862,28 @@ async function fetchCrashTiePoll() {
   }
 }
 
+async function fetchCrashDonutStatuses() {
+  try {
+    return crNormalizeDonutStatuses(await apiFetch('/api/crash-donut-status', { cache: 'no-store' }));
+  } catch {
+    return [];
+  }
+}
+
 async function loadData() {
   try {
-    const [clData, tkData, crData, pollData] = await Promise.all([
+    const [clData, tkData, crData, pollData, donutStatusData] = await Promise.all([
       apiFetch('/api/changelog'),
       apiFetch('/api/tickets'),
       apiFetch('/api/crashes'),
-      fetchCrashTiePoll()
+      fetchCrashTiePoll(),
+      fetchCrashDonutStatuses()
     ]);
     changelogEntries = clData;
     ticketEntries = tkData;
     crashEntries = crData;
     crTiePoll = pollData;
+    crDonutStatuses = donutStatusData;
     renderChangelog();
     renderTickets();
     renderCrashes();
@@ -11977,7 +12905,12 @@ function crFingerprint(list) {
   }
   return fp;
 }
+function crDonutStatusFingerprint(list) {
+  if (!list || list.length === 0) return '0';
+  return list.map(s => `${s.monthKey}:${s.paid ? 1 : 0}:${s.updatedAt || ''}`).sort().join('|');
+}
 let __crLastFp = '';
+let __crLastDonutStatusFp = '';
 
 // Also tick "since last" every minute so it ages in real-time even when
 // nothing new comes in (no server round-trip).
@@ -11997,11 +12930,12 @@ setInterval(() => {
 // handler below that pokes the server the moment focus returns.
 async function refreshNow() {
   try {
-    const [clData, tkData, crData, pollData] = await Promise.all([
+    const [clData, tkData, crData, pollData, donutStatusData] = await Promise.all([
       apiFetch('/api/changelog'),
       apiFetch('/api/tickets'),
       apiFetch('/api/crashes'),
-      fetchCrashTiePoll()
+      fetchCrashTiePoll(),
+      fetchCrashDonutStatuses()
     ]);
     if (clData.length !== changelogEntries.length) {
       changelogEntries = clData;
@@ -12021,6 +12955,12 @@ async function refreshNow() {
     }
     if (pollData && JSON.stringify(pollData) !== JSON.stringify(crTiePoll)) {
       crTiePoll = pollData;
+      renderCrashes();
+    }
+    const dutyFp = crDonutStatusFingerprint(donutStatusData);
+    if (dutyFp !== __crLastDonutStatusFp) {
+      __crLastDonutStatusFp = dutyFp;
+      crDonutStatuses = donutStatusData;
       renderCrashes();
     }
     refreshPolls().catch(() => {});

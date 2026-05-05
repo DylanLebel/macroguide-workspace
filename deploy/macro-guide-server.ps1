@@ -61,6 +61,7 @@ $TkFile = Join-Path $DataDir 'tickets.json'
 $CrFile = Join-Path $DataDir 'crashes.json'
 $CrashNotifyFile = Join-Path $DataDir 'crash-notifications.json'
 $CrashTiePollFile = Join-Path $DataDir 'crash-tie-poll.json'
+$CrashDonutStatusFile = Join-Path $DataDir 'crash-donut-status.json'
 $PollsFile = Join-Path $DataDir 'polls.json'
 $PokeResetFile = Join-Path $DataDir 'poke-resets.json'
 $PokeTargetsFile = Join-Path $DataDir 'poke-targets.json'
@@ -141,6 +142,8 @@ $EmailTo      = 'dlebel@nmtech.com'
 # query string — those are spoofable from DevTools.
 
 $AdminUsernames = @('dlebel')
+$CaptchaDelegateUsernames = @('dshank')
+$CaptchaProtectedTargetUsernames = @('dlebel')
 
 function Get-CallerUser {
     # The unforgeable identity of the user this server is running as.
@@ -856,6 +859,152 @@ function Normalize-PokeTargets {
     return @($clean)
 }
 
+function Test-WindowsUserInList {
+    param([string]$WindowsUser, $List)
+    $win = Normalize-WindowsUser $WindowsUser
+    if (-not $win) { return $false }
+    foreach ($entry in @($List)) {
+        if ($win -eq (Normalize-WindowsUser ([string]$entry))) { return $true }
+    }
+    return $false
+}
+
+function Test-CallerCanQueueCaptchas {
+    $caller = Get-CallerUser
+    if (-not $caller) { return $false }
+    if (Test-CallerIsAdmin) { return $true }
+    return (Test-WindowsUserInList $caller $CaptchaDelegateUsernames)
+}
+
+function Test-CaptchaTargetAllowed {
+    param([string]$Target)
+    $targetUser = Normalize-WindowsUser $Target
+    if (-not $targetUser) { return $false }
+    return -not (Test-WindowsUserInList $targetUser $CaptchaProtectedTargetUsernames)
+}
+
+function Get-RecentCaptchaQueueRows {
+    param([switch]$OnlyAllowedTargets)
+    $queue = @(Read-JsonFile $CaptchaQueueFile)
+    $recent = @()
+    $cutoffQ = (Get-Date).ToUniversalTime().AddHours(-1)
+    foreach ($q in $queue) {
+        $target = if ($q.PSObject.Properties['target']) { Normalize-WindowsUser ([string]$q.target) } else { '' }
+        if ($OnlyAllowedTargets -and -not (Test-CaptchaTargetAllowed $target)) { continue }
+        $st = if ($q.PSObject.Properties['status']) { [string]$q.status } else { '' }
+        if ($st -eq 'pending') { $recent += $q; continue }
+        $qa = $null
+        if ($q.PSObject.Properties['queuedAt']) {
+            try { $qa = [datetime]::Parse([string]$q.queuedAt).ToUniversalTime() } catch {}
+        }
+        if ($qa -and $qa -gt $cutoffQ) { $recent += $q }
+    }
+    return @($recent)
+}
+
+function Get-CaptchaPanelActiveUsers {
+    param([switch]$OnlyAllowedTargets)
+    $cutoff = (Get-Date).ToUniversalTime().AddSeconds(-90)
+    $rows = @(Read-JsonFile $PresenceFile)
+    $active = @()
+    foreach ($e in $rows) {
+        $wu = if ($e.PSObject.Properties['windowsUser']) { Normalize-WindowsUser ([string]$e.windowsUser) } else { '' }
+        if ($OnlyAllowedTargets -and -not (Test-CaptchaTargetAllowed $wu)) { continue }
+        $dn = if ($e.PSObject.Properties['displayName']) { [string]$e.displayName } else { '' }
+        $ls = $null
+        if ($e.PSObject.Properties['lastSeen']) {
+            try { $ls = [datetime]::Parse([string]$e.lastSeen).ToUniversalTime() } catch {}
+        }
+        if ($ls -and $ls -gt $cutoff) {
+            $active += [pscustomobject]@{
+                windowsUser = $wu
+                displayName = $dn
+                machine     = if ($e.PSObject.Properties['machine']) { [string]$e.machine } else { '' }
+                lastSeen    = [string]$e.lastSeen
+            }
+        }
+    }
+    return @($active)
+}
+
+function Get-CaptchaPanelTargets {
+    param([switch]$OnlyAllowedTargets)
+    $pokeTargets = @(Read-JsonFile $PokeTargetsFile)
+    if ($pokeTargets.Count -eq 0) { $pokeTargets = @($DefaultPokeTargets) }
+    $normalizedTargets = @(Normalize-PokeTargets $pokeTargets)
+    if (-not $OnlyAllowedTargets) { return @($normalizedTargets) }
+
+    $filtered = @()
+    foreach ($t in $normalizedTargets) {
+        $allowedWins = @()
+        foreach ($wu in @($t.windowsUsers)) {
+            $clean = Normalize-WindowsUser ([string]$wu)
+            if ($clean -and (Test-CaptchaTargetAllowed $clean)) { $allowedWins += $clean }
+        }
+        if ($allowedWins.Count -eq 0) { continue }
+        $filtered += [pscustomobject]@{
+            label        = if ($t.PSObject.Properties['label']) { [string]$t.label } else { $allowedWins[0] }
+            shortName    = if ($t.PSObject.Properties['shortName']) { [string]$t.shortName } else { $allowedWins[0] }
+            windowsUsers = @($allowedWins)
+            names        = if ($t.PSObject.Properties['names']) { @($t.names) } else { @() }
+            aliases      = if ($t.PSObject.Properties['aliases']) { @($t.aliases) } else { @() }
+            enabled      = if ($t.PSObject.Properties['enabled']) { [bool]$t.enabled } else { $true }
+        }
+    }
+    return @($filtered)
+}
+
+function Add-CaptchaQueueEntry {
+    param(
+        [string]$Target,
+        [int]$Count = 3,
+        [string]$Challenge = '',
+        [string]$QueuedBy = ''
+    )
+    $targetUser = Normalize-WindowsUser $Target
+    if (-not $targetUser) { throw 'target is required.' }
+    if ($Count -lt 1) { $Count = 1 }
+    if ($Count -gt 7) { $Count = 7 }
+    $entry = [ordered]@{
+        id          = [string][guid]::NewGuid()
+        target      = $targetUser
+        count       = $Count
+        challenge   = if ($Challenge) { $Challenge.Trim() } else { '' }
+        queuedBy    = $QueuedBy
+        queuedAt    = (Get-Date).ToUniversalTime().ToString('o')
+        status      = 'pending'
+        firedAt     = $null
+        completedAt = $null
+        result      = $null
+    }
+    # Pending items are kept up to 7 days so captchas queued for offline
+    # users still fire when they come back. Delivered items (fired /
+    # completed / escaped) age out after 2 hours - long enough for the
+    # panels to show recent results without bloating the queue.
+    Invoke-LockedMutate $CaptchaQueueFile {
+        param($data)
+        $newData = @()
+        $cutoffDelivered = (Get-Date).ToUniversalTime().AddHours(-2)
+        $cutoffPending   = (Get-Date).ToUniversalTime().AddDays(-7)
+        foreach ($q in $data) {
+            $qa = $null
+            if ($q.PSObject.Properties['queuedAt']) {
+                try { $qa = [datetime]::Parse([string]$q.queuedAt).ToUniversalTime() } catch {}
+            }
+            if (-not $qa) { continue }
+            $st = if ($q.PSObject.Properties['status']) { [string]$q.status } else { '' }
+            if ($st -eq 'pending') {
+                if ($qa -gt $cutoffPending) { $newData += $q }
+            } else {
+                if ($qa -gt $cutoffDelivered) { $newData += $q }
+            }
+        }
+        $newData += [pscustomobject]$entry
+        return $newData
+    } | Out-Null
+    return [pscustomobject]$entry
+}
+
 # ════════════════════════════════════════════════════════════════════════
 #  EMAIL NOTIFICATIONS
 # ════════════════════════════════════════════════════════════════════════
@@ -1200,6 +1349,7 @@ function Initialize-DataFiles {
             $script:CrFile  = Join-Path $LocalDataDir 'crashes.json'
             $script:CrashNotifyFile = Join-Path $LocalDataDir 'crash-notifications.json'
             $script:CrashTiePollFile = Join-Path $LocalDataDir 'crash-tie-poll.json'
+            $script:CrashDonutStatusFile = Join-Path $LocalDataDir 'crash-donut-status.json'
             $script:PollsFile = Join-Path $LocalDataDir 'polls.json'
             $script:PokeResetFile = Join-Path $LocalDataDir 'poke-resets.json'
             $script:PokeTargetsFile = Join-Path $LocalDataDir 'poke-targets.json'
@@ -1229,6 +1379,10 @@ function Initialize-DataFiles {
     if (-not (Test-Path $CrashTiePollFile)) {
         [System.IO.File]::WriteAllText($CrashTiePollFile, '[]', [System.Text.Encoding]::UTF8)
         Write-Host "  Created crash-tie-poll.json (empty)"
+    }
+    if (-not (Test-Path $CrashDonutStatusFile)) {
+        [System.IO.File]::WriteAllText($CrashDonutStatusFile, '[]', [System.Text.Encoding]::UTF8)
+        Write-Host "  Created crash-donut-status.json (empty)"
     }
     if (-not (Test-Path $PollsFile)) {
         [System.IO.File]::WriteAllText($PollsFile, '[]', [System.Text.Encoding]::UTF8)
@@ -1428,6 +1582,14 @@ function Handle-Request {
         return
     }
 
+    # ── GET /api/crash-donut-status ─────────────────────
+    # Shared follow-up state for whether a closed month's donut duty was paid.
+    if ($method -eq 'GET' -and $url -eq '/api/crash-donut-status') {
+        $data = @(Read-JsonFile $CrashDonutStatusFile)
+        Send-JsonResponse $res 200 $data
+        return
+    }
+
     # ── POST /api/crash-tie-poll/vote ───────────────────
     # One vote per Windows user. Posting again updates that user's vote.
     if ($method -eq 'POST' -and $url -eq '/api/crash-tie-poll/vote') {
@@ -1476,6 +1638,69 @@ function Handle-Request {
             return $next
         }
         Send-JsonResponse $res 200 (Get-CrashTiePollState $updated)
+        return
+    }
+
+    # ── PATCH /api/crash-donut-status/{yyyy-MM} ─────────
+    # Admin marks whether the month's donut duty has been paid up.
+    if ($method -eq 'PATCH' -and $url -match '^/api/crash-donut-status/(\d{4}-\d{2})$') {
+        if (-not (Test-CallerIsAdmin)) {
+            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
+            return
+        }
+        $monthKey = [string]$matches[1]
+        $body = Read-RequestBody $req
+        $parsed = $null
+        try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
+        if (-not $parsed -or -not $parsed.PSObject.Properties['paid']) {
+            Send-JsonResponse $res 400 @{ error = 'Missing required field (paid).' }
+            return
+        }
+
+        $paid = ConvertTo-PreferenceBool $parsed.paid
+        $displayName = ''
+        if ($parsed.PSObject.Properties['displayName'] -and $parsed.displayName) {
+            $displayName = ([string]$parsed.displayName).Trim()
+        }
+        $caller = Get-CallerUser
+        $stamp = (Get-Date).ToUniversalTime().ToString('o')
+        $paidAt = if ($paid) { $stamp } else { '' }
+
+        $updated = Invoke-LockedMutate $CrashDonutStatusFile {
+            param($data)
+            $next = @()
+            $found = $false
+            foreach ($row in @($data)) {
+                if ($null -eq $row) { continue }
+                $rowMonth = if ($row.PSObject.Properties['monthKey']) { [string]$row.monthKey } else { '' }
+                if ($rowMonth -eq $monthKey) {
+                    $found = $true
+                    $row | Add-Member -NotePropertyName monthKey -NotePropertyValue $monthKey -Force
+                    $row | Add-Member -NotePropertyName paid -NotePropertyValue ([bool]$paid) -Force
+                    $row | Add-Member -NotePropertyName updatedAt -NotePropertyValue $stamp -Force
+                    $row | Add-Member -NotePropertyName updatedBy -NotePropertyValue $caller -Force
+                    $row | Add-Member -NotePropertyName updatedByName -NotePropertyValue $displayName -Force
+                    if ($paid) {
+                        $row | Add-Member -NotePropertyName paidAt -NotePropertyValue $stamp -Force
+                    } else {
+                        $row | Add-Member -NotePropertyName paidAt -NotePropertyValue '' -Force
+                    }
+                }
+                $next += $row
+            }
+            if (-not $found) {
+                $next += [pscustomobject][ordered]@{
+                    monthKey      = $monthKey
+                    paid          = [bool]$paid
+                    updatedAt     = $stamp
+                    updatedBy     = $caller
+                    updatedByName = $displayName
+                    paidAt        = $paidAt
+                }
+            }
+            return @($next | Sort-Object monthKey)
+        }
+        Send-JsonResponse $res 200 @{ ok = $true; statuses = @($updated) }
         return
     }
 
@@ -3124,6 +3349,66 @@ function Handle-Request {
         return
     }
 
+    # ── GET /api/captcha-lite/state (dshank + admin) ───
+    # Limited captcha queue panel. Protected targets (Dylan/dlebel) are
+    # filtered here so the browser is not the authority.
+    if ($method -eq 'GET' -and $url -eq '/api/captcha-lite/state') {
+        if (-not (Test-CallerCanQueueCaptchas)) {
+            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
+            return
+        }
+        $active = @(Get-CaptchaPanelActiveUsers -OnlyAllowedTargets)
+        $queue = @(Get-RecentCaptchaQueueRows -OnlyAllowedTargets)
+        $targets = @(Get-CaptchaPanelTargets -OnlyAllowedTargets)
+        Send-JsonResponse $res 200 @{
+            ok        = $true
+            caller    = (Get-CallerUser)
+            active    = $active
+            queue     = $queue
+            targets   = $targets
+            protected = $CaptchaProtectedTargetUsernames
+            source    = $DataSource
+        }
+        return
+    }
+
+    # ── POST /api/captcha-lite/send (dshank + admin) ────
+    # Body: { target: "jgagnon", count: 3, challenge?: "..." }
+    if ($method -eq 'POST' -and $url -eq '/api/captcha-lite/send') {
+        if (-not (Test-CallerCanQueueCaptchas)) {
+            Send-JsonResponse $res 403 @{ error = 'Not authorized.' }
+            return
+        }
+        $caller = Get-CallerUser
+        $body = Read-RequestBody $req
+        $parsed = $null
+        try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
+        $target = ''
+        $count = 3
+        $challenge = ''
+        if ($parsed) {
+            if ($parsed.PSObject.Properties['target'])    { $target = [string]$parsed.target }
+            if ($parsed.PSObject.Properties['count'])     { try { $count = [int]$parsed.count } catch {} }
+            if ($parsed.PSObject.Properties['challenge']) { $challenge = ([string]$parsed.challenge).Trim() }
+        }
+        $targetUser = Normalize-WindowsUser $target
+        if (-not $targetUser) {
+            Send-JsonResponse $res 400 @{ error = 'target is required.' }
+            return
+        }
+        if (-not (Test-CaptchaTargetAllowed $targetUser)) {
+            Send-JsonResponse $res 403 @{ error = 'That target is protected.' }
+            return
+        }
+        try {
+            $entry = Add-CaptchaQueueEntry -Target $targetUser -Count $count -Challenge $challenge -QueuedBy $caller
+            Send-JsonResponse $res 200 @{ ok = $true; id = $entry.id; queuedAt = $entry.queuedAt }
+        } catch {
+            Send-JsonResponse $res 400 @{ error = $_.Exception.Message }
+        }
+        return
+    }
+
     # ── POST /api/admin/captcha-send (admin only) ───────
     # Queues a captcha gauntlet for the target user. Their browser picks it up
     # on the next /api/captcha-check poll.
@@ -3434,6 +3719,7 @@ function Start-Server {
     Release-Lock $TkFile
     Release-Lock $PokeTargetsFile
     Release-Lock $CrashTiePollFile
+    Release-Lock $CrashDonutStatusFile
     Release-Lock $PollsFile
     # Only remove the port file if it still points at our port. On restart the
     # replacement child may have already written its own value — don't clobber.

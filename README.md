@@ -39,7 +39,7 @@ documentation moving together.
 - Getting Started guide for installing and using the macros in SolidWorks.
 - Changelog for macro updates and fixes.
 - Request board for bugs, improvements, new macro ideas, comments, votes, and attachments.
-- Team crash tracker with monthly standings, notifications, stats, and tie-break polling.
+- Team crash tracker with monthly standings, donut pay-up status, notifications, stats, and tie-break polling.
 - Team polls for quick operational decisions.
 - Admin tools for managing guide data, requests, users, and deployment state.
 - Local-only server model: users open a localhost page; shared JSON files hold team data.
@@ -96,7 +96,7 @@ fixture is intentionally added.
 The `.gitignore` keeps the active runtime files out of Git, including:
 
 - request, crash, presence, usage, and notification JSON files
-- poll and tie-break poll JSON files
+- poll, tie-break poll, and donut-duty status JSON files
 - logs, locks, and uploaded attachments
 
 ## Local Checks

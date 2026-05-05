@@ -1177,6 +1177,9 @@
       box-shadow: 0 12px 32px rgba(0,0,0,0.5);
       font-family: inherit; font-size: 0.82rem;
       padding: 10px 12px;
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
     }
     .tk-poke-dev-header {
       display: flex; justify-content: space-between; align-items: center;
@@ -1226,6 +1229,291 @@
     .tk-poke-dev-status {
       margin-top: 6px; padding-top: 6px; border-top: 1px solid #334155;
       font-size: 0.72rem; color: #94a3b8;
+    }
+
+    /* Full-screen dshank captcha command center */
+    .tk-captcha-lite {
+      position: fixed; inset: 0; z-index: 99997;
+      display: flex; align-items: stretch; justify-content: center;
+      padding: clamp(16px, 3vw, 34px);
+      background:
+        repeating-linear-gradient(90deg, rgba(148,163,184,0.05) 0 1px, transparent 1px 72px),
+        repeating-linear-gradient(0deg, rgba(148,163,184,0.04) 0 1px, transparent 1px 72px),
+        linear-gradient(135deg, rgba(3,7,18,0.98), rgba(12,22,36,0.98) 48%, rgba(24,13,18,0.98));
+      color: #eef6ff;
+      font-family: inherit;
+      overflow: auto;
+    }
+    .tk-captcha-lite-shell {
+      width: min(1180px, 100%);
+      min-height: min(760px, calc(100vh - 48px));
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      gap: 18px;
+      margin: auto;
+    }
+    .tk-captcha-lite-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(148,163,184,0.24);
+    }
+    .tk-captcha-lite-kicker {
+      color: #5eead4;
+      font-size: 0.76rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .tk-captcha-lite-title {
+      margin-top: 6px;
+      color: #ffffff;
+      font-size: 4.2rem;
+      line-height: 0.95;
+      font-weight: 950;
+    }
+    .tk-captcha-lite-sub {
+      margin-top: 10px;
+      max-width: 720px;
+      color: #bdd4e8;
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+    .tk-captcha-lite-close {
+      width: 44px; height: 44px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(148,163,184,0.35);
+      border-radius: 50%;
+      background: rgba(15,23,42,0.72);
+      color: #e2e8f0;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .tk-captcha-lite-close:hover { background: rgba(30,41,59,0.9); color: #fff; }
+    .tk-captcha-lite-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .tk-captcha-lite-stat {
+      min-width: 0;
+      border: 1px solid rgba(148,163,184,0.24);
+      background: rgba(15,23,42,0.62);
+      border-radius: 8px;
+      padding: 14px 16px;
+      box-shadow: 0 14px 36px rgba(0,0,0,0.24);
+    }
+    .tk-captcha-lite-stat-label {
+      color: #91a8ba;
+      font-size: 0.68rem;
+      font-weight: 900;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+    }
+    .tk-captcha-lite-stat-value {
+      margin-top: 8px;
+      color: #fff;
+      font-size: 2.45rem;
+      line-height: 1;
+      font-weight: 950;
+      font-variant-numeric: tabular-nums;
+    }
+    .tk-captcha-lite-main {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.8fr);
+      gap: 16px;
+    }
+    .tk-captcha-lite-panel {
+      min-height: 0;
+      border: 1px solid rgba(148,163,184,0.24);
+      background: rgba(2,6,23,0.56);
+      border-radius: 8px;
+      box-shadow: 0 20px 58px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    .tk-captcha-lite-panel-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 14px;
+      padding: 15px 16px;
+      border-bottom: 1px solid rgba(148,163,184,0.18);
+      background: rgba(15,23,42,0.54);
+    }
+    .tk-captcha-lite-panel-title {
+      color: #f8fafc;
+      font-size: 0.86rem;
+      font-weight: 950;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+    }
+    .tk-captcha-lite-controls {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      color: #cbd5e1;
+      font-size: 0.78rem;
+    }
+    .tk-captcha-lite-count {
+      width: 58px;
+      background: #08111f;
+      color: #fff;
+      border: 1px solid rgba(148,163,184,0.34);
+      border-radius: 6px;
+      padding: 7px 8px;
+      font: inherit;
+      font-weight: 800;
+    }
+    .tk-captcha-lite-list {
+      max-height: min(58vh, 560px);
+      overflow: auto;
+      padding: 8px;
+    }
+    .tk-captcha-lite-empty,
+    .tk-captcha-lite-error {
+      padding: 18px;
+      color: #93a4b8;
+      font-size: 0.9rem;
+    }
+    .tk-captcha-lite-error { color: #fecaca; }
+    .tk-captcha-lite-section {
+      padding: 10px 8px 5px;
+      color: #7dd3fc;
+      font-size: 0.68rem;
+      font-weight: 950;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+    }
+    .tk-captcha-lite-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 8px;
+      padding: 14px;
+      border: 1px solid rgba(148,163,184,0.18);
+      background: rgba(15,23,42,0.66);
+      border-radius: 8px;
+    }
+    .tk-captcha-lite-row.offline { opacity: 0.74; }
+    .tk-captcha-lite-person {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .tk-captcha-lite-name {
+      min-width: 0;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+    .tk-captcha-lite-meta {
+      color: #9fb1c2;
+      font-size: 0.78rem;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+    .tk-captcha-lite-dot {
+      display: inline-block;
+      width: 9px; height: 9px;
+      margin-right: 7px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 16px rgba(52,211,153,0.8);
+      vertical-align: 1px;
+    }
+    .tk-captcha-lite-row.offline .tk-captcha-lite-dot {
+      background: #64748b;
+      box-shadow: none;
+    }
+    .tk-captcha-lite-statline {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-top: 3px;
+      font-size: 0.72rem;
+    }
+    .tk-captcha-lite-pill {
+      border: 1px solid rgba(148,163,184,0.2);
+      border-radius: 999px;
+      padding: 3px 7px;
+      background: rgba(2,6,23,0.42);
+      color: #cbd5e1;
+    }
+    .tk-captcha-lite-pill.pending { color: #fde68a; border-color: rgba(245,158,11,0.35); }
+    .tk-captcha-lite-pill.fired { color: #93c5fd; border-color: rgba(59,130,246,0.34); }
+    .tk-captcha-lite-pill.done { color: #86efac; border-color: rgba(34,197,94,0.3); }
+    .tk-captcha-lite-send {
+      display: grid;
+      grid-template-columns: minmax(130px, 190px) auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .tk-captcha-lite-select {
+      min-width: 0;
+      background: #08111f;
+      color: #e5f4ff;
+      border: 1px solid rgba(148,163,184,0.34);
+      border-radius: 6px;
+      padding: 8px 9px;
+      font: inherit;
+      font-size: 0.82rem;
+    }
+    .tk-captcha-lite-btn {
+      border: 1px solid rgba(94,234,212,0.42);
+      border-radius: 6px;
+      background: linear-gradient(135deg, rgba(20,184,166,0.95), rgba(14,116,144,0.95));
+      color: #ecfeff;
+      padding: 9px 13px;
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 950;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tk-captcha-lite-btn:hover { filter: brightness(1.08); }
+    .tk-captcha-lite-btn.secondary {
+      border-color: rgba(245,158,11,0.4);
+      background: rgba(120,53,15,0.64);
+      color: #ffedd5;
+    }
+    .tk-captcha-lite-side {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 12px;
+      padding: 16px;
+    }
+    .tk-captcha-lite-testpick {
+      width: 100%;
+      min-height: 190px;
+      background: #08111f;
+      color: #e5f4ff;
+      border: 1px solid rgba(148,163,184,0.34);
+      border-radius: 8px;
+      padding: 8px;
+      font: inherit;
+    }
+    .tk-captcha-lite-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .tk-captcha-lite-actions .wide { grid-column: 1 / -1; }
+    .tk-captcha-lite-status {
+      border-top: 1px solid rgba(148,163,184,0.18);
+      padding-top: 12px;
+      color: #9fb1c2;
+      font-size: 0.82rem;
+      line-height: 1.4;
+    }
+    @media (max-width: 820px) {
+      .tk-captcha-lite { padding: 12px; }
+      .tk-captcha-lite-shell { min-height: calc(100vh - 24px); }
+      .tk-captcha-lite-top { align-items: flex-start; }
+      .tk-captcha-lite-title { font-size: 2.7rem; }
+      .tk-captcha-lite-stat-value { font-size: 2rem; }
+      .tk-captcha-lite-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .tk-captcha-lite-main { grid-template-columns: 1fr; }
+      .tk-captcha-lite-list { max-height: none; }
+      .tk-captcha-lite-row { grid-template-columns: 1fr; }
+      .tk-captcha-lite-send { grid-template-columns: 1fr; }
     }
 
     /* Dense full-screen poke challenge. Every cell uses the same cursor so
@@ -1507,6 +1795,25 @@
     .cr-recap-body { flex: 1; min-width: 0; }
     .cr-recap-title { font-weight: 700; font-size: 0.98rem; line-height: 1.2; }
     .cr-recap-sub { font-size: 0.85rem; opacity: 0.85; margin-top: 2px; }
+    .cr-recap-action {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      border: 1px solid rgba(255,245,230,0.34);
+      background: rgba(255,255,255,0.08);
+      color: #fff5e6;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font: inherit;
+      font-size: 0.76rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    body.is-admin .cr-recap-action.can-edit { display: inline-flex; }
+    .cr-recap-action:hover { background: rgba(255,255,255,0.14); }
+    .cr-recap-action:disabled { opacity: 0.55; cursor: wait; }
     .cr-recap-dismiss {
       background: transparent; border: 0; color: #fff5e6;
       font-size: 1.4rem; line-height: 1; cursor: pointer;
@@ -1567,6 +1874,56 @@
       50%      { text-shadow: 0 0 38px rgba(255,200,120,0.85); }
     }
     .cr-hero-sub { color: #ffc9a0; font-size: 0.95rem; margin-top: 6px; }
+    .cr-duty-status {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: fit-content;
+      max-width: 100%;
+      margin: 12px auto 0;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,180,100,0.22);
+      color: #ffe4c8;
+      font-size: 0.82rem;
+      line-height: 1.3;
+      flex-wrap: wrap;
+    }
+    .cr-duty-status.is-open {
+      border-color: rgba(79,142,247,0.34);
+      background: rgba(79,142,247,0.12);
+      color: #cfe0ff;
+    }
+    .cr-duty-status.is-owed {
+      border-color: rgba(255,180,80,0.44);
+      background: rgba(255,154,60,0.14);
+      color: #ffdfb8;
+    }
+    .cr-duty-status.is-paid {
+      border-color: rgba(16,185,129,0.45);
+      background: rgba(16,185,129,0.14);
+      color: #bcf7da;
+    }
+    .cr-duty-status-icon { font-size: 0.95rem; line-height: 1; }
+    .cr-duty-action {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid currentColor;
+      background: rgba(255,255,255,0.08);
+      color: inherit;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font: inherit;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    body.is-admin .cr-duty-action.can-edit { display: inline-flex; }
+    .cr-duty-action:hover { background: rgba(255,255,255,0.14); }
+    .cr-duty-action:disabled { opacity: 0.55; cursor: wait; }
     .cr-countdown {
       margin: 0 0 16px;
       padding: 16px 14px 14px;
@@ -1822,6 +2179,32 @@
     .cr-row-count.leading {
       background: linear-gradient(135deg,#ff6b3d,#ff3d6b);
       color: #fff; border-color: transparent;
+    }
+    .cr-duty-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: 6px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      vertical-align: 2px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+    }
+    .cr-duty-chip.owed {
+      border-color: rgba(255,154,60,0.42);
+      background: rgba(255,154,60,0.10);
+      color: #ffbf7d;
+    }
+    .cr-duty-chip.paid {
+      border-color: rgba(16,185,129,0.42);
+      background: rgba(16,185,129,0.10);
+      color: #8ee6bd;
     }
     .cr-col-head {
       background: var(--surface2); padding: 10px 16px;
@@ -2488,6 +2871,189 @@
         padding: 7px 10px;
         font-size: 0.78rem;
       }
+    }
+
+    /* ── User-created polls ─────────────────────────────────────────── */
+    #tab-polls {
+      max-width: 960px;
+      margin: 28px auto 80px;
+      padding: 0 24px;
+    }
+    .poll-section {
+      display: grid;
+      gap: 18px;
+    }
+    .poll-tab-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 16px; margin: 0; padding-bottom: 18px; flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+    }
+    .poll-tab-head-copy { display: grid; gap: 3px; min-width: 0; }
+    .poll-tab-head h2 { margin: 0; font-size: 1.1rem; color: var(--text); font-weight: 700; }
+    .poll-tab-head p { margin: 0; color: var(--muted); font-size: 0.88rem; max-width: 560px; line-height: 1.55; }
+    .poll-new-btn {
+      background: color-mix(in srgb, var(--accent) 14%, transparent);
+      color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 70%, var(--border));
+      border-radius: 9px;
+      padding: 10px 16px; font-weight: 600; font-size: 0.92rem; cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+      box-shadow: 0 8px 20px rgba(79,142,247,0.08);
+    }
+    .poll-new-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .poll-new-btn:active { transform: translateY(1px); }
+    .poll-new-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .poll-list { display: grid; gap: 14px; }
+    .poll-empty {
+      min-height: 132px; display: flex; align-items: center; justify-content: center;
+      text-align: center; padding: 34px 18px; color: var(--muted);
+      background: color-mix(in srgb, var(--surface) 58%, transparent);
+      border: 1px dashed color-mix(in srgb, var(--border) 78%, var(--accent));
+      border-radius: 12px; font-size: 0.95rem;
+    }
+
+    .poll-card {
+      background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, var(--accent)), var(--surface));
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 18px 20px; display: grid; gap: 14px;
+      box-shadow: 0 14px 36px rgba(0,0,0,0.14);
+    }
+    .poll-card.is-closed { opacity: 0.85; }
+    .poll-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+    .poll-card-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 0.78rem; color: var(--muted); }
+    .poll-card-meta .poll-pill {
+      padding: 2px 9px; border-radius: 999px; background: var(--surface2);
+      border: 1px solid var(--border); font-weight: 500;
+    }
+    .poll-card-meta .poll-pill.is-open { color: #34d399; border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.12); }
+    .poll-card-meta .poll-pill.is-closed { color: #fbbf24; border-color: rgba(251,191,36,0.32); background: rgba(251,191,36,0.12); }
+    .poll-card-question { margin: 0; font-size: 1.08rem; color: var(--text); font-weight: 600; line-height: 1.35; }
+    .poll-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .poll-card-icon-btn {
+      background: transparent; border: 1px solid var(--border); border-radius: 8px;
+      width: 30px; height: 30px; display: inline-flex; align-items: center;
+      justify-content: center; cursor: pointer; color: var(--muted);
+      font-size: 0.85rem; transition: background 0.15s ease, color 0.15s ease;
+    }
+    .poll-card-icon-btn:hover { background: var(--surface2); color: var(--text); }
+    .poll-card-icon-btn.is-danger:hover { background: rgba(239,68,68,0.14); color: #fca5a5; border-color: rgba(239,68,68,0.34); }
+
+    .poll-card-options { display: grid; gap: 8px; }
+    .poll-option-row {
+      display: grid; grid-template-columns: auto 1fr auto; gap: 12px;
+      align-items: center; padding: 10px 12px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface2);
+      cursor: pointer; text-align: left; font: inherit; color: inherit;
+      transition: border-color 0.15s ease, background 0.15s ease;
+      position: relative; overflow: hidden;
+    }
+    .poll-option-row:hover:not(:disabled) { border-color: var(--accent); }
+    .poll-option-row:disabled { cursor: default; }
+    .poll-option-row.is-voted { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface2)); }
+    .poll-option-row.is-leading::before {
+      content: ''; position: absolute; inset: 0; left: auto; width: 4px; background: var(--accent);
+    }
+    .poll-option-icon {
+      width: 28px; height: 28px; border-radius: 8px; display: inline-flex;
+      align-items: center; justify-content: center; background: var(--surface);
+      border: 1px solid var(--border); font-size: 0.95rem;
+    }
+    .poll-option-body { display: grid; gap: 2px; min-width: 0; }
+    .poll-option-title { font-weight: 600; color: var(--text); font-size: 0.95rem; line-height: 1.3; }
+    .poll-option-meta { font-size: 0.75rem; color: var(--muted); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .poll-option-tally { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--muted); white-space: nowrap; }
+    .poll-option-tally strong { color: var(--text); font-weight: 600; }
+    .poll-option-bar {
+      grid-column: 1 / -1; height: 4px; background: var(--surface);
+      border-radius: 999px; overflow: hidden; margin-top: 2px;
+    }
+    .poll-option-fill { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.3s ease; }
+
+    .poll-add-option { display: flex; gap: 8px; flex-wrap: wrap; }
+    .poll-add-option input {
+      flex: 1; min-width: 180px; padding: 8px 10px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--surface2); color: var(--text); font: inherit;
+    }
+    .poll-add-option button {
+      padding: 8px 14px; border-radius: 8px; border: 1px solid var(--accent);
+      background: transparent; color: var(--accent); cursor: pointer; font-weight: 600; font-size: 0.85rem;
+    }
+    .poll-add-option button:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+    .poll-add-option button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .poll-card-foot {
+      display: flex; justify-content: space-between; gap: 10px;
+      font-size: 0.78rem; color: var(--muted); flex-wrap: wrap;
+    }
+
+    /* Create-poll modal */
+    .poll-create-overlay {
+      position: fixed; inset: 0; background: rgba(15,23,42,0.55);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1100; padding: 20px;
+    }
+    .poll-create-overlay.open { display: flex; }
+    .poll-create-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      width: min(560px, 100%); max-height: 90vh; overflow-y: auto;
+      display: grid; grid-template-rows: auto 1fr; box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    .poll-create-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+    }
+    .poll-create-head h2 { margin: 0; font-size: 1.15rem; }
+    .poll-create-close {
+      background: transparent; border: 0; font-size: 1.6rem; line-height: 1;
+      color: var(--muted); cursor: pointer; padding: 0 4px;
+    }
+    .poll-create-form { padding: 18px 20px; display: grid; gap: 16px; }
+    .poll-field { display: grid; gap: 6px; font-size: 0.85rem; color: var(--muted); }
+    .poll-field span { font-weight: 600; color: var(--text); font-size: 0.85rem; }
+    .poll-field input[type="text"], .poll-field input[type="datetime-local"] {
+      padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--text); font: inherit;
+    }
+    .poll-field input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .poll-field-checkbox { flex-direction: row; display: flex; align-items: center; gap: 8px; }
+    .poll-field-checkbox input { width: 16px; height: 16px; }
+    .poll-field-checkbox span { color: var(--text); font-weight: 500; }
+
+    .poll-create-options { display: grid; gap: 6px; }
+    .poll-create-option-row { display: flex; gap: 6px; align-items: center; }
+    .poll-create-option-row input.poll-create-option-icon {
+      width: 50px; flex-shrink: 0; text-align: center;
+    }
+    .poll-create-option-row input.poll-create-option-title { flex: 1; }
+    .poll-create-option-row button {
+      background: transparent; border: 1px solid var(--border); border-radius: 8px;
+      width: 32px; height: 32px; cursor: pointer; color: var(--muted);
+    }
+    .poll-create-option-row button:hover { color: #b3300a; border-color: #b3300a40; }
+    .poll-create-add-option {
+      align-self: flex-start; background: transparent; border: 1px dashed var(--border);
+      color: var(--muted); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;
+    }
+    .poll-create-add-option:hover { color: var(--accent); border-color: var(--accent); }
+
+    .poll-create-foot {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 10px; flex-wrap: wrap; padding-top: 4px;
+    }
+    .poll-create-error { color: #b3300a; font-size: 0.85rem; min-height: 1em; }
+    .poll-create-submit {
+      background: var(--accent); color: #fff; border: 0; border-radius: 10px;
+      padding: 10px 18px; font-weight: 600; cursor: pointer;
+    }
+    .poll-create-submit:hover { filter: brightness(1.08); }
+    .poll-create-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    @media (max-width: 600px) {
+      #tab-polls { margin-top: 22px; padding: 0 16px; }
+      .poll-tab-head { flex-direction: column; align-items: stretch; }
+      .poll-new-btn { width: 100%; }
+      .poll-option-row { grid-template-columns: auto 1fr; }
+      .poll-option-tally { grid-column: 1 / -1; justify-content: flex-end; }
     }
 
     /* ── Konami crash-fest overlay ──────────────────────────────────── */
@@ -3397,6 +3963,10 @@
     🔥 Crashes
     <span class="tab-count" id="crCount">0</span>
   </button>
+  <button class="nav-tab" data-tab="polls" id="pollTab">
+    🗳️ Polls
+    <span class="tab-count" id="pollCount">0</span>
+  </button>
 </div>
 
 <!-- ══ MACROS TAB ══ -->
@@ -3744,6 +4314,7 @@
         <div class="cr-recap-title" id="crRecapTitle">—</div>
         <div class="cr-recap-sub" id="crRecapSub">—</div>
       </div>
+      <button class="cr-recap-action" id="crRecapPayBtn" type="button">Mark paid up</button>
       <button class="cr-recap-dismiss" id="crRecapDismiss" type="button" aria-label="Dismiss">&times;</button>
     </div>
 
@@ -3757,6 +4328,11 @@
           <div class="cr-hero-text">
             <div class="cr-hero-name" id="crWinnerName">No crashes yet</div>
             <div class="cr-hero-sub" id="crWinnerSub">Be the first to tank SolidWorks 🎉</div>
+            <div class="cr-duty-status" id="crDutyStatus" aria-live="polite">
+              <span class="cr-duty-status-icon" id="crDutyStatusIcon" aria-hidden="true">🍩</span>
+              <span id="crDutyStatusText">Donut status pending.</span>
+              <button class="cr-duty-action" id="crDutyToggle" type="button">Mark paid up</button>
+            </div>
           </div>
           <div class="cr-donut cr-donut-mirror" aria-hidden="true">🍩</div>
         </div>
@@ -3916,6 +4492,55 @@
     </div>
   </div>
 </div><!-- /tab-crashes -->
+
+<!-- ══ POLLS TAB ══ -->
+<div class="page-section" id="tab-polls">
+  <div class="poll-section">
+    <div class="poll-tab-head">
+      <div class="poll-tab-head-copy">
+        <h2>Team polls</h2>
+        <p id="pollLimitNote">Anyone can run one open poll at a time. Polls close after 7 days unless you set a custom deadline.</p>
+      </div>
+      <button type="button" id="pollNewBtn" class="poll-new-btn">+ Create poll</button>
+    </div>
+    <div id="pollList" class="poll-list">
+      <div class="poll-empty">Loading polls…</div>
+    </div>
+  </div>
+</div><!-- /tab-polls -->
+
+<!-- ══ POLL CREATE MODAL ══ -->
+<div class="poll-create-overlay" id="pollCreateOverlay" aria-modal="true" role="dialog" aria-labelledby="pollCreateTitle">
+  <div class="poll-create-card">
+    <div class="poll-create-head">
+      <h2 id="pollCreateTitle">Create a poll</h2>
+      <button type="button" class="poll-create-close" id="pollCreateClose" aria-label="Close">×</button>
+    </div>
+    <form id="pollCreateForm" class="poll-create-form" autocomplete="off">
+      <label class="poll-field">
+        <span>Question</span>
+        <input type="text" id="pollCreateQuestion" maxlength="200" required placeholder="e.g. What snack should we order?">
+      </label>
+      <div class="poll-field">
+        <span>Options (at least 2)</span>
+        <div id="pollCreateOptions" class="poll-create-options"></div>
+        <button type="button" id="pollCreateAddOption" class="poll-create-add-option">+ Add option</button>
+      </div>
+      <label class="poll-field poll-field-checkbox">
+        <input type="checkbox" id="pollCreateAllowUserOptions">
+        <span>Let voters add their own options</span>
+      </label>
+      <label class="poll-field">
+        <span>Closes (optional — defaults to 7 days from now)</span>
+        <input type="datetime-local" id="pollCreateCloses">
+      </label>
+      <div class="poll-create-foot">
+        <span class="poll-create-error" id="pollCreateError"></span>
+        <button type="submit" id="pollCreateSubmit" class="poll-create-submit">Create poll</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <!-- ══ CRASHES TIE-BREAK POLL ══ -->
 <div class="cr-tie-poll-overlay" id="crTiePollOverlay" aria-modal="true" role="dialog" aria-labelledby="crTiePollTitle">
@@ -4560,11 +5185,72 @@
           attachments: []
         }
       ],
+      crashes: [
+        {
+          id: 1,
+          user: 'Paul Lemelin',
+          severity: 'major',
+          timestamp: '2026-04-03T14:20:00.000Z',
+          createdBy: 'Paul Lemelin',
+          windowsUser: 'plemelin'
+        },
+        {
+          id: 2,
+          user: 'Paul Lemelin',
+          severity: 'minor',
+          timestamp: '2026-04-09T17:35:00.000Z',
+          createdBy: 'Paul Lemelin',
+          windowsUser: 'plemelin'
+        },
+        {
+          id: 3,
+          user: 'Krupal Patel',
+          severity: 'minor',
+          timestamp: '2026-04-12T13:10:00.000Z',
+          createdBy: 'Krupal Patel',
+          windowsUser: 'kpatel'
+        },
+        {
+          id: 4,
+          user: 'Paul Lemelin',
+          severity: 'catastrophic',
+          timestamp: '2026-04-24T19:45:00.000Z',
+          createdBy: 'Paul Lemelin',
+          windowsUser: 'plemelin'
+        },
+        {
+          id: 5,
+          user: 'Ayugma Acharya',
+          severity: 'major',
+          timestamp: '2026-05-01T14:10:00.000Z',
+          createdBy: 'Ayugma Acharya',
+          windowsUser: 'aacharya'
+        },
+        {
+          id: 6,
+          user: 'Ayugma Acharya',
+          severity: 'minor',
+          timestamp: '2026-05-02T16:05:00.000Z',
+          createdBy: 'Ayugma Acharya',
+          windowsUser: 'aacharya'
+        }
+      ],
+      donutStatuses: [
+        {
+          monthKey: '2026-04',
+          paid: false,
+          updatedAt: '2026-05-01T13:00:00.000Z',
+          updatedBy: 'dlebel',
+          updatedByName: 'Dylan',
+          paidAt: ''
+        }
+      ],
       usage: [
         { timestamp: '2026-04-16 09:12:40', windowsUser: 'dlebel', machine: 'D-1077', page: 'tickets', action: 'OPEN' },
         { timestamp: '2026-04-16 09:18:21', windowsUser: 'plemelin', machine: 'P-2044', page: 'macros', action: 'OPEN' },
         { timestamp: '2026-04-16 09:35:04', windowsUser: 'github-preview', machine: 'GitHub Pages', page: 'tickets', action: 'OPEN' }
       ],
+      captchaQueue: [],
       pokeResets: [],
       pokeTargets: defaultPokeTargets(),
       tiePollVotes: [],
@@ -4580,6 +5266,9 @@
         data.pokeResets = Array.isArray(data.pokeResets) ? data.pokeResets : [];
         data.pokeTargets = Array.isArray(data.pokeTargets) ? data.pokeTargets : defaultPokeTargets();
         data.tiePollVotes = Array.isArray(data.tiePollVotes) ? data.tiePollVotes : [];
+        data.captchaQueue = Array.isArray(data.captchaQueue) ? data.captchaQueue : [];
+        data.crashes = Array.isArray(data.crashes) ? data.crashes : [];
+        data.donutStatuses = Array.isArray(data.donutStatuses) ? data.donutStatuses : [];
         return data;
       }
     } catch {}
@@ -4781,6 +5470,14 @@
 
     if (method === 'GET' && path === '/api/changelog') return jsonResponse(clone(data.changelog));
     if (method === 'GET' && path === '/api/tickets') return jsonResponse(clone(data.tickets));
+    if (method === 'GET' && path === '/api/crashes') {
+      data.crashes = Array.isArray(data.crashes) ? data.crashes : [];
+      return jsonResponse(clone(data.crashes));
+    }
+    if (method === 'GET' && path === '/api/crash-donut-status') {
+      data.donutStatuses = Array.isArray(data.donutStatuses) ? data.donutStatuses : [];
+      return jsonResponse(clone(data.donutStatuses));
+    }
     if (method === 'GET' && path === '/api/whoami') return jsonResponse({
       windowsUser: sessionStorage.getItem('winUser') || 'github-preview',
       isAdmin: true,
@@ -4789,6 +5486,32 @@
     if (method === 'GET' && path === '/api/version') return jsonResponse({ version: data.version });
     if (method === 'GET' && path === '/api/usage') return jsonResponse(usageSummary(data.usage || []));
     if (method === 'GET' && path === '/api/restart') return jsonResponse({ ok: true, preview: true });
+    if (method === 'PATCH' && path.match(/^\/api\/crash-donut-status\/\d{4}-\d{2}$/)) {
+      const monthKey = path.split('/').pop();
+      const body = parseBody(init);
+      data.donutStatuses = Array.isArray(data.donutStatuses) ? data.donutStatuses : [];
+      const paid = !!body.paid;
+      const stamp = new Date().toISOString();
+      const existing = data.donutStatuses.find(s => s.monthKey === monthKey);
+      if (existing) {
+        existing.paid = paid;
+        existing.updatedAt = stamp;
+        existing.updatedBy = sessionStorage.getItem('winUser') || 'github-preview';
+        existing.updatedByName = body.displayName || localStorage.getItem('mgUserName') || 'Preview User';
+        existing.paidAt = paid ? stamp : '';
+      } else {
+        data.donutStatuses.push({
+          monthKey,
+          paid,
+          updatedAt: stamp,
+          updatedBy: sessionStorage.getItem('winUser') || 'github-preview',
+          updatedByName: body.displayName || localStorage.getItem('mgUserName') || 'Preview User',
+          paidAt: paid ? stamp : ''
+        });
+      }
+      saveData(data);
+      return jsonResponse({ ok: true, statuses: clone(data.donutStatuses) });
+    }
     if (method === 'GET' && path === '/api/crash-tie-poll') return jsonResponse(tiePollState(data));
     if (method === 'POST' && path === '/api/crash-tie-poll/vote') {
       const body = parseBody(init);
@@ -4823,11 +5546,74 @@
         machine: 'GitHub Pages',
         lastSeen: new Date().toISOString()
       }],
-      queue: []
+      queue: clone(data.captchaQueue || []),
+      targets: clone(data.pokeTargets || defaultPokeTargets())
     });
     if (method === 'GET' && path === '/api/captcha-check') return jsonResponse({ id: null });
     if (method === 'POST' && path === '/api/captcha-ack') return jsonResponse({ ok: true, preview: true });
-    if (method === 'POST' && path === '/api/admin/captcha-send') return jsonResponse({ ok: true, preview: true, id: 'preview-captcha', queuedAt: new Date().toISOString() });
+    if (method === 'GET' && path === '/api/captcha-lite/state') {
+      const caller = (sessionStorage.getItem('winUser') || 'github-preview').trim().toLowerCase();
+      if (!['dshank', 'dlebel', 'github-preview'].includes(caller)) return jsonResponse({ error: 'Not authorized.' }, 403);
+      const protectedTargets = new Set(['dlebel']);
+      const allowedTarget = value => value && !protectedTargets.has(String(value).trim().toLowerCase());
+      const filteredTargets = clone(data.pokeTargets || defaultPokeTargets()).map(t => ({
+        ...t,
+        windowsUsers: (Array.isArray(t.windowsUsers) ? t.windowsUsers : []).filter(allowedTarget)
+      })).filter(t => t.windowsUsers.length > 0);
+      const queue = clone(data.captchaQueue || []).filter(q => allowedTarget(q.target));
+      return jsonResponse({
+        ok: true,
+        preview: true,
+        caller,
+        active: [{
+          windowsUser: caller,
+          displayName: localStorage.getItem('mgUserName') || 'Preview User',
+          machine: 'GitHub Pages',
+          lastSeen: new Date().toISOString()
+        }].filter(u => allowedTarget(u.windowsUser)),
+        queue,
+        targets: filteredTargets,
+        protected: Array.from(protectedTargets)
+      });
+    }
+    if (method === 'POST' && path === '/api/admin/captcha-send') {
+      const body = parseBody(init);
+      data.captchaQueue = Array.isArray(data.captchaQueue) ? data.captchaQueue : [];
+      const queuedAt = new Date().toISOString();
+      data.captchaQueue.push({
+        id: 'preview-captcha-' + Date.now(),
+        target: String(body.target || 'preview').trim().toLowerCase(),
+        count: Math.max(1, Math.min(7, parseInt(body.count || '3', 10) || 3)),
+        challenge: String(body.challenge || '').trim(),
+        queuedBy: sessionStorage.getItem('winUser') || 'github-preview',
+        queuedAt,
+        status: 'pending'
+      });
+      saveData(data);
+      return jsonResponse({ ok: true, preview: true, id: 'preview-captcha', queuedAt });
+    }
+    if (method === 'POST' && path === '/api/captcha-lite/send') {
+      const caller = (sessionStorage.getItem('winUser') || 'github-preview').trim().toLowerCase();
+      if (!['dshank', 'dlebel', 'github-preview'].includes(caller)) return jsonResponse({ error: 'Not authorized.' }, 403);
+      const body = parseBody(init);
+      const target = String(body.target || '').trim().toLowerCase();
+      if (!target) return jsonResponse({ error: 'target is required.' }, 400);
+      if (target === 'dlebel') return jsonResponse({ error: 'That target is protected.' }, 403);
+      data.captchaQueue = Array.isArray(data.captchaQueue) ? data.captchaQueue : [];
+      const queuedAt = new Date().toISOString();
+      const id = 'preview-lite-captcha-' + Date.now();
+      data.captchaQueue.push({
+        id,
+        target,
+        count: Math.max(1, Math.min(7, parseInt(body.count || '3', 10) || 3)),
+        challenge: String(body.challenge || '').trim(),
+        queuedBy: caller,
+        queuedAt,
+        status: 'pending'
+      });
+      saveData(data);
+      return jsonResponse({ ok: true, preview: true, id, queuedAt });
+    }
     if (method === 'POST' && path === '/api/admin/log-attempt') return jsonResponse({ ok: true, preview: true });
     if (method === 'GET' && (path === '/api/poke-targets' || path === '/api/admin/poke-targets')) {
       data.pokeTargets = Array.isArray(data.pokeTargets) ? data.pokeTargets : defaultPokeTargets();
@@ -4907,6 +5693,42 @@
       data.tickets.push(ticket);
       saveData(data);
       return jsonResponse({ ok: true, count: data.tickets.length, entries: clone(data.tickets) });
+    }
+
+    if (method === 'POST' && path === '/api/crashes/add') {
+      const crash = parseBody(init);
+      data.crashes = Array.isArray(data.crashes) ? data.crashes : [];
+      crash.id = maxId(data.crashes) + 1;
+      crash.user = crash.user || localStorage.getItem('mgUserName') || 'Preview User';
+      crash.severity = crash.severity || 'minor';
+      crash.timestamp = crash.timestamp || new Date().toISOString();
+      crash.createdBy = crash.createdBy || crash.user;
+      crash.windowsUser = sessionStorage.getItem('winUser') || 'github-preview';
+      data.crashes.push(crash);
+      saveData(data);
+      return jsonResponse({ ok: true, count: data.crashes.length, entries: clone(data.crashes) });
+    }
+
+    if (path.match(/^\/api\/crashes\/\d+$/)) {
+      const id = path.split('/').pop();
+      data.crashes = Array.isArray(data.crashes) ? data.crashes : [];
+      const crash = byId(data.crashes, id);
+      if (method === 'DELETE') {
+        data.crashes = data.crashes.filter(c => String(c.id) !== String(id));
+        saveData(data);
+        return jsonResponse({ ok: true, count: data.crashes.length, entries: clone(data.crashes) });
+      }
+      if (method === 'PATCH') {
+        if (!crash) return jsonResponse({ error: 'Crash not found.' }, 404);
+        const patch = parseBody(init);
+        if (patch.user) crash.user = patch.user;
+        if (patch.severity) crash.severity = patch.severity;
+        if (patch.timestamp) crash.timestamp = patch.timestamp;
+        if (patch.windowsUser != null) crash.windowsUser = patch.windowsUser;
+        if (patch.createdBy) crash.createdBy = patch.createdBy;
+        saveData(data);
+        return jsonResponse({ ok: true, count: data.crashes.length, entries: clone(data.crashes) });
+      }
     }
 
     if (path.startsWith('/api/tickets/')) {
@@ -6272,6 +7094,21 @@ const POKE_DEV_SECRET = 'backstage';
       // Dev panel is admin-only. Non-admin users get a harmless "wrong door"
       // panel instead of tools.
       pokeOpenDevPanel();
+    }
+  });
+})();
+
+const DSHANK_CAPTCHA_SECRET = 'dshank';
+(function dshankCaptchaSecretInit() {
+  let buf = '';
+  document.addEventListener('keydown', (e) => {
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    if (e.key.length !== 1) return;
+    buf = (buf + e.key.toLowerCase()).slice(-DSHANK_CAPTCHA_SECRET.length);
+    if (buf === DSHANK_CAPTCHA_SECRET) {
+      buf = '';
+      pokeOpenCaptchaLitePanel();
     }
   });
 })();
@@ -8027,6 +8864,317 @@ function pokeShowDevUnauthorized() {
   }
 }
 
+async function pokeCaptchaLiteCallerUser() {
+  let user = (sessionStorage.getItem('winUser') || '').trim().toLowerCase();
+  if (user) return user;
+  try {
+    const w = await apiFetch('/api/whoami');
+    if (w && typeof w.windowsUser === 'string') {
+      sessionStorage.setItem('winUser', w.windowsUser);
+      user = w.windowsUser.trim().toLowerCase();
+    }
+  } catch {}
+  return user;
+}
+
+async function pokeCaptchaLiteOpenContext() {
+  const caller = await pokeCaptchaLiteCallerUser();
+  if (caller === 'dshank') return { allowed: true, caller, preview: false };
+
+  let isAdminPreview = caller === 'dlebel' || pokeDevIsAdmin() || !!serverAllowsAdmin;
+  if (!isAdminPreview && typeof refreshAdminFromServer === 'function') {
+    try { isAdminPreview = !!(await refreshAdminFromServer()); } catch {}
+  }
+  if (isAdminPreview) return { allowed: true, caller, preview: true };
+
+  return { allowed: false, caller, preview: false };
+}
+
+async function pokeOpenCaptchaLitePanel() {
+  const openContext = await pokeCaptchaLiteOpenContext();
+  if (!openContext.allowed) return;
+  if (document.getElementById('tkCaptchaLite')) return;
+
+  const panel = document.createElement('div');
+  panel.id = 'tkCaptchaLite';
+  panel.className = 'tk-captcha-lite';
+  const captchaPickOptions = `<option value="">Random</option>` +
+    POKE_CHALLENGES.map(c => `<option value="${escHtml(c.id)}">${escHtml(c.label)}</option>`).join('');
+  const captchaPreviewOptions = POKE_CHALLENGES
+    .map((c, i) => `<option value="${i}">${i + 1}. ${escHtml(c.label)}</option>`)
+    .join('');
+  panel.innerHTML = `
+    <div class="tk-captcha-lite-shell">
+      <div class="tk-captcha-lite-top">
+        <div>
+          <div class="tk-captcha-lite-kicker">${openContext.preview ? 'admin preview' : 'dshank access only'}</div>
+          <div class="tk-captcha-lite-title">Captcha Command</div>
+          <div class="tk-captcha-lite-sub">Live target board. Dylan locked.</div>
+        </div>
+        <button class="tk-captcha-lite-close" id="tkCaptchaLiteClose" title="Close" aria-label="Close">x</button>
+      </div>
+
+      <div class="tk-captcha-lite-stats" aria-live="polite">
+        <div class="tk-captcha-lite-stat">
+          <div class="tk-captcha-lite-stat-label">Online</div>
+          <div class="tk-captcha-lite-stat-value" id="tkCaptchaLiteOnline">0</div>
+        </div>
+        <div class="tk-captcha-lite-stat">
+          <div class="tk-captcha-lite-stat-label">Offline</div>
+          <div class="tk-captcha-lite-stat-value" id="tkCaptchaLiteOffline">0</div>
+        </div>
+        <div class="tk-captcha-lite-stat">
+          <div class="tk-captcha-lite-stat-label">Pending</div>
+          <div class="tk-captcha-lite-stat-value" id="tkCaptchaLitePending">0</div>
+        </div>
+        <div class="tk-captcha-lite-stat">
+          <div class="tk-captcha-lite-stat-label">Protected</div>
+          <div class="tk-captcha-lite-stat-value">1</div>
+        </div>
+      </div>
+
+      <div class="tk-captcha-lite-main">
+        <section class="tk-captcha-lite-panel">
+          <div class="tk-captcha-lite-panel-head">
+            <div class="tk-captcha-lite-panel-title">Target board</div>
+            <div class="tk-captcha-lite-controls">
+              <label for="tkCaptchaLiteCount">Trials</label>
+              <input class="tk-captcha-lite-count" id="tkCaptchaLiteCount" type="number" min="1" max="7" value="3">
+              <button class="tk-captcha-lite-btn secondary" data-act="lite-refresh">Refresh</button>
+            </div>
+          </div>
+          <div id="tkCaptchaLiteTargets" class="tk-captcha-lite-list">
+            <div class="tk-captcha-lite-empty">Loading targets...</div>
+          </div>
+        </section>
+
+        <section class="tk-captcha-lite-panel tk-captcha-lite-side">
+          <div>
+            <div class="tk-captcha-lite-panel-title">Manual test deck</div>
+            <div class="tk-captcha-lite-meta" style="margin-top:7px;">Local challenge deck.</div>
+          </div>
+          <select class="tk-captcha-lite-testpick" id="tkCaptchaLitePreviewPick" size="8">${captchaPreviewOptions}</select>
+          <div>
+            <div class="tk-captcha-lite-actions">
+              <button class="tk-captcha-lite-btn secondary" data-act="lite-preview">Preview</button>
+              <button class="tk-captcha-lite-btn secondary" data-act="lite-run-selected">Run selected</button>
+              <button class="tk-captcha-lite-btn wide" data-act="lite-run-random">Run random trials</button>
+            </div>
+            <div class="tk-captcha-lite-status" id="tkCaptchaLiteStatus">${openContext.preview ? 'Admin preview. Dylan is still protected server-side.' : 'Dylan is protected server-side.'}</div>
+          </div>
+        </section>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(panel);
+
+  const targetListEl = panel.querySelector('#tkCaptchaLiteTargets');
+  const statusEl = panel.querySelector('#tkCaptchaLiteStatus');
+  const countEl = panel.querySelector('#tkCaptchaLiteCount');
+  const previewPickEl = panel.querySelector('#tkCaptchaLitePreviewPick');
+  const onlineEl = panel.querySelector('#tkCaptchaLiteOnline');
+  const offlineEl = panel.querySelector('#tkCaptchaLiteOffline');
+  const pendingEl = panel.querySelector('#tkCaptchaLitePending');
+  previewPickEl.value = '0';
+
+  const previousBodyOverflow = document.body.style.overflow;
+  document.body.style.overflow = 'hidden';
+
+  const closePanel = () => {
+    document.removeEventListener('keydown', escapeHandler);
+    document.body.style.overflow = previousBodyOverflow;
+    panel.remove();
+  };
+  const escapeHandler = (e) => {
+    if (e.key === 'Escape' && document.getElementById('tkCaptchaLite')) closePanel();
+  };
+  document.addEventListener('keydown', escapeHandler);
+
+  const blockedTargets = new Set(['dlebel']);
+  const normalizedUser = (v) => String(v || '').trim().toLowerCase();
+  const isBlockedTarget = (v) => blockedTargets.has(normalizedUser(v));
+  const getCount = () => Math.max(1, Math.min(7, parseInt(countEl?.value || '3', 10) || 3));
+  const manualIndex = () => Math.max(0, Math.min(POKE_CHALLENGES.length - 1, parseInt(previewPickEl.value || '0', 10) || 0));
+
+  panel.querySelector('#tkCaptchaLiteClose').addEventListener('click', closePanel);
+
+  async function renderCaptchaLiteState() {
+    targetListEl.innerHTML = `<div class="tk-captcha-lite-empty">Loading targets...</div>`;
+    let data = null;
+    try {
+      const r = await fetch('/api/captcha-lite/state', { cache: 'no-store' });
+      data = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        targetListEl.innerHTML = `<div class="tk-captcha-lite-error">${escHtml(data.error || ('HTTP ' + r.status))}</div>`;
+        statusEl.textContent = 'Captcha queue unavailable.';
+        return;
+      }
+    } catch (e) {
+      targetListEl.innerHTML = `<div class="tk-captcha-lite-error">Could not reach server: ${escHtml(e.message)}</div>`;
+      statusEl.textContent = 'Server not reachable.';
+      return;
+    }
+
+    const active = ((data && data.active) || []).filter(u => !isBlockedTarget(u.windowsUser));
+    const queue = ((data && data.queue) || []).filter(q => !isBlockedTarget(q.target));
+    const targets = ((data && data.targets) || []).filter(t => t && t.enabled !== false);
+    const targetRows = [];
+    const seenTargets = new Set();
+    for (const t of targets) {
+      const names = Array.isArray(t.names) ? t.names : [];
+      const wins = Array.isArray(t.windowsUsers)
+        ? t.windowsUsers
+        : (t.windowsUser ? [t.windowsUser] : []);
+      for (const rawWin of wins) {
+        const wu = normalizedUser(rawWin);
+        if (!wu || seenTargets.has(wu) || isBlockedTarget(wu)) continue;
+        seenTargets.add(wu);
+        targetRows.push({
+          windowsUser: wu,
+          displayName: t.displayName || t.label || names[0] || wu
+        });
+      }
+    }
+
+    const statsByTarget = {};
+    let pendingTotal = 0;
+    for (const q of queue) {
+      const t = normalizedUser(q.target);
+      if (!t || isBlockedTarget(t)) continue;
+      const slot = statsByTarget[t] || (statsByTarget[t] = { pending: 0, fired: 0, completed: 0 });
+      if (q.status === 'pending') {
+        slot.pending++;
+        pendingTotal++;
+      } else if (q.status === 'fired') {
+        slot.fired++;
+      } else if (q.status === 'completed' || q.status === 'escaped') {
+        slot.completed++;
+      }
+    }
+
+    const activeKeys = new Set(active.map(u => normalizedUser(u.windowsUser)).filter(Boolean));
+    const offline = targetRows.filter(t => !activeKeys.has(t.windowsUser));
+    onlineEl.textContent = String(active.length);
+    offlineEl.textContent = String(offline.length);
+    pendingEl.textContent = String(pendingTotal);
+
+    const buildStatLine = (stats) => {
+      if (!stats || (!stats.pending && !stats.fired && !stats.completed)) return '';
+      const bits = [];
+      if (stats.pending) bits.push(`<span class="tk-captcha-lite-pill pending">${stats.pending} pending</span>`);
+      if (stats.fired) bits.push(`<span class="tk-captcha-lite-pill fired">${stats.fired} fired</span>`);
+      if (stats.completed) bits.push(`<span class="tk-captcha-lite-pill done">${stats.completed} done</span>`);
+      return `<div class="tk-captcha-lite-statline">${bits.join('')}</div>`;
+    };
+    const buildSendCol = (wu, label) => `
+      <div class="tk-captcha-lite-send">
+        <select class="tk-captcha-lite-select tk-captcha-lite-pick">${captchaPickOptions}</select>
+        <button class="tk-captcha-lite-btn" data-act="lite-send-captcha" data-target="${escHtml(wu)}" data-display="${escHtml(label || wu)}">Send</button>
+      </div>`;
+    const activeRows = active.map(u => {
+      const wu = normalizedUser(u.windowsUser);
+      const dn = (u.displayName || '').trim();
+      const machine = (u.machine || '').trim();
+      const sec = u.lastSeen ? Math.max(0, Math.round((Date.now() - new Date(u.lastSeen).getTime()) / 1000)) : '?';
+      return `
+        <div class="tk-captcha-lite-row" data-captcha-row>
+          <div class="tk-captcha-lite-person">
+            <div class="tk-captcha-lite-name"><span class="tk-captcha-lite-dot"></span>${escHtml(dn || wu || 'unknown')}</div>
+            <div class="tk-captcha-lite-meta">${escHtml(wu)}${machine ? ` @ ${escHtml(machine)}` : ''} | seen ${sec}s ago</div>
+            ${buildStatLine(statsByTarget[wu])}
+          </div>
+          ${buildSendCol(wu, dn)}
+        </div>
+      `;
+    }).join('');
+    const offlineRows = offline.map(t => {
+      const wu = normalizedUser(t.windowsUser);
+      const dn = (t.displayName || '').trim();
+      return `
+        <div class="tk-captcha-lite-row offline" data-captcha-row>
+          <div class="tk-captcha-lite-person">
+            <div class="tk-captcha-lite-name"><span class="tk-captcha-lite-dot"></span>${escHtml(dn || wu)}</div>
+            <div class="tk-captcha-lite-meta">${escHtml(wu)} | offline, fires when they return</div>
+            ${buildStatLine(statsByTarget[wu])}
+          </div>
+          ${buildSendCol(wu, dn)}
+        </div>
+      `;
+    }).join('');
+    const sectionHeader = (label, count) => `<div class="tk-captcha-lite-section">${label} (${count})</div>`;
+
+    let html = '';
+    if (active.length) html += sectionHeader('Online', active.length) + activeRows;
+    if (offline.length) html += sectionHeader('Offline', offline.length) + offlineRows;
+    if (!html) html = `<div class="tk-captcha-lite-empty">No allowed targets found.</div>`;
+    targetListEl.innerHTML = html;
+    statusEl.textContent = `${active.length} online | ${offline.length} offline | ${queue.length} queue row(s) visible | Dylan protected`;
+  }
+
+  panel.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button[data-act]');
+    if (!btn) return;
+    switch (btn.dataset.act) {
+      case 'lite-refresh':
+        await renderCaptchaLiteState();
+        break;
+      case 'lite-preview': {
+        const idx = manualIndex();
+        await pokePreviewChallenge(POKE_CHALLENGES[idx], idx);
+        break;
+      }
+      case 'lite-run-selected': {
+        const idx = manualIndex();
+        await pokeShowEscapeLockout(1, POKE_CHALLENGES[idx].id);
+        break;
+      }
+      case 'lite-run-random':
+        await pokeShowEscapeLockout(getCount());
+        break;
+      case 'lite-send-captcha': {
+        const target = normalizedUser(btn.dataset.target);
+        const display = btn.dataset.display || target;
+        if (!target || isBlockedTarget(target)) {
+          showToast('That target is blocked.', 'error');
+          break;
+        }
+        const row = btn.closest('[data-captcha-row]');
+        const challenge = (row?.querySelector('.tk-captcha-lite-pick')?.value || '').trim();
+        const count = getCount();
+        const label = challenge
+          ? (POKE_CHALLENGES.find(c => c.id === challenge)?.label || challenge)
+          : `${count} random`;
+        if (!confirm(`Queue "${label}" for ${display}?`)) break;
+        const body = challenge ? { target, count: 1, challenge } : { target, count };
+        try {
+          btn.disabled = true;
+          btn.textContent = 'Sending';
+          const r = await fetch('/api/captcha-lite/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+          const data = await r.json().catch(() => ({}));
+          if (!r.ok) {
+            showToast('Send rejected: ' + (data.error || r.status), 'error');
+          } else {
+            showToast(`${label} queued for ${display}`, 'success');
+            await renderCaptchaLiteState();
+          }
+        } catch (err) {
+          showToast('Could not reach server: ' + err.message, 'error');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Send';
+        }
+        break;
+      }
+    }
+  });
+
+  setTimeout(() => { renderCaptchaLiteState().catch(() => {}); }, 100);
+}
+
 function pokeOpenDevPanel() {
   if (!pokeDevIsAdmin()) {
     pokeShowDevUnauthorized();
@@ -8205,6 +9353,25 @@ function pokeOpenDevPanel() {
     const queue = (data && data.queue) || [];
     const targets = (data && data.targets) || [];
 
+    const targetRows = [];
+    const seenTargets = new Set();
+    for (const t of targets) {
+      if (!t || t.enabled === false) continue;
+      const names = Array.isArray(t.names) ? t.names : [];
+      const wins = Array.isArray(t.windowsUsers)
+        ? t.windowsUsers
+        : (t.windowsUser ? [t.windowsUser] : []);
+      for (const rawWin of wins) {
+        const wu = String(rawWin || '').trim().toLowerCase();
+        if (!wu || seenTargets.has(wu)) continue;
+        seenTargets.add(wu);
+        targetRows.push({
+          windowsUser: wu,
+          displayName: t.displayName || t.label || names[0] || wu
+        });
+      }
+    }
+
     // Build a map of captcha-queue stats by target (lowercased windowsUser).
     // Pending counts include captchas queued for offline users — they'll fire
     // on that user's next presence ping.
@@ -8221,10 +9388,7 @@ function pokeOpenDevPanel() {
     // Merge active users with configured poke-targets so the admin can queue
     // captchas for offline people too. Active wins on duplicates.
     const activeKeys = new Set(active.map(u => (u.windowsUser || '').trim().toLowerCase()).filter(Boolean));
-    const offline = targets
-      .filter(t => t && t.windowsUser)
-      .filter(t => t.enabled !== false)
-      .filter(t => !activeKeys.has((t.windowsUser || '').trim().toLowerCase()));
+    const offline = targetRows.filter(t => !activeKeys.has(t.windowsUser));
 
     const captchaOpts = `<option value="">Random</option>` +
       POKE_CHALLENGES.map(c => `<option value="${escHtml(c.id)}">${escHtml(c.label)}</option>`).join('');
@@ -8261,7 +9425,7 @@ function pokeOpenDevPanel() {
 
     const offlineRows = offline.map(t => {
       const wu = (t.windowsUser || '').trim();
-      const dn = (t.displayName || t.label || '').trim();
+      const dn = (t.displayName || '').trim();
       const lk = wu.toLowerCase();
       return `
         <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:4px 6px;gap:6px;border-bottom:1px solid rgba(255,255,255,0.05);opacity:0.78;">
@@ -9262,11 +10426,13 @@ document.getElementById('crAlertToggle').addEventListener('click', () => {
 });
 
 let crashEntries = [];
+let crDonutStatuses = [];
 let crSelectedMonth = null;   // 'YYYY-MM' — null means pick default (current month or latest with data)
 let crSelectedSeverity = 'minor';
 const crSevEmoji = { minor: '😐', major: '😬', catastrophic: '🔥' };
 let crTiePoll = null;
 let crTiePollSaving = false;
+let crDonutStatusSaving = false;
 let crTiePollPanelDismissed = false;
 const CR_TIE_POLL_ID = 'crash-tie-break-2026-04';
 const CR_TIE_POLL_LATER_KEY = `crTiePollLater:${CR_TIE_POLL_ID}`;
@@ -9325,6 +10491,153 @@ function crTiePollWinningOptionId() {
 
 function crTieRuleMode() {
   return crTiePollWinningOptionId() || 'split';
+}
+
+function crBool(value) {
+  if (value === true || value === false) return value;
+  const s = String(value ?? '').trim().toLowerCase();
+  return ['1', 'true', 'yes', 'on', 'paid'].includes(s);
+}
+
+function crNormalizeDonutStatuses(list) {
+  return (Array.isArray(list) ? list : []).filter(Boolean).map(row => ({
+    monthKey: String(row.monthKey || row.month || '').trim(),
+    paid: crBool(row.paid),
+    updatedAt: row.updatedAt || row.paidAt || '',
+    updatedBy: row.updatedBy || '',
+    updatedByName: row.updatedByName || ''
+  })).filter(row => /^\d{4}-\d{2}$/.test(row.monthKey));
+}
+
+function crDonutStatusForMonth(monthKey) {
+  return crDonutStatuses.find(s => s.monthKey === monthKey) || null;
+}
+
+function crMonthDeadline(monthKey) {
+  const parts = String(monthKey || '').split('-').map(Number);
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return crCurrentEndOfMonth();
+  return crEndOfMonth(parts[0], parts[1] - 1);
+}
+
+function crMonthIsLocked(monthKey) {
+  return Date.now() >= crMonthDeadline(monthKey).getTime();
+}
+
+function crStatusStampText(status) {
+  if (!status || !status.updatedAt) return '';
+  const d = new Date(status.updatedAt);
+  if (isNaN(d)) return '';
+  const who = (status.updatedByName || status.updatedBy || '').trim();
+  const when = d.toLocaleDateString('default', { month: 'short', day: 'numeric' });
+  return who ? ` by ${who} on ${when}` : ` on ${when}`;
+}
+
+function crDonutDutyStatusInfo(monthKey, prizeInfo, isCurrent) {
+  if (!prizeInfo || !prizeInfo.assignments || prizeInfo.assignments.length === 0) {
+    return { visible: false };
+  }
+  const locked = crMonthIsLocked(monthKey);
+  if (isCurrent && !locked) {
+    return {
+      visible: true,
+      canEdit: false,
+      paid: false,
+      icon: '⏳',
+      cls: 'is-open',
+      stat: '🍩',
+      statLabel: 'on the line',
+      text: 'Status: race still open — donuts are not owed yet.'
+    };
+  }
+
+  const status = crDonutStatusForMonth(monthKey);
+  if (status && status.paid) {
+    return {
+      visible: true,
+      canEdit: true,
+      paid: true,
+      icon: '✅',
+      cls: 'is-paid',
+      stat: '✅',
+      statLabel: 'paid up',
+      text: `Status: paid up — donuts confirmed${crStatusStampText(status)}.`
+    };
+  }
+
+  return {
+    visible: true,
+    canEdit: true,
+    paid: false,
+    icon: '🧾',
+    cls: 'is-owed',
+    stat: '⏳',
+    statLabel: 'still owes',
+    text: 'Status: still owes donuts — not paid up yet.'
+  };
+}
+
+function crRenderDutyStatus(monthKey, prizeInfo, isCurrent) {
+  const box = document.getElementById('crDutyStatus');
+  const icon = document.getElementById('crDutyStatusIcon');
+  const text = document.getElementById('crDutyStatusText');
+  const btn = document.getElementById('crDutyToggle');
+  if (!box || !icon || !text || !btn) return { visible: false };
+
+  const info = crDonutDutyStatusInfo(monthKey, prizeInfo, isCurrent);
+  box.classList.remove('is-open', 'is-owed', 'is-paid');
+  btn.classList.remove('can-edit');
+
+  if (!info.visible) {
+    box.style.display = 'none';
+    btn.dataset.month = '';
+    btn.dataset.paid = '';
+    return info;
+  }
+
+  box.style.display = 'inline-flex';
+  box.classList.add(info.cls);
+  icon.textContent = info.icon;
+  text.textContent = info.text;
+  btn.dataset.month = monthKey;
+  btn.dataset.paid = info.paid ? 'true' : 'false';
+  btn.textContent = info.paid ? 'Mark still owes' : 'Mark paid up';
+  btn.disabled = crDonutStatusSaving || !info.canEdit;
+  if (info.canEdit) btn.classList.add('can-edit');
+  return info;
+}
+
+function crDutyBadgeHtml(name, prizeInfo, monthKey, isCurrent) {
+  if ((isCurrent && !crMonthIsLocked(monthKey)) || !prizeInfo || !prizeInfo.assignments) return '';
+  const isAssigned = prizeInfo.assignments.some(a => crNormKey(a.name) === crNormKey(name));
+  if (!isAssigned) return '';
+  const paid = !!(crDonutStatusForMonth(monthKey)?.paid);
+  return paid
+    ? '<span class="cr-duty-chip paid" title="Donut duty is paid up">paid up</span>'
+    : '<span class="cr-duty-chip owed" title="Donut duty is still owed">owes donuts</span>';
+}
+
+async function crSetDonutStatus(monthKey, paid) {
+  if (!monthKey || crDonutStatusSaving) return;
+  crDonutStatusSaving = true;
+  renderCrashes();
+  try {
+    const res = await apiFetch('/api/crash-donut-status/' + encodeURIComponent(monthKey), {
+      method: 'PATCH',
+      body: JSON.stringify({
+        paid: !!paid,
+        displayName: localStorage.getItem('mgUserName') || crKnownName() || ''
+      })
+    });
+    crDonutStatuses = crNormalizeDonutStatuses(res.statuses || []);
+    renderCrashes();
+    showToast(paid ? 'Donut duty marked paid up.' : 'Donut duty marked still owed.', 'success');
+  } catch (err) {
+    showToast('Could not save donut status: ' + err.message, 'error');
+    renderCrashes();
+  } finally {
+    crDonutStatusSaving = false;
+    renderCrashes();
+  }
 }
 
 function crTiePollClosesAtMs() {
@@ -9912,6 +11225,7 @@ function renderCrashes() {
   const prizeLbl   = document.getElementById('crStatPrizeLbl');
 
   prizeStat.style.fontSize = ''; // reset — tie-mode inflates it
+  const dutyInfo = crDonutDutyStatusInfo(monthKey, prizeInfo, isCurrent);
 
   if (prizeInfo.assignments.length > 0) {
     if (prizeInfo.assignments.length === 1) {
@@ -9921,9 +11235,13 @@ function renderCrashes() {
       const hasCatastrophic = leaderRow && leaderRow.sev.catastrophic > 0;
       winnerName.innerHTML = escHtml(leaderName) + (hasCatastrophic
         ? ' <span class="cr-catking">🔥 CATASTROPHE KING</span>' : '');
-      winnerSub.textContent = isCurrent
-        ? `${prizeInfo.leaderCount} crash${prizeInfo.leaderCount === 1 ? '' : 'es'} — donuts are on you if nothing changes 🍩`
-        : `${prizeInfo.leaderCount} crashes — brought 🍩 donuts`;
+      if (isCurrent && !crMonthIsLocked(monthKey)) {
+        winnerSub.textContent = `${prizeInfo.leaderCount} crash${prizeInfo.leaderCount === 1 ? '' : 'es'} — donuts are on you if nothing changes 🍩`;
+      } else if (dutyInfo.paid) {
+        winnerSub.textContent = `${prizeInfo.leaderCount} crash${prizeInfo.leaderCount === 1 ? '' : 'es'} — paid up with 🍩 donuts`;
+      } else {
+        winnerSub.textContent = `${prizeInfo.leaderCount} crash${prizeInfo.leaderCount === 1 ? '' : 'es'} — still owes 🍩 donuts`;
+      }
       prizeStat.textContent = '🍩';
       prizeLbl.textContent = isCurrent ? 'on the line' : 'brought';
     } else {
@@ -9955,6 +11273,12 @@ function renderCrashes() {
     winnerSub.textContent = isCurrent ? 'Be the first to tank SolidWorks 🎉' : 'Nothing logged for this month.';
     prizeStat.textContent = '🍩';
     prizeLbl.textContent = 'on the line';
+  }
+  const renderedDutyInfo = crRenderDutyStatus(monthKey, prizeInfo, isCurrent);
+  if (renderedDutyInfo.visible) {
+    prizeStat.style.fontSize = '';
+    prizeStat.textContent = renderedDutyInfo.stat;
+    prizeLbl.textContent = renderedDutyInfo.statLabel;
   }
 
   // Show/hide countdown based on whether we're looking at the current month
@@ -10053,12 +11377,13 @@ function renderCrashes() {
       const rankClass = rank <= 3 ? `cr-rank-${rank}` : '';
       const achvs = crComputeAchievements(row, agg, prevMonthKey);
       const sevHtml = crSevPipsHtml(row.sev);
+      const dutyBadge = crDutyBadgeHtml(row.name, prizeInfo, monthKey, isCurrent);
       const rowEl = document.createElement('div');
       rowEl.className = 'cr-row' + (isMe ? ' me' : '');
       rowEl.innerHTML = `
         <div class="cr-rank ${rankClass}" title="${row.tied ? `Tied for #${rank}` : `Rank #${rank}`}">${rankDisplay}</div>
         <div>
-          <div class="cr-row-name">${escHtml(row.name)}${isMe ? ' <span style="color:var(--accent);font-size:0.75rem">(you)</span>' : ''}${crAchvHtml(achvs)}</div>
+          <div class="cr-row-name">${escHtml(row.name)}${isMe ? ' <span style="color:var(--accent);font-size:0.75rem">(you)</span>' : ''}${dutyBadge}${crAchvHtml(achvs)}</div>
           <div class="cr-row-meta">Last crash ${row.lastTs ? crRelTime(row.lastTs) : '—'}</div>
           ${sevHtml}
         </div>
@@ -10204,16 +11529,26 @@ function crRenderRecapBanner(isCurrent) {
   const prevLabel = crMonthKeyToLabel(prevKey, { short: true });
   const titleEl = document.getElementById('crRecapTitle');
   const subEl = document.getElementById('crRecapSub');
+  const dutyInfo = crDonutDutyStatusInfo(prevKey, prize, false);
+  const dutyText = dutyInfo.paid ? 'paid up ✅' : 'still owes donuts';
+  const payBtn = document.getElementById('crRecapPayBtn');
+  if (payBtn) {
+    payBtn.dataset.month = prevKey;
+    payBtn.dataset.paid = dutyInfo.paid ? 'true' : 'false';
+    payBtn.textContent = dutyInfo.paid ? 'Mark still owes' : 'Mark paid up';
+    payBtn.disabled = crDonutStatusSaving;
+    payBtn.classList.toggle('can-edit', !!dutyInfo.canEdit);
+  }
 
   if (prize.assignments.length === 1) {
     const a = prize.assignments[0];
     titleEl.textContent = `${prevLabel} winner: ${a.name}`;
-    subEl.textContent = `${prize.leaderCount} crash${prize.leaderCount === 1 ? '' : 'es'} — ${a.prize} on the way 🎉`;
+    subEl.textContent = `${prize.leaderCount} crash${prize.leaderCount === 1 ? '' : 'es'} — ${dutyText}`;
   } else {
     titleEl.textContent = `${prevLabel} — ${prize.assignments.length}-way tie`;
     subEl.innerHTML = prize.assignments
       .map(a => `<strong>${escHtml(a.name)}</strong> → ${escHtml(a.prize)}`)
-      .join(' &nbsp;·&nbsp; ');
+      .join(' &nbsp;·&nbsp; ') + ` &nbsp;·&nbsp; ${escHtml(dutyText)}`;
   }
   el.style.display = '';
 }
@@ -10222,6 +11557,22 @@ document.getElementById('crRecapDismiss')?.addEventListener('click', () => {
   const prevKey = crPreviousMonthKey(crCurrentMonthKey());
   localStorage.setItem('crRecapDismissed', prevKey);
   document.getElementById('crRecap').style.display = 'none';
+});
+
+document.getElementById('crDutyToggle')?.addEventListener('click', () => {
+  const btn = document.getElementById('crDutyToggle');
+  const monthKey = btn?.dataset.month || '';
+  const isPaid = btn?.dataset.paid === 'true';
+  if (!monthKey) return;
+  crSetDonutStatus(monthKey, !isPaid);
+});
+
+document.getElementById('crRecapPayBtn')?.addEventListener('click', () => {
+  const btn = document.getElementById('crRecapPayBtn');
+  const monthKey = btn?.dataset.month || '';
+  const isPaid = btn?.dataset.paid === 'true';
+  if (!monthKey) return;
+  crSetDonutStatus(monthKey, !isPaid);
 });
 
 function crShowConfetti() {
@@ -11887,6 +13238,380 @@ document.querySelectorAll('.cr-month-btn').forEach(btn => {
   });
 });
 
+// ── User-created polls ───────────────────────────────────────────────────
+let pollState = { polls: [], caller: '', isAdmin: false };
+let pollSavingId = null;
+
+function pollFingerprint(list) {
+  if (!list || !list.length) return '0';
+  return list.map(p => `${p.id}:${p.isClosed ? 1 : 0}:${p.totalVotes}:${(p.options || []).map(o => o.id + ':' + (p.totals?.[o.id] || 0)).join(',')}:${p.userVote || ''}`).join('|');
+}
+let __pollLastFp = '';
+
+function pollFormatRelative(closesAt, isClosed) {
+  if (!closesAt) return '';
+  const t = new Date(closesAt).getTime();
+  if (!t) return '';
+  const ms = t - Date.now();
+  if (isClosed || ms <= 0) {
+    return `Closed ${new Date(t).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`;
+  }
+  const days = Math.floor(ms / 86400000);
+  const hours = Math.floor((ms % 86400000) / 3600000);
+  const mins = Math.floor((ms % 3600000) / 60000);
+  if (days >= 2) return `Closes in ${days} days`;
+  if (days === 1) return `Closes in 1 day ${hours}h`;
+  if (hours >= 1) return `Closes in ${hours}h ${mins}m`;
+  return `Closes in ${mins}m`;
+}
+
+function pollWinningOptionId(p) {
+  let best = null, bestVotes = -1;
+  for (const opt of (p.options || [])) {
+    const v = Number(p.totals?.[opt.id] || 0);
+    if (v > bestVotes) { bestVotes = v; best = opt.id; }
+  }
+  return bestVotes > 0 ? best : null;
+}
+
+function renderPollList() {
+  const host = document.getElementById('pollList');
+  const countEl = document.getElementById('pollCount');
+  const limitNote = document.getElementById('pollLimitNote');
+  const newBtn = document.getElementById('pollNewBtn');
+  if (!host) return;
+
+  const polls = pollState.polls || [];
+  const openCount = polls.filter(p => !p.isClosed).length;
+  if (countEl) countEl.textContent = openCount;
+
+  if (limitNote) {
+    if (pollState.isAdmin) {
+      limitNote.textContent = 'Admins can run any number of open polls. Polls close after 7 days unless you set a custom deadline.';
+    } else {
+      const yourOpen = polls.filter(p => !p.isClosed && p.createdBy === pollState.caller).length;
+      limitNote.textContent = yourOpen >= 1
+        ? 'You already have an open poll. Close it (or wait for it to expire) before creating another.'
+        : 'You can run one open poll at a time. Polls close after 7 days unless you set a custom deadline.';
+    }
+  }
+  if (newBtn) {
+    const yourOpen = polls.filter(p => !p.isClosed && p.createdBy === pollState.caller).length;
+    newBtn.disabled = !pollState.isAdmin && yourOpen >= 1;
+  }
+
+  if (!polls.length) {
+    host.innerHTML = '<div class="poll-empty">No polls yet. Create the first one!</div>';
+    return;
+  }
+
+  host.innerHTML = polls.map(p => renderPollCard(p)).join('');
+}
+
+function renderPollCard(p) {
+  const isClosed = !!p.isClosed;
+  const winnerId = pollWinningOptionId(p);
+  const totalVotes = Number(p.totalVotes || 0);
+  const maxVotes = Math.max(1, ...(p.options || []).map(o => Number(p.totals?.[o.id] || 0)));
+  const canManage = !!(pollState.isAdmin || (pollState.caller && p.createdBy === pollState.caller));
+  const allowAdd = !!p.allowUserOptions && !isClosed;
+  const saving = pollSavingId === p.id;
+
+  const optionsHtml = (p.options || []).map(opt => {
+    const votes = Number(p.totals?.[opt.id] || 0);
+    const pct = totalVotes ? Math.round((votes / Math.max(1, totalVotes)) * 100) : 0;
+    const fillW = Math.round((votes / maxVotes) * 100);
+    const isVoted = p.userVote === opt.id;
+    const isLeading = !isClosed && winnerId === opt.id && totalVotes > 0;
+    const isWinner = isClosed && winnerId === opt.id && totalVotes > 0;
+    const tagline = isWinner ? '🏆 Winner' : (isLeading ? 'Leading' : '');
+    const meta = opt.addedByName || opt.addedBy ? `Added by ${escHtml(opt.addedByName || opt.addedBy)}` : '';
+    return `
+      <button type="button"
+              class="poll-option-row ${isVoted ? 'is-voted' : ''} ${isLeading ? 'is-leading' : ''}"
+              data-poll="${escHtml(p.id)}" data-option="${escHtml(opt.id)}"
+              ${(isClosed || saving) ? 'disabled' : ''}>
+        <span class="poll-option-icon">${escHtml(opt.icon || '🗳️')}</span>
+        <span class="poll-option-body">
+          <span class="poll-option-title">${escHtml(opt.title)}${tagline ? ` <em style="font-style:normal;font-size:0.75rem;color:var(--accent);margin-left:6px;">${tagline}</em>` : ''}</span>
+          ${meta ? `<span class="poll-option-meta">${meta}</span>` : ''}
+        </span>
+        <span class="poll-option-tally"><strong>${votes}</strong> (${pct}%)</span>
+        <span class="poll-option-bar"><span class="poll-option-fill" style="width:${fillW}%"></span></span>
+      </button>
+    `;
+  }).join('');
+
+  const addOptionHtml = allowAdd ? `
+    <div class="poll-add-option">
+      <input type="text" maxlength="80" placeholder="Add your own option…" data-poll-add-input="${escHtml(p.id)}">
+      <button type="button" data-poll-add-btn="${escHtml(p.id)}" ${saving ? 'disabled' : ''}>Add</button>
+    </div>
+  ` : '';
+
+  const actionsHtml = canManage ? `
+    <div class="poll-card-actions">
+      ${!isClosed ? `<button type="button" class="poll-card-icon-btn" title="Close poll now" data-poll-close="${escHtml(p.id)}">✓</button>` : ''}
+      <button type="button" class="poll-card-icon-btn is-danger" title="Delete poll" data-poll-delete="${escHtml(p.id)}">🗑</button>
+    </div>` : '';
+
+  return `
+    <div class="poll-card ${isClosed ? 'is-closed' : ''}" data-poll-card="${escHtml(p.id)}">
+      <div class="poll-card-head">
+        <div style="min-width:0;">
+          <div class="poll-card-meta">
+            <span class="poll-pill ${isClosed ? 'is-closed' : 'is-open'}">${isClosed ? 'Closed' : 'Open'}</span>
+            <span>By ${escHtml(p.createdByName || p.createdBy || 'someone')}</span>
+            <span>•</span>
+            <span>${pollFormatRelative(p.closesAt, isClosed)}</span>
+            ${p.allowUserOptions ? '<span>• Voters can add options</span>' : ''}
+          </div>
+          <h3 class="poll-card-question">${escHtml(p.question)}</h3>
+        </div>
+        ${actionsHtml}
+      </div>
+      <div class="poll-card-options">${optionsHtml}</div>
+      ${addOptionHtml}
+      <div class="poll-card-foot">
+        <span>${totalVotes} vote${totalVotes === 1 ? '' : 's'}${p.userVote ? ' • You voted' : ''}</span>
+        <span></span>
+      </div>
+    </div>
+  `;
+}
+
+async function fetchPolls() {
+  try {
+    const data = await apiFetch('/api/polls', { cache: 'no-store' });
+    if (data && Array.isArray(data.polls)) {
+      pollState = { polls: data.polls, caller: data.caller || '', isAdmin: !!data.isAdmin };
+    }
+    return data;
+  } catch (err) {
+    return null;
+  }
+}
+
+async function refreshPolls(force = false) {
+  const before = pollFingerprint(pollState.polls);
+  const data = await fetchPolls();
+  // Always render at least once on initial load so the host doesn't stay
+  // stuck on "Loading polls…" if the request failed or returned an empty list.
+  const host = document.getElementById('pollList');
+  const stillLoading = host && host.querySelector('.poll-empty')?.textContent?.includes('Loading');
+  if (!data) {
+    if (force || stillLoading) {
+      host && (host.innerHTML = '<div class="poll-empty">Could not reach server — polls will refresh automatically when it\'s back.</div>');
+    }
+    return;
+  }
+  const after = pollFingerprint(pollState.polls);
+  if (force || stillLoading || before !== after || before === '0') {
+    __pollLastFp = after;
+    renderPollList();
+  }
+}
+
+async function pollVote(pollId, optionId) {
+  if (pollSavingId) return;
+  pollSavingId = pollId;
+  renderPollList();
+  try {
+    const updated = await apiFetch(`/api/polls/${encodeURIComponent(pollId)}/vote`, {
+      method: 'POST',
+      body: JSON.stringify({
+        optionId,
+        displayName: sessionStorage.getItem('winUserDisplay') || ''
+      })
+    });
+    pollState.polls = pollState.polls.map(p => p.id === pollId ? updated : p);
+    showToast('Vote recorded.', 'success');
+  } catch (err) {
+    showToast(err.message || 'Could not record vote.', 'error');
+  } finally {
+    pollSavingId = null;
+    renderPollList();
+  }
+}
+
+async function pollAddOption(pollId, title) {
+  if (!title || pollSavingId) return;
+  pollSavingId = pollId;
+  renderPollList();
+  try {
+    const updated = await apiFetch(`/api/polls/${encodeURIComponent(pollId)}/options`, {
+      method: 'POST',
+      body: JSON.stringify({
+        title,
+        displayName: sessionStorage.getItem('winUserDisplay') || ''
+      })
+    });
+    pollState.polls = pollState.polls.map(p => p.id === pollId ? updated : p);
+    showToast('Option added.', 'success');
+  } catch (err) {
+    showToast(err.message || 'Could not add option.', 'error');
+  } finally {
+    pollSavingId = null;
+    renderPollList();
+  }
+}
+
+async function pollClose(pollId) {
+  if (!confirm('Close this poll now? Voting will stop and the result will be final.')) return;
+  try {
+    const updated = await apiFetch(`/api/polls/${encodeURIComponent(pollId)}/close`, { method: 'POST' });
+    pollState.polls = pollState.polls.map(p => p.id === pollId ? updated : p);
+    renderPollList();
+    showToast('Poll closed.', 'success');
+  } catch (err) {
+    showToast(err.message || 'Could not close poll.', 'error');
+  }
+}
+
+async function pollDelete(pollId) {
+  if (!confirm('Delete this poll and all its votes? This cannot be undone.')) return;
+  try {
+    await apiFetch(`/api/polls/${encodeURIComponent(pollId)}`, { method: 'DELETE' });
+    pollState.polls = pollState.polls.filter(p => p.id !== pollId);
+    renderPollList();
+    showToast('Poll deleted.', 'success');
+  } catch (err) {
+    showToast(err.message || 'Could not delete poll.', 'error');
+  }
+}
+
+// Create-poll modal
+function pollOpenCreate() {
+  const overlay = document.getElementById('pollCreateOverlay');
+  if (!overlay) return;
+  document.getElementById('pollCreateForm')?.reset();
+  document.getElementById('pollCreateError').textContent = '';
+  pollResetCreateOptions();
+  overlay.classList.add('open');
+  setTimeout(() => document.getElementById('pollCreateQuestion')?.focus(), 50);
+}
+
+function pollCloseCreate() {
+  document.getElementById('pollCreateOverlay')?.classList.remove('open');
+}
+
+function pollResetCreateOptions() {
+  const host = document.getElementById('pollCreateOptions');
+  if (!host) return;
+  host.innerHTML = '';
+  pollAddCreateOptionRow();
+  pollAddCreateOptionRow();
+}
+
+function pollAddCreateOptionRow(title = '', icon = '') {
+  const host = document.getElementById('pollCreateOptions');
+  if (!host) return;
+  const row = document.createElement('div');
+  row.className = 'poll-create-option-row';
+  row.innerHTML = `
+    <input type="text" class="poll-create-option-icon" maxlength="4" placeholder="🗳️" value="${escHtml(icon)}">
+    <input type="text" class="poll-create-option-title" maxlength="80" placeholder="Option text" value="${escHtml(title)}">
+    <button type="button" title="Remove">×</button>
+  `;
+  row.querySelector('button').addEventListener('click', () => {
+    if (host.children.length <= 2) {
+      showToast('A poll needs at least two options.', 'info');
+      return;
+    }
+    row.remove();
+  });
+  host.appendChild(row);
+}
+
+async function pollSubmitCreate(ev) {
+  ev.preventDefault();
+  const errorEl = document.getElementById('pollCreateError');
+  const submitBtn = document.getElementById('pollCreateSubmit');
+  errorEl.textContent = '';
+
+  const question = document.getElementById('pollCreateQuestion').value.trim();
+  if (!question) { errorEl.textContent = 'Question is required.'; return; }
+
+  const rows = document.querySelectorAll('#pollCreateOptions .poll-create-option-row');
+  const options = [];
+  rows.forEach(r => {
+    const title = r.querySelector('.poll-create-option-title').value.trim();
+    const icon = r.querySelector('.poll-create-option-icon').value.trim();
+    if (title) options.push({ title, icon });
+  });
+  if (options.length < 2) { errorEl.textContent = 'Add at least two options.'; return; }
+
+  const allowUserOptions = document.getElementById('pollCreateAllowUserOptions').checked;
+  const closesLocal = document.getElementById('pollCreateCloses').value;
+  const closesAt = closesLocal ? new Date(closesLocal).toISOString() : '';
+
+  submitBtn.disabled = true;
+  try {
+    const created = await apiFetch('/api/polls', {
+      method: 'POST',
+      body: JSON.stringify({
+        question,
+        options,
+        allowUserOptions,
+        closesAt,
+        displayName: sessionStorage.getItem('winUserDisplay') || ''
+      })
+    });
+    pollState.polls = [created, ...pollState.polls.filter(p => p.id !== created.id)];
+    renderPollList();
+    pollCloseCreate();
+    showToast('Poll created.', 'success');
+  } catch (err) {
+    errorEl.textContent = err.message || 'Could not create poll.';
+  } finally {
+    submitBtn.disabled = false;
+  }
+}
+
+// Wire up event listeners
+document.getElementById('pollNewBtn')?.addEventListener('click', pollOpenCreate);
+document.getElementById('pollCreateClose')?.addEventListener('click', pollCloseCreate);
+document.getElementById('pollCreateOverlay')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) pollCloseCreate();
+});
+document.getElementById('pollCreateAddOption')?.addEventListener('click', () => pollAddCreateOptionRow());
+document.getElementById('pollCreateForm')?.addEventListener('submit', pollSubmitCreate);
+
+document.getElementById('pollList')?.addEventListener('click', (e) => {
+  const voteBtn = e.target.closest('[data-option]');
+  if (voteBtn) {
+    pollVote(voteBtn.dataset.poll, voteBtn.dataset.option);
+    return;
+  }
+  const closeBtn = e.target.closest('[data-poll-close]');
+  if (closeBtn) {
+    pollClose(closeBtn.dataset.pollClose);
+    return;
+  }
+  const delBtn = e.target.closest('[data-poll-delete]');
+  if (delBtn) {
+    pollDelete(delBtn.dataset.pollDelete);
+    return;
+  }
+  const addBtn = e.target.closest('[data-poll-add-btn]');
+  if (addBtn) {
+    const pollId = addBtn.dataset.pollAddBtn;
+    const input = document.querySelector(`[data-poll-add-input="${CSS.escape(pollId)}"]`);
+    const title = input ? input.value.trim() : '';
+    if (!title) { showToast('Type an option first.', 'info'); return; }
+    pollAddOption(pollId, title);
+  }
+});
+document.getElementById('pollList')?.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+  const input = e.target.closest('[data-poll-add-input]');
+  if (!input) return;
+  e.preventDefault();
+  const pollId = input.dataset.pollAddInput;
+  const title = input.value.trim();
+  if (title) pollAddOption(pollId, title);
+});
+
 // ── Data loading from server ─────────────────────────────────────────────
 async function fetchCrashTiePoll() {
   try {
@@ -11906,21 +13631,33 @@ async function fetchCrashTiePoll() {
   }
 }
 
+async function fetchCrashDonutStatuses() {
+  try {
+    return crNormalizeDonutStatuses(await apiFetch('/api/crash-donut-status', { cache: 'no-store' }));
+  } catch {
+    return [];
+  }
+}
+
 async function loadData() {
   try {
-    const [clData, tkData, crData, pollData] = await Promise.all([
+    const [clData, tkData, crData, pollData, donutStatusData] = await Promise.all([
       apiFetch('/api/changelog'),
       apiFetch('/api/tickets'),
       apiFetch('/api/crashes'),
-      fetchCrashTiePoll()
+      fetchCrashTiePoll(),
+      fetchCrashDonutStatuses()
     ]);
     changelogEntries = clData;
     ticketEntries = tkData;
     crashEntries = crData;
     crTiePoll = pollData;
+    crDonutStatuses = donutStatusData;
     renderChangelog();
     renderTickets();
     renderCrashes();
+    // User-created polls — non-fatal; failure here shouldn't block the rest.
+    refreshPolls(true).catch(() => {});
   } catch (err) {
     showToast('Could not load data from server: ' + err.message, 'error');
   }
@@ -11937,7 +13674,12 @@ function crFingerprint(list) {
   }
   return fp;
 }
+function crDonutStatusFingerprint(list) {
+  if (!list || list.length === 0) return '0';
+  return list.map(s => `${s.monthKey}:${s.paid ? 1 : 0}:${s.updatedAt || ''}`).sort().join('|');
+}
 let __crLastFp = '';
+let __crLastDonutStatusFp = '';
 
 // Also tick "since last" every minute so it ages in real-time even when
 // nothing new comes in (no server round-trip).
@@ -11957,11 +13699,12 @@ setInterval(() => {
 // handler below that pokes the server the moment focus returns.
 async function refreshNow() {
   try {
-    const [clData, tkData, crData, pollData] = await Promise.all([
+    const [clData, tkData, crData, pollData, donutStatusData] = await Promise.all([
       apiFetch('/api/changelog'),
       apiFetch('/api/tickets'),
       apiFetch('/api/crashes'),
-      fetchCrashTiePoll()
+      fetchCrashTiePoll(),
+      fetchCrashDonutStatuses()
     ]);
     if (clData.length !== changelogEntries.length) {
       changelogEntries = clData;
@@ -11983,6 +13726,13 @@ async function refreshNow() {
       crTiePoll = pollData;
       renderCrashes();
     }
+    const dutyFp = crDonutStatusFingerprint(donutStatusData);
+    if (dutyFp !== __crLastDonutStatusFp) {
+      __crLastDonutStatusFp = dutyFp;
+      crDonutStatuses = donutStatusData;
+      renderCrashes();
+    }
+    refreshPolls().catch(() => {});
   } catch { /* silent — will retry next interval */ }
 }
 setInterval(refreshNow, 15000);
