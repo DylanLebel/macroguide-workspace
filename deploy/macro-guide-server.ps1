@@ -36,13 +36,24 @@ $PortCandidates = @(8123, 8124, 8125, 8126)
 $Port = $PortCandidates[0]  # actual chosen port set later when listener starts
 $PortStatusFile = Join-Path $env:TEMP 'MacroGuide.port'
 
-# Paths — auto-detect relative to script, fall back to known locations
+# Paths — prefer shared live data, then fall back to script-local seed data.
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-$DataDir = Join-Path $ScriptDir 'data'
-if (-not (Test-Path $DataDir)) {
-    $DataDir = 'Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\data'
+$ScriptDataDir = Join-Path $ScriptDir 'data'
+$SharedDataCandidates = @(
+    '\\NMT-AD\Programs\Solidworks\Macros\Macro Data PDM\MacroGuide\data',
+    'Y:\Solidworks\Macros\Macro Data PDM\MacroGuide\data'
+)
+$DataDir = $null
+foreach ($candidate in $SharedDataCandidates) {
+    try {
+        if (Test-Path $candidate) {
+            $DataDir = $candidate
+            break
+        }
+    } catch {}
 }
+if (-not $DataDir) { $DataDir = $ScriptDataDir }
 # Local fallback if shared data dir is unavailable (e.g. Y: not mapped).
 # Initialize-DataFiles will switch to this if the primary fails.
 $LocalDataDir = Join-Path $env:APPDATA 'MacroGuide\data'
@@ -62,12 +73,14 @@ $CrFile = Join-Path $DataDir 'crashes.json'
 $CrashNotifyFile = Join-Path $DataDir 'crash-notifications.json'
 $CrashTiePollFile = Join-Path $DataDir 'crash-tie-poll.json'
 $CrashDonutStatusFile = Join-Path $DataDir 'crash-donut-status.json'
+$CrashConsentFile = Join-Path $DataDir 'crash-consent.json'
 $PollsFile = Join-Path $DataDir 'polls.json'
 $PokeResetFile = Join-Path $DataDir 'poke-resets.json'
 $PokeTargetsFile = Join-Path $DataDir 'poke-targets.json'
 $PresenceFile = Join-Path $DataDir 'presence.json'
 $CaptchaQueueFile = Join-Path $DataDir 'captcha-queue.json'
 
+$CrashRulesVersion = '2026-05-donut-duty-v3'
 $CrashTiePollId = 'crash-tie-break-2026-04'
 $CrashTiePollQuestion = 'What should happen when crash duty ends in a tie?'
 $CrashTiePollClosesAt = [datetime]::new(2026, 4, 30, 16, 30, 0, [DateTimeKind]::Local)
@@ -742,6 +755,447 @@ function Test-CrashMonthLocked {
     return ((Get-Date) -ge (Get-CrashMonthLockAt))
 }
 
+function Get-CrashMonthKey {
+    param([datetime]$When = (Get-Date))
+    return $When.ToLocalTime().ToString('yyyy-MM')
+}
+
+function Normalize-CrashDisplayKey {
+    param([string]$Value)
+    if ([string]::IsNullOrWhiteSpace($Value)) { return '' }
+    return (($Value.Trim() -replace '\s+', ' ').ToLowerInvariant())
+}
+
+function Test-CrashNameInList {
+    param([string]$Name, $Names)
+    $target = Normalize-CrashDisplayKey $Name
+    if (-not $target) { return $false }
+    foreach ($n in @($Names)) {
+        if ($target -eq (Normalize-CrashDisplayKey ([string]$n))) { return $true }
+    }
+    return $false
+}
+
+function Get-CrashKnownTargets {
+    $targets = @(Read-JsonFile $PokeTargetsFile)
+    if ($targets.Count -eq 0) { $targets = @($DefaultPokeTargets) }
+    return @(Normalize-PokeTargets $targets)
+}
+
+function Get-CrashDisplayNamesForWindowsUser {
+    param([string]$WindowsUser, [string]$DisplayName = '')
+    $win = Normalize-WindowsUser $WindowsUser
+    $names = @()
+    foreach ($v in @($DisplayName, $win)) {
+        $clean = ([string]$v).Trim()
+        if ($clean -and $names -notcontains $clean) { $names += $clean }
+    }
+    if ($win -eq 'dlebel' -and $names -notcontains 'Dylan Lebel') { $names += 'Dylan Lebel' }
+
+    foreach ($t in @(Get-CrashKnownTargets)) {
+        if ($t.enabled -eq $false) { continue }
+        $isMatch = $false
+        foreach ($wu in @($t.windowsUsers)) {
+            if ((Normalize-WindowsUser ([string]$wu)) -eq $win) { $isMatch = $true; break }
+        }
+        if (-not $isMatch) { continue }
+
+        foreach ($v in @($t.label) + @($t.shortName) + @($t.names) + @($t.aliases)) {
+            $clean = ([string]$v).Trim()
+            if ($clean -and $names -notcontains $clean) { $names += $clean }
+        }
+    }
+    return @($names)
+}
+
+function Resolve-CrashParticipantWindowsUser {
+    param([string]$DisplayName, [string]$FallbackWindowsUser = '')
+    $nameKey = Normalize-CrashDisplayKey $DisplayName
+    $fallback = Normalize-WindowsUser $FallbackWindowsUser
+    if (-not $nameKey) { return $fallback }
+
+    foreach ($t in @(Get-CrashKnownTargets)) {
+        if ($t.enabled -eq $false) { continue }
+        $wins = @($t.windowsUsers)
+        if ($wins.Count -eq 0) { continue }
+        $tokens = @($t.label) + @($t.shortName) + @($t.names) + @($t.aliases) + @($wins)
+        foreach ($token in $tokens) {
+            if ($nameKey -eq (Normalize-CrashDisplayKey ([string]$token))) {
+                return (Normalize-WindowsUser ([string]$wins[0]))
+            }
+        }
+    }
+    if (Test-CrashNameInList $DisplayName (Get-CrashDisplayNamesForWindowsUser -WindowsUser $fallback)) {
+        return $fallback
+    }
+    return ''
+}
+
+function Test-CrashEntryInMonth {
+    param($Crash, [string]$MonthKey)
+    if (-not $Crash -or [string]::IsNullOrWhiteSpace($MonthKey)) { return $false }
+    $raw = if ($Crash.PSObject.Properties['timestamp']) { [string]$Crash.timestamp } else { '' }
+    if ([string]::IsNullOrWhiteSpace($raw)) { return $false }
+    try {
+        $dt = [datetime]::Parse($raw).ToLocalTime()
+        return ((Get-CrashMonthKey $dt) -eq $MonthKey)
+    } catch {
+        return $false
+    }
+}
+
+function Test-CrashEntryBelongsToParticipant {
+    param($Crash, [string]$WindowsUser, $DisplayNames, [string]$MonthKey)
+    if (-not (Test-CrashEntryInMonth -Crash $Crash -MonthKey $MonthKey)) { return $false }
+    $win = Normalize-WindowsUser $WindowsUser
+    if (-not $win) { return $false }
+
+    if ($Crash.PSObject.Properties['participantWindowsUser']) {
+        $participant = Normalize-WindowsUser ([string]$Crash.participantWindowsUser)
+        if ($participant -and $participant -eq $win) { return $true }
+    }
+    if ($Crash.PSObject.Properties['windowsUser']) {
+        $logger = Normalize-WindowsUser ([string]$Crash.windowsUser)
+        if ($logger -and $logger -eq $win) { return $true }
+    }
+    if ($Crash.PSObject.Properties['user'] -and (Test-CrashNameInList ([string]$Crash.user) $DisplayNames)) {
+        return $true
+    }
+    return $false
+}
+
+function Add-CrashConsentRosterParticipant {
+    param([hashtable]$Map, [string]$WindowsUser, [string]$DisplayName = '', [string]$Source = '')
+    $win = Normalize-WindowsUser $WindowsUser
+    $display = ([string]$DisplayName).Trim()
+    if (-not $win -and -not $display) { return }
+
+    $displayKey = Normalize-CrashDisplayKey $display
+    $nameOnlyKey = if ($displayKey) { 'name:' + $displayKey } else { '' }
+    $matchingKey = ''
+    if ($displayKey) {
+        foreach ($existingKey in @($Map.Keys)) {
+            $existing = $Map[$existingKey]
+            if ((Normalize-CrashDisplayKey ([string]$existing['displayName'])) -eq $displayKey) {
+                $matchingKey = [string]$existingKey
+                break
+            }
+        }
+    }
+
+    $key = ''
+    if ($win -and $Map.ContainsKey($win)) {
+        $key = $win
+    } elseif ($win -and $matchingKey) {
+        $existing = $Map[$matchingKey]
+        if ($matchingKey -eq $nameOnlyKey -or -not $existing['windowsUser']) {
+            $Map.Remove($matchingKey)
+            $Map[$win] = $existing
+            $key = $win
+        } else {
+            $key = $matchingKey
+        }
+    } elseif ($win) {
+        $key = $win
+    } elseif ($matchingKey) {
+        $key = $matchingKey
+    } else {
+        $key = $nameOnlyKey
+    }
+
+    if (-not $Map.ContainsKey($key)) {
+        $Map[$key] = [ordered]@{
+            windowsUser = $win
+            displayName = if ($display) { $display } else { $win }
+            sources     = @()
+        }
+    }
+
+    $row = $Map[$key]
+    if ($win -and -not $row['windowsUser']) { $row['windowsUser'] = $win }
+    if ($display -and (-not $row['displayName'] -or $row['displayName'] -eq $row['windowsUser'])) {
+        $row['displayName'] = $display
+    }
+    if ($Source -and @($row['sources']) -notcontains $Source) {
+        $row['sources'] += $Source
+    }
+    return $key
+}
+
+function Get-CrashConsentRoster {
+    $monthKey = Get-CrashMonthKey
+    $consents = @(Read-JsonFile $CrashConsentFile)
+    $crashes = @(Read-JsonFile $CrFile)
+    $map = @{}
+    $consentByUser = @{}
+
+    foreach ($row in $consents) {
+        if ($null -eq $row -or -not $row.PSObject.Properties['windowsUser']) { continue }
+        $win = Normalize-WindowsUser ([string]$row.windowsUser)
+        if (-not $win) { continue }
+        $consentByUser[$win] = $row
+        $display = if ($row.PSObject.Properties['displayName']) { [string]$row.displayName } else { $win }
+        $null = Add-CrashConsentRosterParticipant -Map $map -WindowsUser $win -DisplayName $display -Source 'terms'
+    }
+
+    foreach ($target in @(Get-CrashKnownTargets)) {
+        if ($null -eq $target -or $target.enabled -eq $false) { continue }
+        $display = ''
+        foreach ($v in @($target.label) + @($target.shortName) + @($target.names)) {
+            $clean = ([string]$v).Trim()
+            if ($clean) { $display = $clean; break }
+        }
+        foreach ($wu in @($target.windowsUsers)) {
+            $win = Normalize-WindowsUser ([string]$wu)
+            if ($win) { $null = Add-CrashConsentRosterParticipant -Map $map -WindowsUser $win -DisplayName $display -Source 'participant' }
+        }
+    }
+
+    foreach ($crash in $crashes) {
+        if ($null -eq $crash) { continue }
+        $win = ''
+        if ($crash.PSObject.Properties['participantWindowsUser']) { $win = Normalize-WindowsUser ([string]$crash.participantWindowsUser) }
+        if (-not $win -and $crash.PSObject.Properties['windowsUser']) { $win = Normalize-WindowsUser ([string]$crash.windowsUser) }
+        $display = ''
+        if ($crash.PSObject.Properties['user']) { $display = ([string]$crash.user).Trim() }
+        if (-not $display -and $crash.PSObject.Properties['createdBy']) { $display = ([string]$crash.createdBy).Trim() }
+        $null = Add-CrashConsentRosterParticipant -Map $map -WindowsUser $win -DisplayName $display -Source 'crash'
+    }
+
+    $items = @()
+    foreach ($key in $map.Keys) {
+        $base = $map[$key]
+        $win = Normalize-WindowsUser ([string]$base['windowsUser'])
+        $row = $null
+        if ($win -and $consentByUser.ContainsKey($win)) { $row = $consentByUser[$win] }
+
+        $display = ([string]$base['displayName']).Trim()
+        if ($row -and $row.PSObject.Properties['displayName'] -and $row.displayName) {
+            $display = ([string]$row.displayName).Trim()
+        }
+        if (-not $display) { $display = if ($win) { $win } else { 'Unknown participant' } }
+
+        $rulesVersion = ''
+        $acceptedAt = ''
+        $declinedMonth = ''
+        $declinedAt = ''
+        $accepted = $false
+        $hasConsentRow = $false
+        if ($row) {
+            $hasConsentRow = $true
+            if ($row.PSObject.Properties['rulesVersion']) { $rulesVersion = [string]$row.rulesVersion }
+            if ($row.PSObject.Properties['acceptedAt']) { $acceptedAt = [string]$row.acceptedAt }
+            if ($row.PSObject.Properties['declinedMonthKey']) { $declinedMonth = [string]$row.declinedMonthKey }
+            if ($row.PSObject.Properties['declinedAt']) { $declinedAt = [string]$row.declinedAt }
+            $accepted = ($rulesVersion -eq $CrashRulesVersion -and $row.PSObject.Properties['accepted'] -and (ConvertTo-PreferenceBool $row.accepted))
+        }
+
+        $declinedThisMonth = (-not $accepted -and $declinedMonth -eq $monthKey)
+        $status = 'not_started'
+        if ($accepted) {
+            $status = 'accepted'
+        } elseif ($declinedThisMonth) {
+            $status = 'spectator'
+        } elseif ($hasConsentRow) {
+            $status = 'needs_acceptance'
+        }
+
+        $items += [pscustomobject][ordered]@{
+            displayName       = $display
+            windowsUser       = $win
+            status            = $status
+            accepted          = [bool]$accepted
+            acceptedAt        = $acceptedAt
+            declinedThisMonth = [bool]$declinedThisMonth
+            declinedAt        = $declinedAt
+            rulesVersion      = $rulesVersion
+            currentRulesVersion = $CrashRulesVersion
+            source            = (@($base['sources']) -join ', ')
+        }
+    }
+
+    $participants = @($items | Sort-Object `
+        @{ Expression = { switch ($_.status) { 'accepted' { 0 } 'spectator' { 1 } 'needs_acceptance' { 2 } default { 3 } } } }, `
+        displayName)
+
+    return [pscustomobject][ordered]@{
+        ok                 = $true
+        rulesVersion       = $CrashRulesVersion
+        currentMonthKey    = $monthKey
+        generatedAt        = (Get-Date).ToUniversalTime().ToString('o')
+        participants       = @($participants)
+        totalCount         = @($participants).Count
+        acceptedCount      = @($participants | Where-Object { $_.status -eq 'accepted' }).Count
+        spectatorCount     = @($participants | Where-Object { $_.status -eq 'spectator' }).Count
+        needsDecisionCount = @($participants | Where-Object { $_.status -eq 'needs_acceptance' -or $_.status -eq 'not_started' }).Count
+        source             = $DataSource
+    }
+}
+
+function Get-CrashConsentState {
+    param([string]$WindowsUser, [string]$DisplayName = '')
+    $win = Normalize-WindowsUser $WindowsUser
+    $display = ([string]$DisplayName).Trim()
+    if (-not $display) { $display = $win }
+    $monthKey = Get-CrashMonthKey
+    $row = $null
+    foreach ($entry in @(Read-JsonFile $CrashConsentFile)) {
+        if ($null -eq $entry -or -not $entry.PSObject.Properties['windowsUser']) { continue }
+        if ((Normalize-WindowsUser ([string]$entry.windowsUser)) -eq $win) { $row = $entry }
+    }
+
+    $accepted = $false
+    $acceptedAt = ''
+    $declinedMonth = ''
+    $declinedAt = ''
+    $rulesVersion = $CrashRulesVersion
+    $excludedCrashCount = 0
+    $backedUpCrashCount = 0
+    if ($row) {
+        if ($row.PSObject.Properties['displayName'] -and $row.displayName -and -not $display) { $display = [string]$row.displayName }
+        if ($row.PSObject.Properties['rulesVersion']) { $rulesVersion = [string]$row.rulesVersion }
+        if ($row.PSObject.Properties['acceptedAt']) { $acceptedAt = [string]$row.acceptedAt }
+        if ($row.PSObject.Properties['declinedMonthKey']) { $declinedMonth = [string]$row.declinedMonthKey }
+        if ($row.PSObject.Properties['declinedAt']) { $declinedAt = [string]$row.declinedAt }
+        if ($row.PSObject.Properties['excludedCrashCount']) { try { $excludedCrashCount = [int]$row.excludedCrashCount } catch {} }
+        if ($row.PSObject.Properties['backedUpCrashes']) { try { $backedUpCrashCount = @($row.backedUpCrashes).Count } catch {} }
+        $accepted = ($rulesVersion -eq $CrashRulesVersion -and $row.PSObject.Properties['accepted'] -and (ConvertTo-PreferenceBool $row.accepted))
+    }
+
+    $declinedThisMonth = (-not $accepted -and $declinedMonth -eq $monthKey)
+    $canLog = ($accepted -and -not $declinedThisMonth)
+    return [pscustomobject][ordered]@{
+        ok                = $true
+        windowsUser       = $win
+        displayName       = $display
+        rulesVersion      = $CrashRulesVersion
+        accepted          = [bool]$accepted
+        acceptedAt        = $acceptedAt
+        declinedThisMonth = [bool]$declinedThisMonth
+        declinedMonthKey  = $declinedMonth
+        declinedAt        = $declinedAt
+        deletedCrashCount = 0
+        excludedCrashCount = $excludedCrashCount
+        backedUpCrashCount = $backedUpCrashCount
+        currentMonthKey   = $monthKey
+        canLog            = [bool]$canLog
+        needsDecision     = [bool](-not $accepted -and -not $declinedThisMonth)
+    }
+}
+
+function Set-CrashConsentAccepted {
+    param([string]$WindowsUser, [string]$DisplayName = '')
+    $win = Normalize-WindowsUser $WindowsUser
+    if (-not $win) { throw 'Windows user is required.' }
+    $display = ([string]$DisplayName).Trim()
+    if (-not $display) { $display = $win }
+    $stamp = (Get-Date).ToUniversalTime().ToString('o')
+    $current = Get-CrashConsentState -WindowsUser $win -DisplayName $display
+    # NOTE: declining no longer locks you out for the rest of the month. Players
+    # can hop into Spectator mode and back into the game freely via "Join now".
+
+    Invoke-LockedMutate $CrashConsentFile {
+        param($data)
+        $found = $false
+        foreach ($row in $data) {
+            if (-not $row.PSObject.Properties['windowsUser']) { continue }
+            if ((Normalize-WindowsUser ([string]$row.windowsUser)) -ne $win) { continue }
+            $found = $true
+            $row | Add-Member -NotePropertyName windowsUser -NotePropertyValue $win -Force
+            $row | Add-Member -NotePropertyName displayName -NotePropertyValue $display -Force
+            $row | Add-Member -NotePropertyName rulesVersion -NotePropertyValue $CrashRulesVersion -Force
+            $row | Add-Member -NotePropertyName accepted -NotePropertyValue $true -Force
+            $row | Add-Member -NotePropertyName acceptedAt -NotePropertyValue $stamp -Force
+            $row | Add-Member -NotePropertyName declinedMonthKey -NotePropertyValue '' -Force
+            $row | Add-Member -NotePropertyName declinedAt -NotePropertyValue '' -Force
+            $row | Add-Member -NotePropertyName deletedCrashCount -NotePropertyValue 0 -Force
+            $row | Add-Member -NotePropertyName excludedCrashCount -NotePropertyValue 0 -Force
+            $row | Add-Member -NotePropertyName backedUpCrashes -NotePropertyValue ([object[]]@()) -Force
+            break
+        }
+        if (-not $found) {
+            $data += [pscustomobject][ordered]@{
+                windowsUser       = $win
+                displayName       = $display
+                rulesVersion      = $CrashRulesVersion
+                accepted          = $true
+                acceptedAt        = $stamp
+                declinedMonthKey  = ''
+                declinedAt        = ''
+                deletedCrashCount = 0
+                excludedCrashCount = 0
+                backedUpCrashes = @()
+            }
+        }
+        return @($data | Sort-Object windowsUser)
+    } | Out-Null
+
+    return Get-CrashConsentState -WindowsUser $win -DisplayName $display
+}
+
+function Set-CrashConsentDeclined {
+    param([string]$WindowsUser, [string]$DisplayName = '')
+    $win = Normalize-WindowsUser $WindowsUser
+    if (-not $win) { throw 'Windows user is required.' }
+    $display = ([string]$DisplayName).Trim()
+    if (-not $display) { $display = $win }
+    $monthKey = Get-CrashMonthKey
+    $stamp = (Get-Date).ToUniversalTime().ToString('o')
+    $displayNames = @(Get-CrashDisplayNamesForWindowsUser -WindowsUser $win -DisplayName $display)
+    $backedUpCrashes = @()
+
+    foreach ($c in @(Read-JsonFile $CrFile)) {
+        if (Test-CrashEntryBelongsToParticipant -Crash $c -WindowsUser $win -DisplayNames $displayNames -MonthKey $monthKey) {
+            $snapshot = [ordered]@{}
+            foreach ($prop in $c.PSObject.Properties) {
+                $snapshot[$prop.Name] = $prop.Value
+            }
+            $backedUpCrashes += [pscustomobject]$snapshot
+        }
+    }
+    $excludedCount = @($backedUpCrashes).Count
+
+    Invoke-LockedMutate $CrashConsentFile {
+        param($data)
+        $found = $false
+        foreach ($row in $data) {
+            if (-not $row.PSObject.Properties['windowsUser']) { continue }
+            if ((Normalize-WindowsUser ([string]$row.windowsUser)) -ne $win) { continue }
+            $found = $true
+            $row | Add-Member -NotePropertyName windowsUser -NotePropertyValue $win -Force
+            $row | Add-Member -NotePropertyName displayName -NotePropertyValue $display -Force
+            $row | Add-Member -NotePropertyName rulesVersion -NotePropertyValue $CrashRulesVersion -Force
+            $row | Add-Member -NotePropertyName accepted -NotePropertyValue $false -Force
+            $row | Add-Member -NotePropertyName acceptedAt -NotePropertyValue '' -Force
+            $row | Add-Member -NotePropertyName declinedMonthKey -NotePropertyValue $monthKey -Force
+            $row | Add-Member -NotePropertyName declinedAt -NotePropertyValue $stamp -Force
+            $row | Add-Member -NotePropertyName deletedCrashCount -NotePropertyValue 0 -Force
+            $row | Add-Member -NotePropertyName excludedCrashCount -NotePropertyValue $excludedCount -Force
+            $row | Add-Member -NotePropertyName backedUpCrashes -NotePropertyValue ([object[]]@($backedUpCrashes)) -Force
+            break
+        }
+        if (-not $found) {
+            $data += [pscustomobject][ordered]@{
+                windowsUser       = $win
+                displayName       = $display
+                rulesVersion      = $CrashRulesVersion
+                accepted          = $false
+                acceptedAt        = ''
+                declinedMonthKey  = $monthKey
+                declinedAt        = $stamp
+                deletedCrashCount = 0
+                excludedCrashCount = $excludedCount
+                backedUpCrashes = @($backedUpCrashes)
+            }
+        }
+        return @($data | Sort-Object windowsUser)
+    } | Out-Null
+
+    $state = Get-CrashConsentState -WindowsUser $win -DisplayName $display
+    $state | Add-Member -NotePropertyName entries -NotePropertyValue @(Read-JsonFile $CrFile) -Force
+    return $state
+}
+
 function Get-CrashTiePollState {
     param($Votes)
 
@@ -927,31 +1381,165 @@ function Get-CaptchaPanelActiveUsers {
     return @($active)
 }
 
-function Get-CaptchaPanelTargets {
-    param([switch]$OnlyAllowedTargets)
-    $pokeTargets = @(Read-JsonFile $PokeTargetsFile)
-    if ($pokeTargets.Count -eq 0) { $pokeTargets = @($DefaultPokeTargets) }
-    $normalizedTargets = @(Normalize-PokeTargets $pokeTargets)
-    if (-not $OnlyAllowedTargets) { return @($normalizedTargets) }
+function Add-CaptchaPanelTargetMapEntry {
+    param(
+        [hashtable]$Map,
+        [string]$WindowsUser,
+        [string]$DisplayName = '',
+        [string]$Machine = '',
+        [string]$LastSeen = '',
+        [string]$Source = '',
+        [switch]$Configured,
+        [switch]$OnlyAllowedTargets
+    )
+    $wu = Normalize-WindowsUser $WindowsUser
+    if (-not $wu) { return }
+    if ($OnlyAllowedTargets -and -not (Test-CaptchaTargetAllowed $wu)) { return }
 
-    $filtered = @()
-    foreach ($t in $normalizedTargets) {
-        $allowedWins = @()
-        foreach ($wu in @($t.windowsUsers)) {
-            $clean = Normalize-WindowsUser ([string]$wu)
-            if ($clean -and (Test-CaptchaTargetAllowed $clean)) { $allowedWins += $clean }
-        }
-        if ($allowedWins.Count -eq 0) { continue }
-        $filtered += [pscustomobject]@{
-            label        = if ($t.PSObject.Properties['label']) { [string]$t.label } else { $allowedWins[0] }
-            shortName    = if ($t.PSObject.Properties['shortName']) { [string]$t.shortName } else { $allowedWins[0] }
-            windowsUsers = @($allowedWins)
-            names        = if ($t.PSObject.Properties['names']) { @($t.names) } else { @() }
-            aliases      = if ($t.PSObject.Properties['aliases']) { @($t.aliases) } else { @() }
-            enabled      = if ($t.PSObject.Properties['enabled']) { [bool]$t.enabled } else { $true }
+    $label = $DisplayName.Trim()
+    if ([string]::IsNullOrWhiteSpace($label)) { $label = $wu }
+
+    if (-not $Map.ContainsKey($wu)) {
+        $Map[$wu] = [ordered]@{
+            windowsUser = $wu
+            displayName = $label
+            names       = @()
+            aliases     = @()
+            machine     = ''
+            lastSeen    = ''
+            source      = @()
+            configured  = $false
         }
     }
-    return @($filtered)
+
+    $entry = $Map[$wu]
+    if ($Configured) { $entry.configured = $true }
+    if (-not [string]::IsNullOrWhiteSpace($label)) {
+        $names = @($entry.names)
+        if ($names -notcontains $label) { $entry.names = @($names + $label) }
+        if ($entry.displayName -eq $wu -or $Configured -or [string]::IsNullOrWhiteSpace([string]$entry.displayName)) {
+            $entry.displayName = $label
+        }
+    }
+    if (-not [string]::IsNullOrWhiteSpace($Machine)) { $entry.machine = $Machine.Trim() }
+    if (-not [string]::IsNullOrWhiteSpace($LastSeen)) {
+        $seen = $LastSeen.Trim()
+        if ([string]::IsNullOrWhiteSpace([string]$entry.lastSeen) -or $seen -gt [string]$entry.lastSeen) {
+            $entry.lastSeen = $seen
+        }
+    }
+    if (-not [string]::IsNullOrWhiteSpace($Source)) {
+        $sources = @($entry.source)
+        if ($sources -notcontains $Source) { $entry.source = @($sources + $Source) }
+    }
+}
+
+function Get-CaptchaPanelKnownTargets {
+    param([switch]$OnlyAllowedTargets)
+    $known = @{}
+
+    $pokeTargets = @(Read-JsonFile $PokeTargetsFile)
+    if ($pokeTargets.Count -eq 0) { $pokeTargets = @($DefaultPokeTargets) }
+    foreach ($t in @(Normalize-PokeTargets $pokeTargets)) {
+        if ($t.enabled -eq $false) { continue }
+        foreach ($wuRaw in @($t.windowsUsers)) {
+            Add-CaptchaPanelTargetMapEntry -Map $known -WindowsUser ([string]$wuRaw) -DisplayName ([string]$t.label) -Source 'target' -Configured -OnlyAllowedTargets:$OnlyAllowedTargets
+            $wu = Normalize-WindowsUser ([string]$wuRaw)
+            if (-not $known.ContainsKey($wu)) { continue }
+            $entry = $known[$wu]
+            foreach ($alias in @($t.aliases)) {
+                $cleanAlias = Normalize-WindowsUser ([string]$alias)
+                if (-not $cleanAlias) { continue }
+                $aliases = @($entry.aliases)
+                if ($aliases -notcontains $cleanAlias) { $entry.aliases = @($aliases + $cleanAlias) }
+            }
+            foreach ($name in @($t.names)) {
+                $cleanName = ([string]$name).Trim()
+                if (-not $cleanName) { continue }
+                $names = @($entry.names)
+                if ($names -notcontains $cleanName) { $entry.names = @($names + $cleanName) }
+            }
+        }
+    }
+
+    foreach ($p in @(Read-JsonFile $PresenceFile)) {
+        $wu = if ($p.PSObject.Properties['windowsUser']) { [string]$p.windowsUser } else { '' }
+        $dn = if ($p.PSObject.Properties['displayName']) { [string]$p.displayName } else { '' }
+        $machine = if ($p.PSObject.Properties['machine']) { [string]$p.machine } else { '' }
+        $lastSeen = if ($p.PSObject.Properties['lastSeen']) { [string]$p.lastSeen } else { '' }
+        Add-CaptchaPanelTargetMapEntry -Map $known -WindowsUser $wu -DisplayName $dn -Machine $machine -LastSeen $lastSeen -Source 'presence' -OnlyAllowedTargets:$OnlyAllowedTargets
+    }
+
+    try {
+        $usage = Read-UsageLog -MaxEntries 1000
+        foreach ($u in @($usage.unique)) {
+            $wu = if ($u.PSObject.Properties['windowsUser']) { [string]$u.windowsUser } else { '' }
+            $machine = if ($u.PSObject.Properties['machine']) { [string]$u.machine } else { '' }
+            $lastSeen = if ($u.PSObject.Properties['lastSeen']) { [string]$u.lastSeen } else { '' }
+            Add-CaptchaPanelTargetMapEntry -Map $known -WindowsUser $wu -Machine $machine -LastSeen $lastSeen -Source 'usage' -OnlyAllowedTargets:$OnlyAllowedTargets
+        }
+    } catch {}
+
+    foreach ($tk in @(Read-JsonFile $TkFile)) {
+        if ($null -eq $tk) { continue }
+        $tkUser = if ($tk.PSObject.Properties['windowsUser'] -and $tk.windowsUser) { [string]$tk.windowsUser } else { '' }
+        $tkName = if ($tk.PSObject.Properties['createdBy'] -and $tk.createdBy) { [string]$tk.createdBy } else { '' }
+        $tkDate = if ($tk.PSObject.Properties['date'] -and $tk.date) { [string]$tk.date } else { '' }
+        Add-CaptchaPanelTargetMapEntry -Map $known -WindowsUser $tkUser -DisplayName $tkName -LastSeen $tkDate -Source 'ticket' -OnlyAllowedTargets:$OnlyAllowedTargets
+
+        foreach ($v in @($tk.voters)) {
+            if ($null -eq $v) { continue }
+            Add-CaptchaPanelTargetMapEntry -Map $known -WindowsUser ([string]$v) -Source 'vote' -OnlyAllowedTargets:$OnlyAllowedTargets
+        }
+        foreach ($p in @($tk.pokes)) {
+            if ($null -eq $p) { continue }
+            $pu = if ($p.PSObject.Properties['windowsUser'] -and $p.windowsUser) { [string]$p.windowsUser } else { '' }
+            Add-CaptchaPanelTargetMapEntry -Map $known -WindowsUser $pu -Source 'poke' -OnlyAllowedTargets:$OnlyAllowedTargets
+        }
+        foreach ($c in @($tk.comments)) {
+            if ($null -eq $c) { continue }
+            $cu = if ($c.PSObject.Properties['windowsUser'] -and $c.windowsUser) { [string]$c.windowsUser } else { '' }
+            $cn = if ($c.PSObject.Properties['displayName'] -and $c.displayName) { [string]$c.displayName } else { '' }
+            $cd = if ($c.PSObject.Properties['date'] -and $c.date) { [string]$c.date } else { '' }
+            Add-CaptchaPanelTargetMapEntry -Map $known -WindowsUser $cu -DisplayName $cn -LastSeen $cd -Source 'comment' -OnlyAllowedTargets:$OnlyAllowedTargets
+        }
+    }
+
+    foreach ($cr in @(Read-JsonFile $CrFile)) {
+        if ($null -eq $cr) { continue }
+        $wu = if ($cr.PSObject.Properties['windowsUser'] -and $cr.windowsUser) { [string]$cr.windowsUser } else { '' }
+        $dn = ''
+        if ($cr.PSObject.Properties['createdBy'] -and $cr.createdBy) { $dn = [string]$cr.createdBy }
+        elseif ($cr.PSObject.Properties['user'] -and $cr.user) { $dn = [string]$cr.user }
+        $when = if ($cr.PSObject.Properties['timestamp'] -and $cr.timestamp) { [string]$cr.timestamp } else { '' }
+        Add-CaptchaPanelTargetMapEntry -Map $known -WindowsUser $wu -DisplayName $dn -LastSeen $when -Source 'crash' -OnlyAllowedTargets:$OnlyAllowedTargets
+    }
+
+    $rows = @()
+    foreach ($key in $known.Keys) {
+        $entry = $known[$key]
+        $label = [string]$entry.displayName
+        if ([string]::IsNullOrWhiteSpace($label)) { $label = [string]$entry.windowsUser }
+        $shortName = ($label -split '\s+')[0]
+        $rows += [pscustomobject]@{
+            label        = $label
+            shortName    = $shortName
+            windowsUsers = @([string]$entry.windowsUser)
+            names        = @($entry.names)
+            aliases      = @($entry.aliases)
+            enabled      = $true
+            machine      = [string]$entry.machine
+            lastSeen     = [string]$entry.lastSeen
+            source       = (@($entry.source) -join ', ')
+            configured   = [bool]$entry.configured
+        }
+    }
+    return @($rows | Sort-Object -Property @{ Expression = 'configured'; Descending = $true }, @{ Expression = 'label'; Ascending = $true })
+}
+
+function Get-CaptchaPanelTargets {
+    param([switch]$OnlyAllowedTargets)
+    return @(Get-CaptchaPanelKnownTargets -OnlyAllowedTargets:$OnlyAllowedTargets)
 }
 
 function Add-CaptchaQueueEntry {
@@ -1350,6 +1938,7 @@ function Initialize-DataFiles {
             $script:CrashNotifyFile = Join-Path $LocalDataDir 'crash-notifications.json'
             $script:CrashTiePollFile = Join-Path $LocalDataDir 'crash-tie-poll.json'
             $script:CrashDonutStatusFile = Join-Path $LocalDataDir 'crash-donut-status.json'
+            $script:CrashConsentFile = Join-Path $LocalDataDir 'crash-consent.json'
             $script:PollsFile = Join-Path $LocalDataDir 'polls.json'
             $script:PokeResetFile = Join-Path $LocalDataDir 'poke-resets.json'
             $script:PokeTargetsFile = Join-Path $LocalDataDir 'poke-targets.json'
@@ -1383,6 +1972,10 @@ function Initialize-DataFiles {
     if (-not (Test-Path $CrashDonutStatusFile)) {
         [System.IO.File]::WriteAllText($CrashDonutStatusFile, '[]', [System.Text.Encoding]::UTF8)
         Write-Host "  Created crash-donut-status.json (empty)"
+    }
+    if (-not (Test-Path $CrashConsentFile)) {
+        [System.IO.File]::WriteAllText($CrashConsentFile, '[]', [System.Text.Encoding]::UTF8)
+        Write-Host "  Created crash-consent.json (empty)"
     }
     if (-not (Test-Path $PollsFile)) {
         [System.IO.File]::WriteAllText($PollsFile, '[]', [System.Text.Encoding]::UTF8)
@@ -1587,6 +2180,69 @@ function Handle-Request {
     if ($method -eq 'GET' -and $url -eq '/api/crash-donut-status') {
         $data = @(Read-JsonFile $CrashDonutStatusFile)
         Send-JsonResponse $res 200 $data
+        return
+    }
+
+    # ── GET /api/crash-consent ──────────────────────────
+    # Public roster of participants and their current terms status.
+    if ($method -eq 'GET' -and $url -eq '/api/crash-consent') {
+        Send-JsonResponse $res 200 (Get-CrashConsentRoster)
+        return
+    }
+
+    # ── GET /api/crash-consent/me ───────────────────────
+    # One-time crash game agreement keyed by the caller's Windows user.
+    if ($method -eq 'GET' -and $url -eq '/api/crash-consent/me') {
+        $who = Get-CallerUser
+        $display = [string]$req.QueryString['displayName']
+        $state = Get-CrashConsentState -WindowsUser $who -DisplayName $display
+        Send-JsonResponse $res 200 $state
+        return
+    }
+
+    # ── POST /api/crash-consent/accept ──────────────────
+    if ($method -eq 'POST' -and $url -eq '/api/crash-consent/accept') {
+        $who = Get-CallerUser
+        if (-not $who) {
+            Send-JsonResponse $res 400 @{ error = 'Windows user is required.' }
+            return
+        }
+        $body = Read-RequestBody $req
+        $parsed = $null
+        try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
+        $display = ''
+        if ($parsed -and $parsed.PSObject.Properties['displayName'] -and $parsed.displayName) {
+            $display = ([string]$parsed.displayName).Trim()
+        }
+        try {
+            Send-JsonResponse $res 200 (Set-CrashConsentAccepted -WindowsUser $who -DisplayName $display)
+        } catch {
+            Send-JsonResponse $res 400 @{ error = $_.Exception.Message }
+        }
+        return
+    }
+
+    # ── POST /api/crash-consent/decline ─────────────────
+    # Declining records an opt-out snapshot and blocks logging until the next
+    # month. Crash rows are never deleted by the consent flow.
+    if ($method -eq 'POST' -and $url -eq '/api/crash-consent/decline') {
+        $who = Get-CallerUser
+        if (-not $who) {
+            Send-JsonResponse $res 400 @{ error = 'Windows user is required.' }
+            return
+        }
+        $body = Read-RequestBody $req
+        $parsed = $null
+        try { if ($body) { $parsed = $body | ConvertFrom-Json } } catch {}
+        $display = ''
+        if ($parsed -and $parsed.PSObject.Properties['displayName'] -and $parsed.displayName) {
+            $display = ([string]$parsed.displayName).Trim()
+        }
+        try {
+            Send-JsonResponse $res 200 (Set-CrashConsentDeclined -WindowsUser $who -DisplayName $display)
+        } catch {
+            Send-JsonResponse $res 400 @{ error = $_.Exception.Message }
+        }
         return
     }
 
@@ -2194,10 +2850,41 @@ function Handle-Request {
             }
             return
         }
+        $createdBy = ''
+        if ($crash.PSObject.Properties['createdBy'] -and $crash.createdBy) {
+            $createdBy = ([string]$crash.createdBy).Trim()
+        }
+        $targetName = ''
+        if ($crash.PSObject.Properties['user'] -and $crash.user) {
+            $targetName = ([string]$crash.user).Trim()
+        }
+        $displayForConsent = if ($createdBy) { $createdBy } elseif ($targetName) { $targetName } else { $caller }
+        $consentState = Get-CrashConsentState -WindowsUser $caller -DisplayName $displayForConsent
+        if (-not $consentState.canLog) {
+            Send-JsonResponse $res 403 @{
+                error   = 'You need to accept the crash donut duty rules before logging crashes.'
+                consent = $consentState
+            }
+            return
+        }
+        if (-not (Test-CallerIsAdmin)) {
+            $allowedNames = @(Get-CrashDisplayNamesForWindowsUser -WindowsUser $caller -DisplayName $displayForConsent)
+            if ($targetName -and -not (Test-CrashNameInList $targetName $allowedNames)) {
+                Send-JsonResponse $res 403 @{ error = 'Only admins can log a crash for someone else.' }
+                return
+            }
+        }
         $crash | Add-Member -NotePropertyName windowsUser -NotePropertyValue $caller -Force
         if (-not $crash.user) {
-            $crash | Add-Member -NotePropertyName user -NotePropertyValue $caller -Force
+            $crash | Add-Member -NotePropertyName user -NotePropertyValue $displayForConsent -Force
+            $targetName = $displayForConsent
         }
+        if (-not $crash.PSObject.Properties['createdBy'] -or -not $crash.createdBy) {
+            $crash | Add-Member -NotePropertyName createdBy -NotePropertyValue $displayForConsent -Force
+        }
+        $participantUser = Resolve-CrashParticipantWindowsUser -DisplayName $targetName -FallbackWindowsUser $caller
+        if (-not $participantUser -or -not (Test-CallerIsAdmin)) { $participantUser = $caller }
+        $crash | Add-Member -NotePropertyName participantWindowsUser -NotePropertyValue $participantUser -Force
         $updated = Invoke-LockedMutate $CrFile {
             param($data)
             $maxId = 0
@@ -3341,11 +4028,10 @@ function Handle-Request {
             }
             if ($qa -and $qa -gt $cutoffQ) { $recent += $q }
         }
-        # Configured poke-targets — gives the admin UI the full set of users
-        # it can queue captchas for, including ones currently offline.
-        $pokeTargets = @(Read-JsonFile $PokeTargetsFile)
-        if ($pokeTargets.Count -eq 0) { $pokeTargets = @($DefaultPokeTargets) }
-        Send-JsonResponse $res 200 @{ active = $active; queue = $recent; targets = $pokeTargets; source = $DataSource }
+        # Known guide users - configured targets, recent presence, usage,
+        # tickets, comments, pokes, votes, and crash rows.
+        $knownTargets = @(Get-CaptchaPanelTargets -OnlyAllowedTargets)
+        Send-JsonResponse $res 200 @{ active = $active; queue = $recent; targets = $knownTargets; source = $DataSource }
         return
     }
 
@@ -3720,6 +4406,7 @@ function Start-Server {
     Release-Lock $PokeTargetsFile
     Release-Lock $CrashTiePollFile
     Release-Lock $CrashDonutStatusFile
+    Release-Lock $CrashConsentFile
     Release-Lock $PollsFile
     # Only remove the port file if it still points at our port. On restart the
     # replacement child may have already written its own value — don't clobber.

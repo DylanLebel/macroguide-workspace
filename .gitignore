@@ -20,6 +20,7 @@ deploy/data/usage.log
 deploy/data/tickets.json
 deploy/data/crashes.json
 deploy/data/crash-notifications.json
+deploy/data/crash-consent.json
 deploy/data/crash-tie-poll.json
 deploy/data/crash-donut-status.json
 deploy/data/polls.json
@@ -28,6 +29,9 @@ deploy/data/captcha-queue.json
 deploy/data/poke-resets.json
 deploy/data/poke-targets.json
 deploy/data/attachments/
+
+# Local snapshots fetched from the running Macro Guide server.
+served-macroguide.html
 
 # OS files
 Thumbs.db

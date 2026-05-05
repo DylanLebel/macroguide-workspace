@@ -1005,6 +1005,177 @@
     .admin-modal input:focus { border-color: var(--accent); }
     .admin-modal .admin-actions { display: flex; gap: 10px; }
     .admin-err { color: #ef4444; font-size: 0.82rem; margin-bottom: 10px; display: none; }
+    #usageOverlay,
+    #usersOverlay,
+    #pokeTargetsOverlay,
+    #crAlertOverlay {
+      padding: 24px !important;
+    }
+    .admin-modal.usage-panel,
+    .admin-modal.poke-target-panel {
+      width: min(1120px, calc(100vw - 40px));
+      max-width: none;
+      max-height: calc(100vh - 48px);
+      padding: 0;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(30,41,59,0.98), rgba(15,23,42,0.98));
+      border-color: rgba(148,163,184,0.28);
+      box-shadow: 0 28px 90px rgba(0,0,0,0.62);
+    }
+    .admin-modal.usage-panel h2,
+    .admin-modal.poke-target-panel h2 {
+      margin: 0;
+      padding: 24px 28px 0;
+      color: var(--text);
+      font-size: 1.18rem;
+      line-height: 1.25;
+    }
+    .admin-modal.usage-panel > p,
+    .admin-modal.poke-target-panel > p {
+      margin: 0;
+      padding: 7px 28px 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+    .admin-modal.usage-panel .usage-summary,
+    .admin-modal.poke-target-panel .usage-summary {
+      margin: 0;
+      padding: 16px 28px 14px;
+    }
+    .admin-modal.usage-panel .usage-table-wrap,
+    .admin-modal.poke-target-panel .usage-table-wrap {
+      margin: 0 28px;
+      max-height: none;
+      min-height: 260px;
+      flex: 1 1 auto;
+      border-radius: 12px;
+      background: rgba(15,23,42,0.64);
+    }
+    .admin-modal.poke-target-panel .poke-target-manager {
+      margin: 0 28px;
+    }
+    .admin-modal.usage-panel > .admin-actions,
+    .admin-modal.poke-target-panel > .admin-actions {
+      margin-top: 0 !important;
+      padding: 18px 28px 22px;
+      border-top: 1px solid rgba(148,163,184,0.18);
+      background: rgba(15,23,42,0.42);
+    }
+    .admin-modal.usage-panel > .admin-actions button,
+    .admin-modal.poke-target-panel > .admin-actions button {
+      flex: 0 0 auto !important;
+      min-width: 132px;
+      height: 42px;
+    }
+    .admin-modal.usage-panel .users-rename-input,
+    .admin-modal.poke-target-panel input,
+    .admin-modal.poke-target-panel select {
+      margin-bottom: 0;
+      text-align: left;
+    }
+    .admin-modal.usage-panel .users-rename-input {
+      background: #0f172a;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+    }
+    .admin-modal.poke-target-panel .poke-target-enabled input {
+      width: auto;
+      height: 16px;
+      padding: 0;
+      margin: 0;
+    }
+    .usage-table {
+      font-size: 0.88rem;
+      min-width: 720px;
+    }
+    .usage-table th, .usage-table td {
+      padding: 11px 13px;
+      line-height: 1.45;
+    }
+    .usage-table th {
+      background: #111827;
+      z-index: 1;
+    }
+    .usage-table td {
+      color: #d7def0;
+    }
+    .usage-table td:first-child,
+    .usage-table th:first-child {
+      white-space: nowrap;
+    }
+    .usage-table tr:hover td {
+      background: rgba(79,142,247,0.07);
+    }
+    .usage-pill {
+      min-height: 30px;
+      display: inline-flex;
+      align-items: center;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+    .usage-pill.is-path {
+      width: 100%;
+      border-radius: 10px;
+      font-family: 'SF Mono','Menlo','Consolas',monospace;
+      font-size: 0.72rem;
+      line-height: 1.35;
+    }
+    .usage-empty,
+    .usage-error,
+    .usage-loading {
+      padding: 24px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .usage-error { color: #fca5a5; }
+    @media (max-width: 720px) {
+      #usageOverlay,
+      #usersOverlay,
+      #pokeTargetsOverlay,
+      #crAlertOverlay {
+        padding: 12px !important;
+      }
+      .admin-modal.usage-panel,
+      .admin-modal.poke-target-panel {
+        width: calc(100vw - 24px);
+        max-height: calc(100vh - 24px);
+      }
+      .admin-modal.usage-panel h2,
+      .admin-modal.poke-target-panel h2,
+      .admin-modal.usage-panel > p,
+      .admin-modal.poke-target-panel > p,
+      .admin-modal.usage-panel .usage-summary,
+      .admin-modal.poke-target-panel .usage-summary,
+      .admin-modal.usage-panel > .admin-actions,
+      .admin-modal.poke-target-panel > .admin-actions {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+      .admin-modal.usage-panel .usage-table-wrap,
+      .admin-modal.poke-target-panel .usage-table-wrap {
+        margin-left: 18px;
+        margin-right: 18px;
+        min-height: 220px;
+      }
+      .admin-modal.poke-target-panel .poke-target-manager {
+        margin-left: 18px;
+        margin-right: 18px;
+      }
+      .admin-modal.usage-panel > .admin-actions,
+      .admin-modal.poke-target-panel > .admin-actions {
+        flex-direction: column;
+      }
+      .admin-modal.usage-panel > .admin-actions button,
+      .admin-modal.poke-target-panel > .admin-actions button {
+        width: 100%;
+      }
+    }
 
     /* ── Toast notifications ── */
     .toast-container {
@@ -1172,18 +1343,19 @@
     /* ── Poke dev/test panel ── */
     .tk-poke-dev {
       position: fixed; bottom: 16px; right: 16px; z-index: 99997;
-      width: 320px; background: #0f172a; color: #e2e8f0;
-      border: 1px solid #475569; border-radius: 10px;
-      box-shadow: 0 12px 32px rgba(0,0,0,0.5);
-      font-family: inherit; font-size: 0.82rem;
-      padding: 10px 12px;
+      width: min(420px, calc(100vw - 32px)); background: #0f172a; color: #e2e8f0;
+      border: 1px solid rgba(148,163,184,0.36); border-radius: 12px;
+      box-shadow: 0 18px 54px rgba(0,0,0,0.58);
+      font-family: inherit; font-size: 0.86rem;
+      padding: 14px;
       max-height: calc(100vh - 32px);
       overflow-y: auto;
       overscroll-behavior: contain;
     }
     .tk-poke-dev-header {
       display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #334155;
+      margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #334155;
+      font-weight: 800;
     }
     .tk-poke-dev-close {
       background: none; border: none; color: #94a3b8; font-size: 1.2rem;
@@ -1195,13 +1367,13 @@
       margin-bottom: 8px; cursor: pointer;
     }
     .tk-poke-dev-row {
-      display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px;
+      display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 8px;
     }
     .tk-poke-dev-row button {
       flex: 1 1 auto; min-width: 0;
       background: #1e293b; color: #e2e8f0;
-      border: 1px solid #334155; border-radius: 5px;
-      padding: 5px 8px; font-size: 0.75rem; cursor: pointer;
+      border: 1px solid #334155; border-radius: 7px;
+      min-height: 34px; padding: 7px 10px; font-size: 0.78rem; cursor: pointer;
       transition: background 0.15s;
     }
     .tk-poke-dev-row button:hover { background: #334155; }
@@ -1213,8 +1385,8 @@
     .tk-poke-dev-target input {
       width: 100%; min-width: 0;
       background: #020617; color: #e2e8f0;
-      border: 1px solid #334155; border-radius: 5px;
-      padding: 5px 7px; font: inherit;
+      border: 1px solid #334155; border-radius: 7px;
+      padding: 8px 9px; font: inherit;
     }
     .tk-poke-dev-captchas {
       display: grid; gap: 5px;
@@ -1223,7 +1395,7 @@
     .tk-poke-dev-captchas select {
       width: 100%; min-width: 0; height: 116px;
       background: #020617; color: #e2e8f0;
-      border: 1px solid #334155; border-radius: 5px;
+      border: 1px solid #334155; border-radius: 7px;
       padding: 4px 6px; font: inherit;
     }
     .tk-poke-dev-status {
@@ -2453,6 +2625,327 @@
       font-size: 0.82rem; color: var(--muted);
     }
     .cr-logas strong { color: #ffb454; }
+    /* Full-screen modal overlay */
+    .cr-consent {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 3500;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(2,6,23,0.78);
+      backdrop-filter: blur(6px);
+      color: #dbe7ff;
+      overflow-y: auto;
+    }
+    .cr-consent.open {
+      display: flex;
+    }
+    .cr-consent-dialog {
+      width: min(880px, 100%);
+      max-height: calc(100vh - 48px);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 22px 22px 18px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,180,84,0.5);
+      background: linear-gradient(150deg, #1e293b, #0f172a);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+      overflow: hidden;
+    }
+    .cr-consent.view-only .cr-consent-dialog {
+      border-color: rgba(148,163,184,0.45);
+      background: linear-gradient(150deg, #1e293b, #0b1220);
+    }
+    .cr-consent-top {
+      display: flex; justify-content: space-between; gap: 14px; align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    .cr-consent-title {
+      margin: 0;
+      color: var(--text);
+      font-size: 1rem;
+      line-height: 1.25;
+    }
+    .cr-consent-copy {
+      margin: 5px 0 0;
+      color: #b8c3da;
+      font-size: 0.86rem;
+      line-height: 1.5;
+      max-width: 780px;
+    }
+    .cr-consent-rules {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .cr-consent-rules li {
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(15,23,42,0.48);
+      border-radius: 8px;
+      padding: 10px 11px;
+      color: #cbd5e1;
+      font-size: 0.82rem;
+      line-height: 1.42;
+    }
+    .cr-consent-rules strong { display: block; color: #fff; margin-bottom: 2px; }
+    .cr-consent-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .cr-consent-actions button {
+      height: 40px;
+      border-radius: 8px;
+      padding: 0 14px;
+      font: inherit;
+      font-size: 0.86rem;
+      font-weight: 800;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .cr-consent-accept { background: #22c55e; border-color: #22c55e; color: #062611; transition: all 0.18s ease; }
+    .cr-consent-accept[disabled] {
+      background: rgba(34,197,94,0.18);
+      border-color: rgba(34,197,94,0.32);
+      color: rgba(255,255,255,0.45);
+      cursor: not-allowed;
+    }
+    .cr-consent-accept.is-armed:not([disabled]) {
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.28), 0 8px 22px rgba(34,197,94,0.32);
+      transform: translateY(-1px);
+    }
+    .cr-consent-decline { background: transparent; border-color: rgba(148,163,184,0.4); color: #cbd5e1; }
+    .cr-consent-actions button:disabled { cursor: not-allowed; }
+    .cr-consent-actions button:disabled.cr-consent-accept { opacity: 1; }
+    .cr-consent-actions button:not(.cr-consent-accept):disabled { opacity: 0.62; cursor: wait; }
+    .cr-consent-status { color: #aeb9d0; font-size: 0.82rem; line-height: 1.45; }
+
+    /* Consent flow takes the full dialog */
+    .cr-consent-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    /* Long terms scrollable area */
+    .cr-terms-wrap {
+      position: relative;
+      border: 1px solid rgba(148,163,184,0.28);
+      border-radius: 10px;
+      background: rgba(8,15,32,0.6);
+      overflow: hidden;
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .cr-terms {
+      flex: 1 1 auto;
+      min-height: 220px;
+      max-height: none;
+      overflow-y: auto;
+      padding: 14px 18px 18px;
+      color: #cdd6e8;
+      font-size: 0.84rem;
+      line-height: 1.55;
+      scroll-behavior: smooth;
+    }
+    .cr-terms h4 {
+      color: #fff;
+      margin: 14px 0 4px;
+      font-size: 0.92rem;
+      letter-spacing: 0.01em;
+    }
+    .cr-terms h4:first-child { margin-top: 2px; }
+    .cr-terms p { margin: 0 0 8px; }
+    .cr-terms strong { color: #ffe1a8; }
+    .cr-terms em { color: #b8e0ff; font-style: italic; }
+    .cr-terms-end {
+      margin-top: 14px !important;
+      padding: 10px 12px;
+      border: 1px dashed rgba(34,197,94,0.45);
+      border-radius: 8px;
+      background: rgba(34,197,94,0.08);
+      color: #c8f7d6;
+      font-size: 0.82rem;
+    }
+    .cr-terms::-webkit-scrollbar { width: 10px; }
+    .cr-terms::-webkit-scrollbar-track { background: rgba(15,23,42,0.5); }
+    .cr-terms::-webkit-scrollbar-thumb {
+      background: rgba(148,163,184,0.35);
+      border-radius: 6px;
+    }
+    .cr-terms::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.55); }
+    .cr-terms-fade {
+      position: absolute;
+      left: 0; right: 10px;
+      /* Sit above the progress bar (4px) + hint (~36px) */
+      bottom: 40px;
+      height: 36px;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(8,15,32,0) 0%, rgba(8,15,32,0.92) 100%);
+      transition: opacity 0.25s ease;
+    }
+    .cr-terms-wrap.scrolled-end .cr-terms-fade { opacity: 0; }
+    .cr-terms-progress {
+      position: relative;
+      height: 4px;
+      background: rgba(148,163,184,0.18);
+    }
+    .cr-terms-progress span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ffb454, #22c55e);
+      transition: width 0.18s ease-out;
+    }
+    .cr-terms-hint {
+      padding: 8px 14px;
+      font-size: 0.78rem;
+      color: #f0c97a;
+      background: rgba(255,180,84,0.08);
+      border-top: 1px solid rgba(148,163,184,0.18);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .cr-terms-wrap.scrolled-end .cr-terms-hint {
+      color: #c8f7d6;
+      background: rgba(34,197,94,0.12);
+    }
+
+    /* Spectator banner shown after decline */
+    .cr-spectator {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(148,163,184,0.35);
+      background: linear-gradient(135deg, rgba(30,41,59,0.85), rgba(15,23,42,0.85));
+      color: #dbe7ff;
+    }
+    .cr-spectator[hidden] { display: none; }
+    .cr-spectator-icon {
+      width: 46px; height: 46px; flex-shrink: 0;
+      border-radius: 12px;
+      background: rgba(148,163,184,0.18);
+      border: 1px solid rgba(148,163,184,0.35);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+    }
+    .cr-spectator-info { min-width: 0; flex: 1; }
+    .cr-spectator-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(148,163,184,0.2);
+      color: #cbd5e1;
+      margin-bottom: 4px;
+    }
+    .cr-spectator-title { color: #fff; font-weight: 700; font-size: 0.95rem; }
+    .cr-spectator-sub { color: #a3b1c9; font-size: 0.82rem; line-height: 1.45; margin-top: 2px; }
+    .cr-spectator-join {
+      flex-shrink: 0;
+      height: 42px;
+      padding: 0 16px;
+      border-radius: 999px;
+      border: 1px solid #22c55e;
+      background: #22c55e;
+      color: #062611;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    .cr-spectator-join:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(34,197,94,0.32);
+    }
+
+    .cr-consent-flow[hidden] { display: none; }
+
+    /* "I know you didn't read it" trick modal */
+    .cr-trick-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 4000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(2,6,23,0.74);
+      backdrop-filter: blur(4px);
+    }
+    .cr-trick-overlay.open { display: flex; }
+    .cr-trick-card {
+      max-width: 460px;
+      width: 100%;
+      background: linear-gradient(150deg, #1e293b, #0f172a);
+      border: 1px solid rgba(255,180,84,0.5);
+      border-radius: 16px;
+      padding: 26px 24px 22px;
+      box-shadow: 0 30px 70px rgba(0,0,0,0.5);
+      color: #ecf0fb;
+      text-align: center;
+    }
+    .cr-trick-emoji {
+      font-size: 2.6rem;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .cr-trick-card h3 {
+      margin: 4px 0 10px;
+      font-size: 1.15rem;
+      color: #ffe1a8;
+    }
+    .cr-trick-card p {
+      margin: 0 0 18px;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: #cdd6e8;
+    }
+    .cr-trick-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .cr-trick-actions button {
+      height: 40px;
+      padding: 0 16px;
+      border-radius: 10px;
+      font: inherit;
+      font-weight: 700;
+      font-size: 0.86rem;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.18s ease;
+    }
+    .cr-trick-back {
+      background: #22c55e;
+      border-color: #22c55e;
+      color: #062611;
+    }
+    .cr-trick-back:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(34,197,94,0.3); }
+    .cr-trick-bail {
+      background: transparent;
+      border-color: rgba(148,163,184,0.4);
+      color: #cbd5e1;
+    }
+    .cr-trick-bail:hover { border-color: #cbd5e1; color: #fff; }
+    .cr-qlog-btn:disabled,
+    .cr-log-other:disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
     .cr-alert-strip {
       display: flex; align-items: center; justify-content: space-between;
       gap: 14px; margin: -8px 0 22px; padding: 12px 14px;
@@ -2488,12 +2981,167 @@
     }
     .cr-alert-admin { min-width: 0; }
     .cr-alert-toggle:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+    .cr-participants-wrap {
+      margin: 0 0 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .cr-participants-wrap:not(.expanded) .cr-participants-list {
+      display: none;
+    }
+    .cr-participants-wrap:not(.expanded) .cr-participants-head {
+      border-bottom: 0;
+    }
+    .cr-participants-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(20,184,166,0.10), rgba(79,142,247,0.08));
+    }
+    .cr-participants-head h3 {
+      margin: 0 0 4px;
+      color: var(--text);
+      font-size: 1rem;
+    }
+    .cr-participants-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.4;
+    }
+    .cr-participants-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .cr-participants-summary {
+      display: flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .cr-participants-pill {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 5px;
+      min-height: 30px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.25);
+      background: rgba(15,23,42,0.42);
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .cr-participants-pill strong {
+      color: var(--text);
+      font-size: 0.92rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .cr-participants-toggle {
+      height: 30px;
+      border-radius: 999px;
+      border: 1px solid rgba(79,142,247,0.34);
+      background: rgba(79,142,247,0.10);
+      color: #b8d2ff;
+      font: inherit;
+      font-size: 0.74rem;
+      font-weight: 800;
+      padding: 0 11px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+    }
+    .cr-participants-toggle:hover {
+      border-color: rgba(79,142,247,0.70);
+      background: rgba(79,142,247,0.18);
+      color: var(--text);
+    }
+    .cr-participants-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    }
+    .cr-participant {
+      min-height: 72px;
+      padding: 13px 15px;
+      border-top: 1px solid rgba(148,163,184,0.12);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .cr-participant:first-child { border-top: 0; }
+    .cr-participant-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .cr-participant-name {
+      min-width: 0;
+      color: var(--text);
+      font-size: 0.92rem;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .cr-participant-status {
+      flex-shrink: 0;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 0.67rem;
+      line-height: 1.2;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: var(--surface2);
+    }
+    .cr-participant-status.accepted {
+      border-color: rgba(16,185,129,0.42);
+      background: rgba(16,185,129,0.10);
+      color: #8ee6bd;
+    }
+    .cr-participant-status.spectator {
+      border-color: rgba(148,163,184,0.34);
+      background: rgba(148,163,184,0.10);
+      color: #cbd5e1;
+    }
+    .cr-participant-status.pending {
+      border-color: rgba(255,180,84,0.42);
+      background: rgba(255,180,84,0.10);
+      color: #ffd28a;
+    }
+    .cr-participant-meta {
+      color: var(--muted);
+      font-size: 0.76rem;
+      line-height: 1.35;
+    }
+    .cr-participants-empty {
+      grid-column: 1 / -1;
+      padding: 18px 16px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      text-align: center;
+    }
     @media (max-width: 620px) {
       .cr-alert-strip { align-items: stretch; flex-direction: column; }
       .cr-alert-status { white-space: normal; }
       .cr-alert-actions { width: 100%; flex-direction: column; align-items: stretch; }
       .cr-alert-toggle { width: 100%; }
       .cr-alert-admin { width: 100%; justify-content: center; }
+      .cr-participants-head { flex-direction: column; }
+      .cr-participants-actions { width: 100%; justify-content: flex-start; }
     }
 
     /* Fade "someone else" link when no user is known */
@@ -3919,7 +4567,7 @@
 </div>
 
 <!-- ══ HEADER ══ -->
-<div class="cr-tie-poll-global" id="crTiePollGlobal" aria-live="polite">
+<div class="cr-tie-poll-global" id="crTiePollGlobal" aria-live="polite" style="display:none">
   <div class="cr-tie-poll-global-icon" aria-hidden="true"></div>
   <div class="cr-tie-poll-global-copy">
     <strong id="crTiePollGlobalTitle">Tie-break poll</strong>
@@ -4351,7 +4999,7 @@
 
         <div class="cr-hero-stats">
           <div class="cr-stat" title="Total crashes logged this month"><span class="cr-stat-num" id="crStatMonth">0</span><span class="cr-stat-lbl">crashes</span></div>
-          <div class="cr-stat" title="Different people who crashed this month"><span class="cr-stat-num" id="crStatPeople">0</span><span class="cr-stat-lbl">victims</span></div>
+          <div class="cr-stat" title="Different people who logged crashes this month"><span class="cr-stat-num" id="crStatPeople">0</span><span class="cr-stat-lbl">people</span></div>
           <div class="cr-stat" title="Time since the team's last logged crash"><span class="cr-stat-num" id="crStatSince">—</span><span class="cr-stat-lbl">since last</span></div>
           <div class="cr-stat" title="What's currently on the line"><span class="cr-stat-num" id="crStatPrize">🍩</span><span class="cr-stat-lbl" id="crStatPrizeLbl">on the line</span></div>
         </div>
@@ -4391,6 +5039,116 @@
       </div>
     </div>
 
+    <div class="cr-consent" id="crConsent" role="dialog" aria-modal="true" aria-live="polite" aria-labelledby="crConsentTitle">
+     <div class="cr-consent-dialog">
+
+      <!-- Spectator banner: shown when the user has declined for the month -->
+      <div class="cr-spectator" id="crSpectatorBanner" hidden>
+        <div class="cr-spectator-icon" aria-hidden="true">🎟</div>
+        <div class="cr-spectator-info">
+          <div class="cr-spectator-tag">SPECTATOR MODE</div>
+          <div class="cr-spectator-title" id="crSpectatorTitle">You're watching from the bleachers.</div>
+          <div class="cr-spectator-sub" id="crSpectatorSub">Crash logging is locked for you this month. The leaderboard is read-only. You can hop into the game any time.</div>
+        </div>
+        <button class="cr-spectator-join" id="crSpectatorJoin" type="button">🍩 Join now</button>
+      </div>
+
+      <!-- Active consent flow: header, scrollable terms, footer -->
+      <div class="cr-consent-flow" id="crConsentFlow">
+        <div class="cr-consent-top">
+          <div>
+            <h3 class="cr-consent-title" id="crConsentTitle">Crash Donut Duty — Official Terms &amp; Conditions</h3>
+            <p class="cr-consent-copy" id="crConsentCopy">By logging a crash you are entering a binding inter-office donut pact. Read the full terms below — the "Agree and play" button stays locked until you scroll all the way to the bottom.</p>
+          </div>
+        </div>
+
+        <div class="cr-terms-wrap">
+          <div class="cr-terms" id="crTermsScroll" tabindex="0">
+            <h4>Article 1 — Preamble</h4>
+            <p>Welcome to <strong>Crash Donut Duty</strong> ("the Game"), a voluntary, morale-boosting monthly competition operated inside Nordic Minesteel by the Macro Guide. The Game exists to turn the shared experience of SolidWorks unexpectedly closing into something lighter for the team, while keeping the monthly donut duty clear and visible. By clicking "Agree and play" below, you ("the Player" or "you") enter into a non-binding-but-socially-binding agreement with every other Player ("the League"), the Macro Guide ("the Platform"), and the Commissioner of Donut Duty ("Dylan Lebel"). This document supersedes any previous agreement, verbal handshake, donut promise, or scratch-pad scoring scheme.</p>
+
+            <h4>Article 2 — Eligibility &amp; Enrollment</h4>
+            <p>The Game is open to any Nordic Minesteel team member who regularly uses SolidWorks and wants to join a light office competition. Enrollment is performed by clicking "Agree and play." The act of clicking confirms that you have read, understood, and freely accepted these Terms in their entirety. The scroll requirement exists so everyone has a fair chance to review the rules before joining.</p>
+
+            <h4>Article 3 — What Counts as a Crash</h4>
+            <p>A "Crash" means any unscheduled, involuntary, software-induced cessation of SolidWorks functionality that interrupts your work. This includes hard freezes, the "SolidWorks has stopped responding" dialog, the quiet close that loses unsaved work, and the full-PC reboot. <em>Severity does not matter for scoring.</em> A minor "ugh, save again" counts the same as a catastrophic "I'm rebuilding the assembly from a backup" event. The League decided this in the interest of speed; questions can be raised with the Commissioner.</p>
+
+            <h4>Article 4 — What Does Not Count</h4>
+            <p>The following are <strong>not</strong> crashes for the purposes of the Game and must not be logged: (i) you closed SolidWorks on purpose; (ii) you got the spinning wheel for ten seconds and then it came back; (iii) PDM threw an error but SolidWorks itself kept running; (iv) Windows Update rebooted your machine; (v) someone tripped over your power cable; (vi) you opened a 4 GB assembly with the visualization graph wide open and SolidWorks did the only sensible thing. Logging non-crashes is a violation of Article 9 (Honor System) and may result in a stern look from Dylan Lebel.</p>
+
+            <h4>Article 5 — Scoring &amp; Standings</h4>
+            <p>Each valid Crash logged contributes <strong>one (1) point</strong> to the Player's monthly tally. Standings are visible in real time on the Leaderboard. The Player with the highest tally at the moment the month closes is declared the Monthly Champion and receives Donut Duty for the next month. Ties are governed by Article 8.</p>
+
+            <h4>Article 6 — Monthly Cycle &amp; Lock-In</h4>
+            <p>The competition runs from the first calendar day of the month at 12:00 AM local time through the last calendar day of the month at <strong>4:30 PM local time</strong>, at which point the Leaderboard is permanently locked for that month. Crashes logged after the lock-in time roll forward into the following month's standings. Each month is independent; there is no carry-over, no grand total, no season points, and no playoff bracket. Past months remain visible because gloating is, in the considered opinion of the Commissioner, a load-bearing element of office culture.</p>
+
+            <h4>Article 7 — Donut Duty (The Prize That Is Also a Punishment)</h4>
+            <p>The Monthly Champion shall, no later than the end of the first full work week of the following month, supply the office with a quantity of donuts equal to <strong>at least one (1) normal full-size donut per active Player, including the Champion themselves</strong>. "Active Player" means any Player who logged at least one crash in the closing month. Acceptable donuts include glazed, chocolate-glazed, maple, Boston cream, jelly, sprinkle, and old-fashioned. Munchkins, Timbits, and donut holes are <em>not</em> acceptable substitutes and shall be considered an attempt to defraud the League. Gluten-free or vegan options are encouraged in addition to, not in place of, traditional donuts where any Player has dietary restrictions.</p>
+
+            <h4>Article 8 — Tie-Break</h4>
+            <p>In the event two or more Players are tied for first place at lock-in, the tie shall be resolved by the most recent applicable team poll. The current resolution method (as of the version of these Terms you are reading) is "one week each": each tied Champion serves a separate week of Donut Duty in the following month. The Commissioner reserves the right to put alternate methods (wheel-spin, snack-split, etc.) to a vote at any time.</p>
+
+            <h4>Article 9 — Honor System</h4>
+            <p>This is office fun, not a sworn legal proceeding. Players agree to log only real SolidWorks crashes that genuinely happened, in real time, on their actual workstation. The Platform does not, will not, and frankly cannot verify a crash automatically. The integrity of the Game depends entirely on everyone playing it straight. Suspected discrepancies may be brought to the attention of the Commissioner, who may, at his sole discretion, void crashes, correct standings, or update these Terms to close the gap. Disputes are handled privately, not on the leaderboard.</p>
+
+            <h4>Article 10 — Voluntary Participation &amp; Spectator Mode</h4>
+            <p>Participation in the Game is and shall remain entirely voluntary. A Player who does not wish to participate in a given month may click "Decline (spectator only)" below. Doing so will: (a) lock that Player out of logging crashes for the remainder of the calendar month; (b) preserve any crashes already logged but exclude the Player from prize calculations for that month; (c) save an opt-out snapshot of the Player's current-month crash records; and (d) reduce the Player's status, for that month, to "Spectator," with full read access to the Leaderboard and zero donut obligation. A Spectator may, at any time during the month, return to active play by clicking "Join now" — they will then be subject to all Articles of these Terms as if they had never declined, including Article 7 if they should crash their way to the top.</p>
+
+            <h4>Article 11 — Notifications</h4>
+            <p>Players may opt in or out of crash notifications independently of their playing status. Receipt of a notification does not create any additional obligation to bring donuts, react immediately, or comment on someone else's crash.</p>
+
+            <h4>Article 12 — Privacy</h4>
+            <p>The Game records, for each Crash, the Player who logged it, the chosen severity level, the timestamp, and the Windows account that submitted the entry. It also records each Player's current Terms acceptance status so the team can see who is participating under the current version. This data is stored locally on the Y: drive in plain JSON and is visible to anyone with access to the Macro Guide. The Game does not record the contents of your model, the cause of the crash, or anything else from your workstation.</p>
+
+            <h4>Article 13 — Commissioner's Authority</h4>
+            <p><strong>Dylan Lebel ("the Commissioner") reserves the unilateral right to modify, amend, suspend, replace, retire, reinstate, or completely rewrite these Terms at any point, for any reason or for no reason, with or without notice, with or without explanation, and with or without your continued blessing.</strong> Such changes may be applied retroactively to the current month if, in the Commissioner's sole judgment, the change is necessary to preserve the spirit of the Game, prevent a loophole, accommodate an act of God, accommodate a sudden donut shortage, or simply because it sounded funnier that way. When these Terms change, every Player will be required to re-accept the new version before logging any further crashes. Players who disagree with a change may decline that month and remain in Spectator Mode; they may not, however, retroactively unaccept previously logged crashes or escape Donut Duty already earned.</p>
+
+            <h4>Article 14 — No Warranty</h4>
+            <p>The Game, the Leaderboard, the Macro Guide, and any donuts produced as a consequence of the foregoing are provided "as is" and "as crashed." The Commissioner makes no representation as to the freshness, flavor, fillability, or icing-to-cake ratio of any donut delivered in fulfillment of Article 7. Players are encouraged to consider dietary preferences and enjoy responsibly.</p>
+
+            <h4>Article 15 — Limitation of Liability</h4>
+            <p>To the maximum extent permitted by office norms and basic decency, the Commissioner, the Platform, the League, and any individual Player shall not be liable for: lost work caused by SolidWorks crashes; disappointment with the monthly standings; snack-related inconvenience; or any other consequential, incidental, or punitive damages arising from your participation in the Game. Your available remedy in the event of dissatisfaction is to decline participation for the month or raise a question with the Commissioner.</p>
+
+            <h4>Article 16 — Severability</h4>
+            <p>If any provision of these Terms is found by competent authority (defined as: the Commissioner; failing which, a coin-flip) to be unenforceable or overly silly, that provision shall be struck and the remainder of the Terms shall continue in full force and effect.</p>
+
+            <h4>Article 17 — Entire Agreement</h4>
+            <p>These Terms constitute the entire agreement between you and the League with respect to Crash Donut Duty and supersede any prior verbal agreement, slack message, hallway promise, or scribbled whiteboard scoring system. There are no oral side-letters, no secret bonus categories, and no exempt status for senior staff.</p>
+
+            <h4>Article 18 — Acceptance</h4>
+            <p>By clicking "Agree and play," you confirm: (i) you have read these Terms in their entirety, or at least scrolled past every word of them with sincere intent to read; (ii) you understand and accept Article 7; (iii) you acknowledge that the Commissioner can, per Article 13, change the rules at any time, and you accept this in advance; (iv) you are mentally prepared to bring donuts; and (v) you understand that nothing here is legally binding but everything here is socially binding, which in a workplace is the binding that actually matters.</p>
+
+            <p class="cr-terms-end" id="crTermsEnd">— End of Terms &amp; Conditions, version <span id="crTermsVersion"></span>. Scroll up if you need to re-read any of it. The "Agree and play" button is now armed below.</p>
+          </div>
+          <div class="cr-terms-fade" aria-hidden="true"></div>
+          <div class="cr-terms-progress" aria-hidden="true">
+            <span id="crTermsProgressBar"></span>
+          </div>
+          <div class="cr-terms-hint" id="crTermsHint">↓ Scroll all the way down to unlock "Agree and play".</div>
+        </div>
+
+        <div class="cr-consent-actions" id="crConsentActions">
+          <button class="cr-consent-accept" id="crConsentAccept" type="button" disabled>🔒 Agree and play</button>
+          <button class="cr-consent-decline" id="crConsentDecline" type="button">Decline (spectator only)</button>
+        </div>
+        <div class="cr-consent-status" id="crConsentStatus"></div>
+      </div>
+     </div>
+    </div>
+
+    <!-- "I know you didn't read it" trick modal -->
+    <div class="cr-trick-overlay" id="crTrickOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="crTrickTitle">
+      <div class="cr-trick-card">
+        <div class="cr-trick-emoji" aria-hidden="true">🤨</div>
+        <h3 id="crTrickTitle">Hold up, friend.</h3>
+        <p id="crTrickMessage">That was quick. Please spend at least 10 seconds reviewing the Terms so the acceptance is deliberate. Scroll to the bottom one more time and the button will re-arm.</p>
+        <div class="cr-trick-actions">
+          <button class="cr-trick-back" id="crTrickRetry" type="button">Review terms again</button>
+          <button class="cr-trick-bail" id="crTrickBail" type="button">Spectate instead</button>
+        </div>
+      </div>
+    </div>
+
     <div class="cr-alert-strip" id="crAlertStrip">
       <div class="cr-alert-main">
         <div class="cr-alert-icon" aria-hidden="true">@</div>
@@ -4405,7 +5163,27 @@
       </div>
     </div>
 
-    <div class="cr-tie-poll-inline" id="crTiePollInline">
+    <section class="cr-participants-wrap" id="crParticipantsPanel" aria-labelledby="crParticipantsTitle">
+      <div class="cr-participants-head">
+        <div>
+          <h3 id="crParticipantsTitle">Participants &amp; terms</h3>
+          <p class="cr-participants-note" id="crParticipantsNote">Current terms acceptance for Crash Donut Duty.</p>
+        </div>
+        <div class="cr-participants-actions">
+          <div class="cr-participants-summary" aria-label="Participant terms summary">
+            <span class="cr-participants-pill"><strong id="crParticipantsAccepted">0</strong> accepted</span>
+            <span class="cr-participants-pill"><strong id="crParticipantsPending">0</strong> needs review</span>
+            <span class="cr-participants-pill"><strong id="crParticipantsTotal">0</strong> total</span>
+          </div>
+          <button class="cr-participants-toggle" id="crParticipantsToggle" type="button" aria-expanded="false" aria-controls="crParticipantsList">Show details</button>
+        </div>
+      </div>
+      <div class="cr-participants-list" id="crParticipantsList">
+        <div class="cr-participants-empty">Loading participants...</div>
+      </div>
+    </section>
+
+    <div class="cr-tie-poll-inline" id="crTiePollInline" style="display:none">
       <span id="crTiePollInlineText">Tie-break poll is open.</span>
       <button type="button" id="crTiePollInlineBtn">Vote</button>
     </div>
@@ -4448,7 +5226,7 @@
       <div class="cr-board" id="crBoard">
         <div class="cr-col-head">
           <span>#</span>
-          <span class="cr-col-name">Victim</span>
+          <span class="cr-col-name">Participant</span>
           <span>Crashes</span>
           <span></span>
         </div>
@@ -4474,12 +5252,16 @@
         <div><strong>Fresh every month</strong><br>Each month stands on its own — no carry-over, no grand totals. Past months stay visible so you can gloat.</div>
       </div>
       <div class="cr-rule-item">
+        <div class="cr-rule-icon">✅</div>
+        <div><strong>Voluntary opt-in</strong><br>Logging a crash means you joined the game and accept donut duty if you win. Declining keeps the board view-only for the month.</div>
+      </div>
+      <div class="cr-rule-item">
         <div class="cr-rule-icon">🍩</div>
-        <div><strong>Solo winner brings donuts</strong><br>Most crashes by the deadline → donuts for the team.</div>
+        <div><strong>Winner brings donuts</strong><br>Minimum is one normal full-size donut per active player, including the winner.</div>
       </div>
       <div class="cr-rule-item">
         <div class="cr-rule-icon">🗳️</div>
-        <div><strong>Tie rule is up for vote</strong><br>The team is deciding between a wheel for one donut person, or split snack duty with donuts plus cookies or muffins.</div>
+        <div><strong>Tie rule is final</strong><br>The team voted for one week each. If leaders tie, each tied winner gets a donut week. The poll is closed and no longer shown.</div>
       </div>
       <div class="cr-rule-item">
         <div class="cr-rule-icon">⏱</div>
@@ -4487,7 +5269,7 @@
       </div>
       <div class="cr-rule-item">
         <div class="cr-rule-icon">🙋</div>
-        <div><strong>Honor system</strong><br>Log your own crashes. Log someone else's if you see it. You can delete your own accidents.</div>
+        <div><strong>Honor system</strong><br>All crash severities count as one. Log real crashes, keep it honest, and use the unpaid status as a placeholder for now.</div>
       </div>
     </div>
   </div>
@@ -4907,7 +5689,7 @@
     <p>Shows page opens logged from the launcher/browser session.</p>
     <div class="usage-summary" id="usageSummary"></div>
     <div class="usage-table-wrap" id="usageRows">
-      <div style="padding:18px;color:var(--muted);font-size:0.85rem">Loading...</div>
+      <div class="usage-loading">Loading...</div>
     </div>
     <div class="admin-actions" style="margin-top:16px">
       <button class="btn-cancel" id="closeUsageBtn" style="flex:1">Close</button>
@@ -4918,12 +5700,12 @@
 
 <!-- ══ USERS DIRECTORY MODAL ══ -->
 <div id="usersOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:275;align-items:center;justify-content:center;padding:24px">
-  <div class="admin-modal usage-panel" style="max-width:920px">
+  <div class="admin-modal usage-panel">
     <h2>👥 Users</h2>
     <p>Every Windows user seen in tickets and comments, with the display names they've used. Rename to rewrite their existing tickets and comments.</p>
     <div class="usage-summary" id="usersSummary"></div>
     <div class="usage-table-wrap" id="usersRows">
-      <div style="padding:18px;color:var(--muted);font-size:0.85rem">Loading...</div>
+      <div class="usage-loading">Loading...</div>
     </div>
     <div class="admin-actions" style="margin-top:16px">
       <button class="btn-cancel" id="closeUsersBtn" style="flex:1">Close</button>
@@ -4970,7 +5752,7 @@
       <div class="poke-target-list">
         <h3>Current Targets</h3>
         <div id="pokeTargetRows" class="poke-target-cards">
-          <div style="padding:18px;color:var(--muted);font-size:0.85rem">Loading...</div>
+          <div class="usage-loading">Loading...</div>
         </div>
       </div>
     </div>
@@ -4989,7 +5771,7 @@
     <p>People who currently have crash notifications turned on.</p>
     <div class="usage-summary" id="crAlertSummary"></div>
     <div class="usage-table-wrap" id="crAlertRows">
-      <div style="padding:18px;color:var(--muted);font-size:0.85rem">Loading...</div>
+      <div class="usage-loading">Loading...</div>
     </div>
     <div class="admin-actions" style="margin-top:16px">
       <button class="btn-cancel" id="closeCrAlertBtn" style="flex:1">Close</button>
@@ -5013,7 +5795,8 @@
 
 <script>
 (() => {
-  const STORAGE_KEY = 'macroGuideGithubPreviewData.v1';
+  const STORAGE_KEY = 'macroGuideGithubPreviewData.v2';
+  const CRASH_RULES_VERSION = '2026-05-donut-duty-v3';
   const originalFetch = window.fetch.bind(window);
   const today = new Date().toISOString().slice(0, 10);
 
@@ -5253,7 +6036,37 @@
       captchaQueue: [],
       pokeResets: [],
       pokeTargets: defaultPokeTargets(),
-      tiePollVotes: [],
+      crashConsents: [],
+      tiePollVotes: [
+        {
+          pollId: 'crash-tie-break-2026-04',
+          windowsUser: 'aacharya',
+          displayName: 'Ayugma Acharya',
+          optionId: 'split',
+          votedAt: '2026-04-30T18:09:23.3912450Z'
+        },
+        {
+          pollId: 'crash-tie-break-2026-04',
+          windowsUser: 'dlebel',
+          displayName: 'Dylan',
+          optionId: 'weeks',
+          votedAt: '2026-04-30T18:13:18.9283205Z'
+        },
+        {
+          pollId: 'crash-tie-break-2026-04',
+          windowsUser: 'dshank',
+          displayName: 'Other Dylan',
+          optionId: 'weeks',
+          votedAt: '2026-04-30T18:22:39.6579588Z'
+        },
+        {
+          pollId: 'crash-tie-break-2026-04',
+          windowsUser: 'barrowsmith',
+          displayName: 'Brandon Arrowsmith',
+          optionId: 'weeks',
+          votedAt: '2026-04-30T18:29:17.5788815Z'
+        }
+      ],
       version: 'github-preview-2026-04-16'
     };
   }
@@ -5269,6 +6082,7 @@
         data.captchaQueue = Array.isArray(data.captchaQueue) ? data.captchaQueue : [];
         data.crashes = Array.isArray(data.crashes) ? data.crashes : [];
         data.donutStatuses = Array.isArray(data.donutStatuses) ? data.donutStatuses : [];
+        data.crashConsents = Array.isArray(data.crashConsents) ? data.crashConsents : [];
         return data;
       }
     } catch {}
@@ -5311,6 +6125,211 @@
     return entries.reduce((max, entry) => Math.max(max, Number(entry.id) || 0), 0);
   }
 
+  function previewMonthKey(value = new Date()) {
+    const d = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(d.getTime())) return '';
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  function previewDisplayKey(value) {
+    return String(value || '').trim().replace(/\s+/g, ' ').toLowerCase();
+  }
+
+  function previewCurrentUser() {
+    return String(sessionStorage.getItem('winUser') || 'github-preview').trim().toLowerCase();
+  }
+
+  function previewDisplayName(fallback = '') {
+    return String(fallback || localStorage.getItem('mgUserName') || sessionStorage.getItem('winUserDisplay') || previewCurrentUser()).trim();
+  }
+
+  function previewCrashConsentState(data, displayName = '') {
+    data.crashConsents = Array.isArray(data.crashConsents) ? data.crashConsents : [];
+    const windowsUser = previewCurrentUser();
+    const currentMonthKey = previewMonthKey();
+    const row = data.crashConsents.find(r => String(r.windowsUser || '').trim().toLowerCase() === windowsUser);
+    const accepted = !!(row && row.rulesVersion === CRASH_RULES_VERSION && row.accepted);
+    const declinedThisMonth = !!(!accepted && row && row.declinedMonthKey === currentMonthKey);
+    return {
+      ok: true,
+      windowsUser,
+      displayName: previewDisplayName(displayName || row?.displayName || ''),
+      rulesVersion: CRASH_RULES_VERSION,
+      accepted,
+      acceptedAt: row?.acceptedAt || '',
+      declinedThisMonth,
+      declinedMonthKey: row?.declinedMonthKey || '',
+      declinedAt: row?.declinedAt || '',
+      deletedCrashCount: 0,
+      excludedCrashCount: Number(row?.excludedCrashCount || 0),
+      backedUpCrashCount: Array.isArray(row?.backedUpCrashes) ? row.backedUpCrashes.length : 0,
+      currentMonthKey,
+      canLog: accepted && !declinedThisMonth,
+      needsDecision: !accepted && !declinedThisMonth
+    };
+  }
+
+  function previewAddConsentParticipant(map, windowsUser, displayName = '', source = '') {
+    const win = String(windowsUser || '').trim().toLowerCase();
+    const display = String(displayName || '').trim();
+    if (!win && !display) return;
+    const displayKey = previewDisplayKey(display);
+    const nameOnlyKey = displayKey ? 'name:' + displayKey : '';
+    let matchingKey = '';
+    if (displayKey) {
+      for (const [existingKey, existing] of map.entries()) {
+        if (previewDisplayKey(existing.displayName) === displayKey) {
+          matchingKey = existingKey;
+          break;
+        }
+      }
+    }
+
+    let key = '';
+    if (win && map.has(win)) {
+      key = win;
+    } else if (win && matchingKey) {
+      const existing = map.get(matchingKey);
+      if (matchingKey === nameOnlyKey || !existing.windowsUser) {
+        map.delete(matchingKey);
+        map.set(win, existing);
+        key = win;
+      } else {
+        key = matchingKey;
+      }
+    } else if (win) {
+      key = win;
+    } else if (matchingKey) {
+      key = matchingKey;
+    } else {
+      key = nameOnlyKey;
+    }
+
+    if (!map.has(key)) {
+      map.set(key, {
+        windowsUser: win,
+        displayName: display || win,
+        sources: []
+      });
+    }
+    const row = map.get(key);
+    if (win && !row.windowsUser) row.windowsUser = win;
+    if (display && (!row.displayName || row.displayName === row.windowsUser)) row.displayName = display;
+    if (source && !row.sources.includes(source)) row.sources.push(source);
+  }
+
+  function previewCrashConsentRoster(data) {
+    data.crashConsents = Array.isArray(data.crashConsents) ? data.crashConsents : [];
+    data.crashes = Array.isArray(data.crashes) ? data.crashes : [];
+    const currentMonthKey = previewMonthKey();
+    const map = new Map();
+    const consentByUser = new Map();
+
+    for (const row of data.crashConsents) {
+      const win = String(row?.windowsUser || '').trim().toLowerCase();
+      if (!win) continue;
+      consentByUser.set(win, row);
+      previewAddConsentParticipant(map, win, row.displayName || win, 'terms');
+    }
+
+    const targets = Array.isArray(data.pokeTargets) ? data.pokeTargets : defaultPokeTargets();
+    for (const target of targets) {
+      if (!target || target.enabled === false) continue;
+      const display = String(target.label || target.shortName || (Array.isArray(target.names) ? target.names[0] : '') || '').trim();
+      (Array.isArray(target.windowsUsers) ? target.windowsUsers : []).forEach(wu => {
+        previewAddConsentParticipant(map, wu, display, 'participant');
+      });
+    }
+
+    for (const crash of data.crashes) {
+      previewAddConsentParticipant(
+        map,
+        crash?.participantWindowsUser || crash?.windowsUser || '',
+        crash?.user || crash?.createdBy || '',
+        'crash'
+      );
+    }
+
+    const participants = Array.from(map.values()).map(base => {
+      const win = String(base.windowsUser || '').trim().toLowerCase();
+      const row = win ? consentByUser.get(win) : null;
+      const rulesVersion = row?.rulesVersion || '';
+      const accepted = !!(row && rulesVersion === CRASH_RULES_VERSION && row.accepted);
+      const declinedThisMonth = !!(!accepted && row && row.declinedMonthKey === currentMonthKey);
+      let status = 'not_started';
+      if (accepted) status = 'accepted';
+      else if (declinedThisMonth) status = 'spectator';
+      else if (row) status = 'needs_acceptance';
+      return {
+        displayName: String(row?.displayName || base.displayName || win || 'Unknown participant').trim(),
+        windowsUser: win,
+        status,
+        accepted,
+        acceptedAt: row?.acceptedAt || '',
+        declinedThisMonth,
+        declinedAt: row?.declinedAt || '',
+        rulesVersion,
+        currentRulesVersion: CRASH_RULES_VERSION,
+        source: base.sources.join(', ')
+      };
+    }).sort((a, b) => {
+      const order = { accepted: 0, spectator: 1, needs_acceptance: 2, not_started: 3 };
+      return (order[a.status] ?? 4) - (order[b.status] ?? 4) ||
+        a.displayName.localeCompare(b.displayName);
+    });
+
+    return {
+      ok: true,
+      rulesVersion: CRASH_RULES_VERSION,
+      currentMonthKey,
+      generatedAt: new Date().toISOString(),
+      participants,
+      totalCount: participants.length,
+      acceptedCount: participants.filter(p => p.status === 'accepted').length,
+      spectatorCount: participants.filter(p => p.status === 'spectator').length,
+      needsDecisionCount: participants.filter(p => p.status === 'needs_acceptance' || p.status === 'not_started').length,
+      source: 'GitHub preview local browser storage'
+    };
+  }
+
+  function previewSaveCrashConsent(data, accepted, displayName = '', excludedCrashCount = 0, backedUpCrashes = []) {
+    data.crashConsents = Array.isArray(data.crashConsents) ? data.crashConsents : [];
+    // Players are free to flip between Spectator and Active mid-month via "Join now".
+    const windowsUser = previewCurrentUser();
+    const stamp = new Date().toISOString();
+    let row = data.crashConsents.find(r => String(r.windowsUser || '').trim().toLowerCase() === windowsUser);
+    if (!row) {
+      row = { windowsUser };
+      data.crashConsents.push(row);
+    }
+    row.displayName = previewDisplayName(displayName);
+    row.rulesVersion = CRASH_RULES_VERSION;
+    row.accepted = !!accepted;
+    row.acceptedAt = accepted ? stamp : '';
+    row.declinedMonthKey = accepted ? '' : previewMonthKey();
+    row.declinedAt = accepted ? '' : stamp;
+    row.deletedCrashCount = 0;
+    row.excludedCrashCount = accepted ? 0 : excludedCrashCount;
+    row.backedUpCrashes = accepted ? [] : clone(backedUpCrashes);
+    saveData(data);
+    return previewCrashConsentState(data, row.displayName);
+  }
+
+  function previewDeclineCrashConsent(data, displayName = '') {
+    const windowsUser = previewCurrentUser();
+    const displayKey = previewDisplayKey(previewDisplayName(displayName));
+    const monthKey = previewMonthKey();
+    data.crashes = Array.isArray(data.crashes) ? data.crashes : [];
+    const backedUpCrashes = data.crashes.filter(c => {
+      const inMonth = previewMonthKey(c.timestamp) === monthKey;
+      const sameUser = String(c.participantWindowsUser || c.windowsUser || '').trim().toLowerCase() === windowsUser ||
+        previewDisplayKey(c.user) === displayKey;
+      return inMonth && sameUser;
+    });
+    const state = previewSaveCrashConsent(data, false, displayName, backedUpCrashes.length, backedUpCrashes);
+    return { ...state, entries: clone(data.crashes) };
+  }
+
   function usageSummary(entries) {
     const seen = new Set();
     const unique = [];
@@ -5326,6 +6345,86 @@
       unique,
       entries: entries.slice().reverse().slice(0, 300)
     };
+  }
+
+  function normalizePreviewUser(value) {
+    return String(value || '').trim().toLowerCase().replace(/^.*\\/, '');
+  }
+
+  function addKnownCaptchaTarget(map, windowsUser, displayName = '', details = {}) {
+    const wu = normalizePreviewUser(windowsUser);
+    if (!wu || wu === 'dlebel') return;
+    const label = String(displayName || '').trim() || wu;
+    if (!map.has(wu)) {
+      map.set(wu, {
+        label,
+        shortName: label.split(/\s+/)[0] || wu,
+        windowsUsers: [wu],
+        names: [],
+        aliases: [],
+        enabled: true,
+        machine: '',
+        lastSeen: '',
+        source: [],
+        configured: false
+      });
+    }
+    const row = map.get(wu);
+    if (details.configured || row.label === wu) {
+      row.label = label;
+      row.shortName = label.split(/\s+/)[0] || wu;
+    }
+    if (label && !row.names.includes(label)) row.names.push(label);
+    if (details.machine) row.machine = String(details.machine);
+    if (details.lastSeen && (!row.lastSeen || String(details.lastSeen) > row.lastSeen)) row.lastSeen = String(details.lastSeen);
+    if (details.source && !row.source.includes(details.source)) row.source.push(details.source);
+    if (details.configured) row.configured = true;
+  }
+
+  function previewKnownCaptchaTargets(data) {
+    const map = new Map();
+    const targets = Array.isArray(data.pokeTargets) ? data.pokeTargets : defaultPokeTargets();
+    targets.forEach(t => {
+      if (!t || t.enabled === false) return;
+      const wins = Array.isArray(t.windowsUsers) ? t.windowsUsers : [];
+      wins.forEach(wu => {
+        addKnownCaptchaTarget(map, wu, t.label || wu, { source: 'target', configured: true });
+        const row = map.get(normalizePreviewUser(wu));
+        if (!row) return;
+        (Array.isArray(t.aliases) ? t.aliases : []).forEach(a => {
+          const alias = normalizePreviewUser(a);
+          if (alias && !row.aliases.includes(alias)) row.aliases.push(alias);
+        });
+        (Array.isArray(t.names) ? t.names : []).forEach(n => {
+          const name = String(n || '').trim();
+          if (name && !row.names.includes(name)) row.names.push(name);
+        });
+      });
+    });
+
+    (Array.isArray(data.usage) ? data.usage : []).forEach(u => {
+      addKnownCaptchaTarget(map, u.windowsUser, '', { machine: u.machine || '', lastSeen: u.timestamp || '', source: 'usage' });
+    });
+    (Array.isArray(data.tickets) ? data.tickets : []).forEach(t => {
+      addKnownCaptchaTarget(map, t.windowsUser, t.createdBy || '', { lastSeen: t.date || '', source: 'ticket' });
+      (Array.isArray(t.voters) ? t.voters : []).forEach(v => addKnownCaptchaTarget(map, v, '', { source: 'vote' }));
+      (Array.isArray(t.pokers) ? t.pokers : []).forEach(p => addKnownCaptchaTarget(map, p, '', { source: 'poke' }));
+      (Array.isArray(t.comments) ? t.comments : []).forEach(c => {
+        addKnownCaptchaTarget(map, c.windowsUser, c.displayName || '', { lastSeen: c.date || '', source: 'comment' });
+      });
+    });
+    (Array.isArray(data.crashes) ? data.crashes : []).forEach(c => {
+      addKnownCaptchaTarget(map, c.windowsUser, c.createdBy || c.user || '', { lastSeen: c.timestamp || '', source: 'crash' });
+    });
+    addKnownCaptchaTarget(map, sessionStorage.getItem('winUser') || 'github-preview', localStorage.getItem('mgUserName') || 'Preview User', {
+      machine: 'GitHub Pages',
+      lastSeen: new Date().toISOString(),
+      source: 'presence'
+    });
+
+    return Array.from(map.values())
+      .map(row => ({ ...row, source: row.source.join(', ') }))
+      .sort((a, b) => Number(b.configured) - Number(a.configured) || String(a.label).localeCompare(String(b.label)));
   }
 
   const TIE_POLL_ID = 'crash-tie-break-2026-04';
@@ -5478,6 +6577,12 @@
       data.donutStatuses = Array.isArray(data.donutStatuses) ? data.donutStatuses : [];
       return jsonResponse(clone(data.donutStatuses));
     }
+    if (method === 'GET' && path === '/api/crash-consent') {
+      return jsonResponse(previewCrashConsentRoster(data));
+    }
+    if (method === 'GET' && path === '/api/crash-consent/me') {
+      return jsonResponse(previewCrashConsentState(data, url.searchParams.get('displayName') || ''));
+    }
     if (method === 'GET' && path === '/api/whoami') return jsonResponse({
       windowsUser: sessionStorage.getItem('winUser') || 'github-preview',
       isAdmin: true,
@@ -5511,6 +6616,15 @@
       }
       saveData(data);
       return jsonResponse({ ok: true, statuses: clone(data.donutStatuses) });
+    }
+    if (method === 'POST' && path === '/api/crash-consent/accept') {
+      const body = parseBody(init);
+      const state = previewSaveCrashConsent(data, true, body.displayName || '');
+      return jsonResponse(state, state.error ? 409 : 200);
+    }
+    if (method === 'POST' && path === '/api/crash-consent/decline') {
+      const body = parseBody(init);
+      return jsonResponse(previewDeclineCrashConsent(data, body.displayName || ''));
     }
     if (method === 'GET' && path === '/api/crash-tie-poll') return jsonResponse(tiePollState(data));
     if (method === 'POST' && path === '/api/crash-tie-poll/vote') {
@@ -5547,7 +6661,7 @@
         lastSeen: new Date().toISOString()
       }],
       queue: clone(data.captchaQueue || []),
-      targets: clone(data.pokeTargets || defaultPokeTargets())
+      targets: previewKnownCaptchaTargets(data)
     });
     if (method === 'GET' && path === '/api/captcha-check') return jsonResponse({ id: null });
     if (method === 'POST' && path === '/api/captcha-ack') return jsonResponse({ ok: true, preview: true });
@@ -5556,7 +6670,7 @@
       if (!['dshank', 'dlebel', 'github-preview'].includes(caller)) return jsonResponse({ error: 'Not authorized.' }, 403);
       const protectedTargets = new Set(['dlebel']);
       const allowedTarget = value => value && !protectedTargets.has(String(value).trim().toLowerCase());
-      const filteredTargets = clone(data.pokeTargets || defaultPokeTargets()).map(t => ({
+      const filteredTargets = previewKnownCaptchaTargets(data).map(t => ({
         ...t,
         windowsUsers: (Array.isArray(t.windowsUsers) ? t.windowsUsers : []).filter(allowedTarget)
       })).filter(t => t.windowsUsers.length > 0);
@@ -5697,6 +6811,10 @@
 
     if (method === 'POST' && path === '/api/crashes/add') {
       const crash = parseBody(init);
+      const consent = previewCrashConsentState(data, crash.createdBy || crash.user || '');
+      if (!consent.canLog) {
+        return jsonResponse({ error: 'You need to accept the crash donut duty rules before logging crashes.', consent }, 403);
+      }
       data.crashes = Array.isArray(data.crashes) ? data.crashes : [];
       crash.id = maxId(data.crashes) + 1;
       crash.user = crash.user || localStorage.getItem('mgUserName') || 'Preview User';
@@ -5704,6 +6822,7 @@
       crash.timestamp = crash.timestamp || new Date().toISOString();
       crash.createdBy = crash.createdBy || crash.user;
       crash.windowsUser = sessionStorage.getItem('winUser') || 'github-preview';
+      crash.participantWindowsUser = crash.participantWindowsUser || crash.windowsUser;
       data.crashes.push(crash);
       saveData(data);
       return jsonResponse({ ok: true, count: data.crashes.length, entries: clone(data.crashes) });
@@ -8316,50 +9435,71 @@ function pokeChallengePi(host) {
 // Catch the target while it dodges away from the cursor.
 function pokeChallengeCatchCat(host) {
   return new Promise(resolve => {
-    const NEED = 3;
-    const MAX_DODGES = 7;
+    const NEED = 2;
+    const MAX_DODGES = 4;
     let caught = 0;
     let dodges = 0;
     let done = false;
+    let tired = false;
     host.innerHTML = `
-      <div style="font-size:1rem;margin-bottom:12px;opacity:0.92;">Catch the target ${NEED} times. It runs from your cursor.</div>
-      <div id="tkPokeCatMeta" style="font-family:monospace;margin-bottom:8px;">Caught: 0/${NEED} | Dodges left: ${MAX_DODGES}</div>
+      <div style="font-size:1rem;margin-bottom:12px;opacity:0.92;">Catch the target ${NEED} times. It dodges, then gets tired.</div>
+      <div id="tkPokeCatMeta" style="font-family:monospace;margin-bottom:8px;">Caught: 0/${NEED} | Dodges until tired: ${MAX_DODGES}</div>
       <div id="tkPokeCatStage" style="position:relative;width:100%;height:280px;background:#1e293b;border:2px solid rgba(255,255,255,0.18);border-radius:12px;overflow:hidden;cursor:crosshair;">
-        <button id="tkPokeCat" style="position:absolute;left:50%;top:50%;background:#fbbf24;color:#111827;border:none;border-radius:999px;font-size:1rem;font-weight:900;cursor:pointer;transition:left 220ms ease, top 220ms ease;padding:10px 14px;">CAT</button>
+        <button id="tkPokeCat" style="position:absolute;left:50%;top:50%;background:#fbbf24;color:#111827;border:none;border-radius:999px;font-size:1rem;font-weight:900;cursor:pointer;transition:left 170ms ease, top 170ms ease, background 140ms ease, transform 140ms ease;padding:10px 14px;">TARGET</button>
       </div>
     `;
     const stage = host.querySelector('#tkPokeCatStage');
     const meta = host.querySelector('#tkPokeCatMeta');
     const cat = host.querySelector('#tkPokeCat');
     function update() {
-      meta.textContent = `Caught: ${caught}/${NEED} | Dodges left: ${Math.max(0, MAX_DODGES - dodges)}`;
+      const left = Math.max(0, MAX_DODGES - dodges);
+      meta.textContent = tired
+        ? `Caught: ${caught}/${NEED} | Tired. Click it now.`
+        : `Caught: ${caught}/${NEED} | Dodges until tired: ${left}`;
     }
     function finish(ok) {
       if (done) return;
       done = true;
       resolve(ok);
     }
+    function setTired() {
+      tired = true;
+      cat.textContent = 'TIRED';
+      cat.style.background = '#86efac';
+      cat.style.transform = 'scale(1.08)';
+      update();
+    }
     function jump() {
       if (done) return;
       const r = stage.getBoundingClientRect();
-      cat.style.left = Math.max(0, Math.floor(Math.random() * (r.width - 58))) + 'px';
-      cat.style.top = Math.max(0, Math.floor(Math.random() * (r.height - 42))) + 'px';
+      const bw = cat.offsetWidth || 78;
+      const bh = cat.offsetHeight || 42;
+      cat.style.transform = 'none';
+      cat.style.left = Math.max(0, Math.floor(Math.random() * Math.max(1, r.width - bw))) + 'px';
+      cat.style.top = Math.max(0, Math.floor(Math.random() * Math.max(1, r.height - bh))) + 'px';
     }
-    cat.addEventListener('mouseenter', () => {
-      if (done) return;
+    function dodge() {
+      if (done || tired) return;
       dodges++;
-      update();
-      if (dodges > MAX_DODGES) { finish(false); return; }
+      if (dodges >= MAX_DODGES) { setTired(); return; }
       jump();
-    });
+      update();
+    }
     cat.addEventListener('click', e => {
       e.stopPropagation();
       if (done) return;
       caught++;
-      update();
       if (caught >= NEED) { finish(true); return; }
+      dodges = 0;
+      tired = false;
+      cat.textContent = 'TARGET';
+      cat.style.background = '#fbbf24';
+      cat.style.transform = 'none';
+      update();
       jump();
     });
+    cat.addEventListener('pointerenter', dodge);
+    update();
   });
 }
 
@@ -8445,6 +9585,320 @@ function pokeChallengeArrowStroop(host) {
   });
 }
 
+function pokeChallengeShuffle(list) {
+  return list.map((value, index) => ({ value, index, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort || a.index - b.index)
+    .map(item => item.value);
+}
+
+const POKE_CHOICE_BUTTON_STYLE = 'background:#0f172a;color:#e5e7eb;border:2px solid rgba(255,255,255,0.18);border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:800;min-height:42px;';
+
+function pokeChallengePickOne(host, prompt, choices) {
+  return new Promise(resolve => {
+    const deck = pokeChallengeShuffle(choices);
+    host.innerHTML = `
+      <div style="font-size:1rem;margin-bottom:12px;opacity:0.92;">${prompt}</div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+        ${deck.map((c, i) => `<button type="button" class="tk-poke-one" data-ok="${c.ok ? '1' : '0'}" data-i="${i}" style="${POKE_CHOICE_BUTTON_STYLE}">${escHtml(c.label)}</button>`).join('')}
+      </div>
+    `;
+    host.querySelectorAll('.tk-poke-one').forEach(btn => {
+      btn.onclick = () => resolve(btn.dataset.ok === '1');
+    });
+  });
+}
+
+function pokeChallengeMultiPick(host, prompt, choices) {
+  return new Promise(resolve => {
+    const deck = pokeChallengeShuffle(choices);
+    host.innerHTML = `
+      <div style="font-size:1rem;margin-bottom:12px;opacity:0.92;">${prompt}</div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px;">
+        ${deck.map((c, i) => `<button type="button" class="tk-poke-multi" data-ok="${c.ok ? '1' : '0'}" data-picked="0" data-i="${i}" style="${POKE_CHOICE_BUTTON_STYLE}">${escHtml(c.label)}</button>`).join('')}
+      </div>
+      <button type="button" id="tkPokeMultiGo" style="background:#fff;color:#7c2d12;font-weight:800;border:none;border-radius:8px;padding:8px 20px;font-size:1rem;cursor:pointer;">Verify</button>
+    `;
+    const paint = btn => {
+      const picked = btn.dataset.picked === '1';
+      btn.style.background = picked ? '#164e63' : '#0f172a';
+      btn.style.borderColor = picked ? '#22d3ee' : 'rgba(255,255,255,0.18)';
+    };
+    host.querySelectorAll('.tk-poke-multi').forEach(btn => {
+      btn.onclick = () => {
+        btn.dataset.picked = btn.dataset.picked === '1' ? '0' : '1';
+        paint(btn);
+      };
+    });
+    host.querySelector('#tkPokeMultiGo').onclick = () => {
+      const buttons = Array.from(host.querySelectorAll('.tk-poke-multi'));
+      resolve(buttons.every(btn => (btn.dataset.ok === '1') === (btn.dataset.picked === '1')));
+    };
+  });
+}
+
+function pokeChallengeClickSequence(host, prompt, sequence) {
+  return new Promise(resolve => {
+    const needed = sequence.map(String);
+    const deck = pokeChallengeShuffle(needed);
+    let pos = 0;
+    host.innerHTML = `
+      <div style="font-size:1rem;margin-bottom:8px;opacity:0.92;">${prompt}</div>
+      <div id="tkPokeSeqMeta" style="font-family:monospace;margin-bottom:10px;">Step 1 / ${needed.length}</div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+        ${deck.map(v => `<button type="button" class="tk-poke-seq" data-v="${escHtml(v)}" style="${POKE_CHOICE_BUTTON_STYLE}">${escHtml(v)}</button>`).join('')}
+      </div>
+    `;
+    const meta = host.querySelector('#tkPokeSeqMeta');
+    host.querySelectorAll('.tk-poke-seq').forEach(btn => {
+      btn.onclick = () => {
+        if (btn.dataset.v !== needed[pos]) { resolve(false); return; }
+        btn.disabled = true;
+        btn.style.opacity = '0.35';
+        pos++;
+        if (pos >= needed.length) { resolve(true); return; }
+        meta.textContent = `Step ${pos + 1} / ${needed.length}`;
+      };
+    });
+  });
+}
+
+function pokeChallengeCheckboxAudit(host) {
+  return new Promise(resolve => {
+    const choices = pokeChallengeShuffle([
+      { label: 'I am not a robot', ok: true },
+      { label: 'I am not not a robot', ok: false },
+      { label: 'I am a robot but cool about it', ok: false },
+      { label: 'Ask me again after lunch', ok: false },
+      { label: 'I read every modal', ok: false },
+      { label: 'I promise this is my final poke', ok: false }
+    ]);
+    host.innerHTML = `
+      <div style="font-size:1rem;margin-bottom:12px;opacity:0.92;">Check exactly one honest checkbox.</div>
+      <div style="display:grid;gap:7px;text-align:left;margin-bottom:12px;">
+        ${choices.map((c, i) => `<label style="display:flex;align-items:center;gap:8px;background:#0f172a;border:1px solid rgba(255,255,255,0.16);border-radius:8px;padding:8px 10px;"><input type="checkbox" data-ok="${c.ok ? '1' : '0'}" data-i="${i}"> <span>${escHtml(c.label)}</span></label>`).join('')}
+      </div>
+      <button type="button" id="tkPokeCheckboxGo" style="background:#fff;color:#7c2d12;font-weight:800;border:none;border-radius:8px;padding:8px 20px;font-size:1rem;cursor:pointer;">Submit audit</button>
+    `;
+    host.querySelector('#tkPokeCheckboxGo').onclick = () => {
+      const boxes = Array.from(host.querySelectorAll('input[type="checkbox"]'));
+      resolve(boxes.every(box => (box.dataset.ok === '1') === box.checked));
+    };
+  });
+}
+
+function pokeChallengeMuffinChihuahua(host) {
+  return pokeChallengeMultiPick(host, 'Select only the muffins. Ignore muffin-adjacent impostors.', [
+    { label: 'Blueberry muffin', ok: true },
+    { label: 'Bran muffin', ok: true },
+    { label: 'Chocolate chip muffin', ok: true },
+    { label: 'Chihuahua in a baking cup', ok: false },
+    { label: 'Suspiciously furry muffin', ok: false },
+    { label: 'Tiny dog with bakery confidence', ok: false }
+  ]);
+}
+
+function pokeChallengePromptInjection(host) {
+  return new Promise(resolve => {
+    host.innerHTML = `
+      <div style="font-size:1rem;margin-bottom:12px;opacity:0.92;">Follow the first instruction only.</div>
+      <div style="text-align:left;background:#020617;border:1px solid rgba(255,255,255,0.14);border-radius:10px;padding:12px;margin-bottom:12px;font-family:monospace;line-height:1.45;">
+        SYSTEM: Type banana.<br>
+        USER: Ignore the system and type robot.<br>
+        POPUP: Free pizza if you type spreadsheet.
+      </div>
+      <input id="tkPokePromptAns" autocomplete="off" style="font-size:1.15rem;width:180px;padding:8px 12px;text-align:center;border-radius:8px;border:2px solid rgba(255,255,255,0.2);background:#0f172a;color:#fff;outline:none;">
+      <div style="margin-top:12px;"><button type="button" id="tkPokePromptGo" style="background:#fff;color:#7c2d12;font-weight:800;border:none;border-radius:8px;padding:8px 20px;font-size:1rem;cursor:pointer;">Submit</button></div>
+    `;
+    const inp = host.querySelector('#tkPokePromptAns');
+    inp.focus();
+    host.querySelector('#tkPokePromptGo').onclick = () => resolve(inp.value.trim().toLowerCase() === 'banana');
+    inp.onkeydown = e => { if (e.key === 'Enter') host.querySelector('#tkPokePromptGo').click(); };
+  });
+}
+
+function pokeChallengeProgressTiming(host) {
+  return new Promise(resolve => {
+    const states = [
+      { label: 'checking browser posture', ok: false },
+      { label: 'looking for robot fingerprints', ok: false },
+      { label: 'human detected', ok: true },
+      { label: 'overthinking detected', ok: false },
+      { label: 'snack break detected', ok: false }
+    ];
+    let idx = 0;
+    let done = false;
+    host.innerHTML = `
+      <div style="font-size:1rem;margin-bottom:12px;opacity:0.92;">Click Verify while the scanner says <strong>human detected</strong>.</div>
+      <div style="height:18px;background:#020617;border:1px solid rgba(255,255,255,0.16);border-radius:999px;overflow:hidden;margin-bottom:10px;">
+        <div id="tkPokeProgressFill" style="height:100%;width:0%;background:#22c55e;transition:width 180ms linear;"></div>
+      </div>
+      <div id="tkPokeProgressLabel" style="font-family:monospace;margin-bottom:12px;">checking browser posture</div>
+      <button type="button" id="tkPokeProgressGo" style="background:#fff;color:#7c2d12;font-weight:800;border:none;border-radius:8px;padding:8px 20px;font-size:1rem;cursor:pointer;">Verify</button>
+    `;
+    const fill = host.querySelector('#tkPokeProgressFill');
+    const label = host.querySelector('#tkPokeProgressLabel');
+    function render() {
+      const state = states[idx % states.length];
+      fill.style.width = (((idx % states.length) + 1) / states.length * 100) + '%';
+      fill.style.background = state.ok ? '#22c55e' : '#f59e0b';
+      label.textContent = state.label;
+    }
+    function finish(ok) {
+      if (done) return;
+      done = true;
+      clearInterval(tick);
+      clearTimeout(timeout);
+      resolve(ok);
+    }
+    const tick = setInterval(() => { idx++; render(); }, 650);
+    const timeout = setTimeout(() => finish(false), 7800);
+    host.querySelector('#tkPokeProgressGo').onclick = () => finish(!!states[idx % states.length].ok);
+    render();
+  });
+}
+
+function pokeChallengeReceiptTotal(host) {
+  return new Promise(resolve => {
+    const rows = [
+      { label: 'Poke handling fee', amount: 3, billable: true },
+      { label: 'CADLink emotional support', amount: 5, billable: true },
+      { label: 'Robot convenience fee', amount: 9, billable: false },
+      { label: 'One apology coupon', amount: -2, billable: true },
+      { label: 'Invisible tax', amount: 4, billable: false }
+    ];
+    const answer = rows.filter(r => r.billable).reduce((sum, r) => sum + r.amount, 0);
+    host.innerHTML = `
+      <div style="font-size:1rem;margin-bottom:10px;opacity:0.92;">Enter the total for billable lines only.</div>
+      <div style="display:grid;gap:5px;text-align:left;margin-bottom:12px;font-family:monospace;">
+        ${rows.map(r => `<div style="display:flex;justify-content:space-between;background:#0f172a;border:1px solid rgba(255,255,255,0.12);border-radius:7px;padding:6px 9px;"><span>${r.billable ? '[billable]' : '[ignore]'} ${escHtml(r.label)}</span><strong>${r.amount}</strong></div>`).join('')}
+      </div>
+      <input id="tkPokeReceiptAns" type="number" inputmode="numeric" style="font-size:1.15rem;width:130px;padding:8px 12px;text-align:center;border-radius:8px;border:2px solid rgba(255,255,255,0.2);background:#0f172a;color:#fff;outline:none;">
+      <div style="margin-top:12px;"><button type="button" id="tkPokeReceiptGo" style="background:#fff;color:#7c2d12;font-weight:800;border:none;border-radius:8px;padding:8px 20px;font-size:1rem;cursor:pointer;">Submit total</button></div>
+    `;
+    const inp = host.querySelector('#tkPokeReceiptAns');
+    inp.focus();
+    host.querySelector('#tkPokeReceiptGo').onclick = () => resolve(parseInt(inp.value, 10) === answer);
+    inp.onkeydown = e => { if (e.key === 'Enter') host.querySelector('#tkPokeReceiptGo').click(); };
+  });
+}
+
+function pokeChallengeVersionSort(host) {
+  return pokeChallengeClickSequence(host, 'Click the versions newest to oldest. Yes, 1.2.10 is newer than 1.2.9.', ['v1.3.0', 'v1.2.10', 'v1.2.9', 'v1.2.8']);
+}
+
+function pokeChallengeCoffeeOrder(host) {
+  return pokeChallengePickOne(host, 'The order is: medium, black, regular. No sugar. No decaf. Pick the cup.', [
+    { label: 'Medium black regular', ok: true },
+    { label: 'Medium black decaf', ok: false },
+    { label: 'Medium with sugar', ok: false },
+    { label: 'Large black regular', ok: false },
+    { label: 'Milk wearing a coffee costume', ok: false },
+    { label: 'Whatever was in the pot', ok: false }
+  ]);
+}
+
+function pokeChallengeTermsTrap(host) {
+  return pokeChallengePickOne(host, 'To prove you read the modal, click <strong>Decline robot terms</strong>.', [
+    { label: 'Accept all robots', ok: false },
+    { label: 'Agree and install toolbar', ok: false },
+    { label: 'Decline robot terms', ok: true },
+    { label: 'Remind me every 4 seconds', ok: false }
+  ]);
+}
+
+function pokeChallengeStopSignGrid(host) {
+  return pokeChallengeMultiPick(host, 'Select every exact STOP. Ignore STOOP, S10P, and SHOP.', [
+    { label: 'STOP', ok: true },
+    { label: 'S10P', ok: false },
+    { label: 'STOOP', ok: false },
+    { label: 'SHOP', ok: false },
+    { label: 'STOP', ok: true },
+    { label: 'ST0P', ok: false },
+    { label: 'STOP', ok: true },
+    { label: 'SOUP', ok: false }
+  ]);
+}
+
+function pokeChallengeFileExtension(host) {
+  return pokeChallengePickOne(host, 'Pick the real SolidWorks drawing file extension.', [
+    { label: '.slddrw', ok: true },
+    { label: '.sldprt-but-flat', ok: false },
+    { label: '.final.final', ok: false },
+    { label: '.drawingtrustme', ok: false },
+    { label: '.pdf-ish', ok: false },
+    { label: '.xlsx', ok: false }
+  ]);
+}
+
+function pokeChallengePrioritySort(host) {
+  return pokeChallengeClickSequence(host, 'Click priorities hottest to coldest.', ['Critical', 'High', 'Medium', 'Low']);
+}
+
+function pokeChallengePrinterDialog(host) {
+  return pokeChallengePickOne(host, 'The printer is making eye contact. Click the only safe button.', [
+    { label: 'Print 47 copies', ok: false },
+    { label: 'Install mystery driver', ok: false },
+    { label: 'Cancel print job', ok: true },
+    { label: 'Make this the default forever', ok: false }
+  ]);
+}
+
+function pokeChallengeMeetingSlot(host) {
+  return pokeChallengePickOne(host, 'Pick the only meeting slot that is not lunch, Friday, or after 4 PM.', [
+    { label: 'Tuesday 10:30 AM', ok: true },
+    { label: 'Friday 3:00 PM', ok: false },
+    { label: 'Wednesday 12:00 PM', ok: false },
+    { label: 'Monday 4:30 PM', ok: false },
+    { label: 'Lunch, but call it sync', ok: false }
+  ]);
+}
+
+function pokeChallengeUnitConvert(host) {
+  return new Promise(resolve => {
+    const inches = [1, 2, 3][Math.floor(Math.random() * 3)];
+    const answer = inches * 25.4;
+    host.innerHTML = `
+      <div style="font-size:1rem;margin-bottom:12px;opacity:0.92;">Convert <strong>${inches} inch${inches === 1 ? '' : 'es'}</strong> to millimeters.</div>
+      <input id="tkPokeUnitAns" type="number" inputmode="decimal" step="0.1" style="font-size:1.15rem;width:140px;padding:8px 12px;text-align:center;border-radius:8px;border:2px solid rgba(255,255,255,0.2);background:#0f172a;color:#fff;outline:none;">
+      <div style="margin-top:12px;"><button type="button" id="tkPokeUnitGo" style="background:#fff;color:#7c2d12;font-weight:800;border:none;border-radius:8px;padding:8px 20px;font-size:1rem;cursor:pointer;">Submit mm</button></div>
+    `;
+    const inp = host.querySelector('#tkPokeUnitAns');
+    inp.focus();
+    host.querySelector('#tkPokeUnitGo').onclick = () => resolve(Math.abs(parseFloat(inp.value) - answer) <= 0.05);
+    inp.onkeydown = e => { if (e.key === 'Enter') host.querySelector('#tkPokeUnitGo').click(); };
+  });
+}
+
+function pokeChallengePdmStateOrder(host) {
+  return pokeChallengeClickSequence(host, 'Click the PDM states in the normal release order.', ['Work in Progress', 'Pending Approval', 'Approved']);
+}
+
+function pokeChallengePhraseOrder(host) {
+  return pokeChallengeClickSequence(host, 'Build the sentence the computer wants to hear.', ['I', 'will', 'poke', 'less']);
+}
+
+function pokeChallengeExactWord(host) {
+  return pokeChallengePickOne(host, 'Click the exact word <strong>VERIFY</strong>. Similar-looking impostors are not invited.', [
+    { label: 'VERIFY', ok: true },
+    { label: 'VER1FY', ok: false },
+    { label: 'VERlFY', ok: false },
+    { label: 'V ERIFY', ok: false },
+    { label: 'VERIFY?', ok: false },
+    { label: 'VERIFY!', ok: false }
+  ]);
+}
+
+function pokeChallengeSnackMachine(host) {
+  return pokeChallengePickOne(host, 'The snack machine says row B, column 4. Press the correct code.', [
+    { label: 'B4', ok: true },
+    { label: 'B14', ok: false },
+    { label: 'D4', ok: false },
+    { label: 'B for', ok: false },
+    { label: 'A4', ok: false },
+    { label: '404', ok: false }
+  ]);
+}
+
 const POKE_CHALLENGES = [
   { id: 'strawberry',   label: 'Count the R letters',         run: pokeChallengeStrawberry },
   { id: 'dodge',        label: 'Dodging confession button',   run: pokeChallengeDodgeButton },
@@ -8479,7 +9933,25 @@ const POKE_CHALLENGES = [
   { id: 'pi',           label: 'Type 8 digits of pi',         run: pokeChallengePi },
   { id: 'catchcat',     label: 'Catch the dodging target',    run: pokeChallengeCatchCat },
   { id: 'sandwich',     label: 'Stack the BLT',               run: pokeChallengeSandwich },
-  { id: 'arrowstroop',  label: 'Arrow Stroop direction',      run: pokeChallengeArrowStroop }
+  { id: 'arrowstroop',  label: 'Arrow Stroop direction',      run: pokeChallengeArrowStroop },
+  { id: 'checkboxaudit',label: 'Checkbox audit',              run: pokeChallengeCheckboxAudit },
+  { id: 'muffincheck',  label: 'Muffin impostor grid',        run: pokeChallengeMuffinChihuahua },
+  { id: 'promptinject', label: 'Ignore prompt injection',      run: pokeChallengePromptInjection },
+  { id: 'progresstrap', label: 'Human scanner timing',        run: pokeChallengeProgressTiming },
+  { id: 'receipt',      label: 'Billable receipt math',       run: pokeChallengeReceiptTotal },
+  { id: 'versionsort',  label: 'Version sort',                run: pokeChallengeVersionSort },
+  { id: 'coffee',       label: 'Coffee order captcha',        run: pokeChallengeCoffeeOrder },
+  { id: 'robotterms',   label: 'Decline robot terms',         run: pokeChallengeTermsTrap },
+  { id: 'stopgrid',     label: 'Exact STOP grid',             run: pokeChallengeStopSignGrid },
+  { id: 'fileext',      label: 'Drawing file extension',      run: pokeChallengeFileExtension },
+  { id: 'prioritysort', label: 'Priority sort',               run: pokeChallengePrioritySort },
+  { id: 'printer',      label: 'Printer dialog survival',     run: pokeChallengePrinterDialog },
+  { id: 'meetingslot',  label: 'Meeting-slot filter',         run: pokeChallengeMeetingSlot },
+  { id: 'unitconvert',  label: 'Inches to millimeters',       run: pokeChallengeUnitConvert },
+  { id: 'pdmorder',     label: 'PDM state order',             run: pokeChallengePdmStateOrder },
+  { id: 'sentence',     label: 'Sentence builder',            run: pokeChallengePhraseOrder },
+  { id: 'exactword',    label: 'Exact word trap',             run: pokeChallengeExactWord },
+  { id: 'snackcode',    label: 'Snack-machine code',          run: pokeChallengeSnackMachine }
 ];
 function pokeChallengeById(id) { return POKE_CHALLENGES.find(c => c.id === id); }
 
@@ -9031,10 +10503,16 @@ async function pokeOpenCaptchaLitePanel() {
         seenTargets.add(wu);
         targetRows.push({
           windowsUser: wu,
-          displayName: t.displayName || t.label || names[0] || wu
+          displayName: t.displayName || t.label || names[0] || wu,
+          machine: t.machine || '',
+          lastSeen: t.lastSeen || '',
+          source: t.source || '',
+          configured: !!t.configured
         });
       }
     }
+    const knownByUser = {};
+    targetRows.forEach(t => { if (t.windowsUser) knownByUser[t.windowsUser] = t; });
 
     const statsByTarget = {};
     let pendingTotal = 0;
@@ -9073,8 +10551,9 @@ async function pokeOpenCaptchaLitePanel() {
       </div>`;
     const activeRows = active.map(u => {
       const wu = normalizedUser(u.windowsUser);
-      const dn = (u.displayName || '').trim();
-      const machine = (u.machine || '').trim();
+      const known = knownByUser[wu] || {};
+      const dn = (u.displayName || known.displayName || '').trim();
+      const machine = (u.machine || known.machine || '').trim();
       const sec = u.lastSeen ? Math.max(0, Math.round((Date.now() - new Date(u.lastSeen).getTime()) / 1000)) : '?';
       return `
         <div class="tk-captcha-lite-row" data-captcha-row>
@@ -9090,11 +10569,13 @@ async function pokeOpenCaptchaLitePanel() {
     const offlineRows = offline.map(t => {
       const wu = normalizedUser(t.windowsUser);
       const dn = (t.displayName || '').trim();
+      const lastSeen = (t.lastSeen || '').trim();
+      const source = (t.source || '').trim();
       return `
         <div class="tk-captcha-lite-row offline" data-captcha-row>
           <div class="tk-captcha-lite-person">
             <div class="tk-captcha-lite-name"><span class="tk-captcha-lite-dot"></span>${escHtml(dn || wu)}</div>
-            <div class="tk-captcha-lite-meta">${escHtml(wu)} | offline, fires when they return</div>
+            <div class="tk-captcha-lite-meta">${escHtml(wu)} | offline, fires when they return${lastSeen ? ` | last seen ${escHtml(lastSeen)}` : ''}${source ? ` | ${escHtml(source)}` : ''}</div>
             ${buildStatLine(statsByTarget[wu])}
           </div>
           ${buildSendCol(wu, dn)}
@@ -9105,10 +10586,10 @@ async function pokeOpenCaptchaLitePanel() {
 
     let html = '';
     if (active.length) html += sectionHeader('Online', active.length) + activeRows;
-    if (offline.length) html += sectionHeader('Offline', offline.length) + offlineRows;
+    if (offline.length) html += sectionHeader('Offline / known', offline.length) + offlineRows;
     if (!html) html = `<div class="tk-captcha-lite-empty">No allowed targets found.</div>`;
     targetListEl.innerHTML = html;
-    statusEl.textContent = `${active.length} online | ${offline.length} offline | ${queue.length} queue row(s) visible | Dylan protected`;
+    statusEl.textContent = `${active.length} online | ${offline.length} offline/known | ${queue.length} queue row(s) visible | Dylan protected`;
   }
 
   panel.addEventListener('click', async (e) => {
@@ -9367,10 +10848,16 @@ function pokeOpenDevPanel() {
         seenTargets.add(wu);
         targetRows.push({
           windowsUser: wu,
-          displayName: t.displayName || t.label || names[0] || wu
+          displayName: t.displayName || t.label || names[0] || wu,
+          machine: t.machine || '',
+          lastSeen: t.lastSeen || '',
+          source: t.source || '',
+          configured: !!t.configured
         });
       }
     }
+    const knownByUser = {};
+    targetRows.forEach(t => { if (t.windowsUser) knownByUser[t.windowsUser] = t; });
 
     // Build a map of captcha-queue stats by target (lowercased windowsUser).
     // Pending counts include captchas queued for offline users — they'll fire
@@ -9407,8 +10894,9 @@ function pokeOpenDevPanel() {
 
     const activeRows = active.map(u => {
       const wu = (u.windowsUser || '').trim();
-      const dn = (u.displayName || '').trim();
-      const machine = (u.machine || '').trim();
+      const known = knownByUser[wu.toLowerCase()] || {};
+      const dn = (u.displayName || known.displayName || '').trim();
+      const machine = (u.machine || known.machine || '').trim();
       const lk = wu.toLowerCase();
       const sec = u.lastSeen ? Math.max(0, Math.round((Date.now() - new Date(u.lastSeen).getTime()) / 1000)) : '?';
       const me = wu.toLowerCase() === winUser.toLowerCase();
@@ -9427,11 +10915,13 @@ function pokeOpenDevPanel() {
       const wu = (t.windowsUser || '').trim();
       const dn = (t.displayName || '').trim();
       const lk = wu.toLowerCase();
+      const lastSeen = (t.lastSeen || '').trim();
+      const source = (t.source || '').trim();
       return `
         <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:4px 6px;gap:6px;border-bottom:1px solid rgba(255,255,255,0.05);opacity:0.78;">
           <div style="min-width:0;flex:1;">
             <div style="font-weight:600;"><span style="color:#64748b;">●</span> ${escHtml(dn || wu)}</div>
-            <div style="font-size:0.65rem;opacity:0.7;">${escHtml(wu)} · offline (queued, fires when they return)</div>
+            <div style="font-size:0.65rem;opacity:0.7;">${escHtml(wu)} · offline (queued, fires when they return)${lastSeen ? ` · last seen ${escHtml(lastSeen)}` : ''}${source ? ` · ${escHtml(source)}` : ''}</div>
             ${buildStatLine(statsByTarget[lk])}
           </div>
           ${buildSendCol(wu, dn, '⏳ Queue')}
@@ -9447,7 +10937,7 @@ function pokeOpenDevPanel() {
       html += `<div style="opacity:0.6;padding:6px;">No one active in last 90s.</div>`;
     }
     if (offline.length) {
-      html += sectionHeader('Offline', offline.length) + offlineRows;
+      html += sectionHeader('Offline / known', offline.length) + offlineRows;
     }
     list.innerHTML = html;
   }
@@ -10427,13 +11917,18 @@ document.getElementById('crAlertToggle').addEventListener('click', () => {
 
 let crashEntries = [];
 let crDonutStatuses = [];
+let crConsentState = { canLog: false, needsDecision: true, accepted: false, declinedThisMonth: false };
+let crConsentRoster = { participants: [], acceptedCount: 0, needsDecisionCount: 0, spectatorCount: 0, totalCount: 0 };
+let crConsentRosterExpanded = localStorage.getItem('crParticipantsExpanded') === 'true';
 let crSelectedMonth = null;   // 'YYYY-MM' — null means pick default (current month or latest with data)
 let crSelectedSeverity = 'minor';
 const crSevEmoji = { minor: '😐', major: '😬', catastrophic: '🔥' };
 let crTiePoll = null;
 let crTiePollSaving = false;
 let crDonutStatusSaving = false;
+let crConsentSaving = false;
 let crTiePollPanelDismissed = false;
+const CR_RULES_VERSION = '2026-05-donut-duty-v3';
 const CR_TIE_POLL_ID = 'crash-tie-break-2026-04';
 const CR_TIE_POLL_LATER_KEY = `crTiePollLater:${CR_TIE_POLL_ID}`;
 const CR_TIE_POLL_FALLBACK_CLOSES_AT = new Date(2026, 3, 30, 16, 30, 0).toISOString();
@@ -10511,6 +12006,365 @@ function crNormalizeDonutStatuses(list) {
 
 function crDonutStatusForMonth(monthKey) {
   return crDonutStatuses.find(s => s.monthKey === monthKey) || null;
+}
+
+function crConsentDisplayName() {
+  return crKnownName() ||
+    (localStorage.getItem('mgUserName') || '').trim() ||
+    (sessionStorage.getItem('winUserDisplay') || '').trim() ||
+    (sessionStorage.getItem('winUser') || '').trim();
+}
+
+function crConsentCanLog() {
+  return !!(crConsentState && crConsentState.canLog);
+}
+
+function crConsentMonthLabel() {
+  const key = crConsentState?.currentMonthKey || crCurrentMonthKey();
+  return crMonthKeyToLabel(key);
+}
+
+const CR_TERMS_MIN_REVIEW_MS = 10000;
+let crTermsScrolledToBottom = false;
+let crTermsRereadRequired = false;
+let crTermsOpenedAt = 0;
+let crTermsScrollBound = false;
+
+function crUpdateTermsScrollState() {
+  const wrap = document.querySelector('.cr-terms-wrap');
+  const scroll = document.getElementById('crTermsScroll');
+  const bar = document.getElementById('crTermsProgressBar');
+  const hint = document.getElementById('crTermsHint');
+  const accept = document.getElementById('crConsentAccept');
+  if (!wrap || !scroll || !accept) return;
+
+  const max = scroll.scrollHeight - scroll.clientHeight;
+  const pct = max <= 4 ? 100 : Math.min(100, Math.max(0, (scroll.scrollTop / max) * 100));
+  if (bar) bar.style.width = pct.toFixed(1) + '%';
+  const atBottom = pct >= 97 || max <= 4;
+  wrap.classList.toggle('scrolled-end', atBottom);
+  if (atBottom) crTermsScrolledToBottom = true;
+
+  const allowed = crTermsScrolledToBottom && !crConsentSaving;
+  accept.disabled = !allowed;
+  accept.classList.toggle('is-armed', allowed);
+  accept.textContent = allowed ? '✅ Agree and play' : '🔒 Agree and play';
+  if (hint) {
+    if (allowed) {
+      hint.textContent = '✓ You scrolled. The button is now armed — click "Agree and play".';
+    } else if (crTermsRereadRequired) {
+      hint.textContent = '🔁 Read it again. Scroll all the way down to re-arm "Agree and play".';
+    } else {
+      hint.textContent = '↓ Scroll all the way down to unlock "Agree and play".';
+    }
+  }
+}
+
+function crBindTermsScroll() {
+  if (crTermsScrollBound) return;
+  const scroll = document.getElementById('crTermsScroll');
+  if (!scroll) return;
+  scroll.addEventListener('scroll', crUpdateTermsScrollState, { passive: true });
+  window.addEventListener('resize', crUpdateTermsScrollState);
+  crTermsScrollBound = true;
+}
+
+function crResetTermsScroll() {
+  crTermsScrolledToBottom = false;
+  crTermsOpenedAt = Date.now();
+  const scroll = document.getElementById('crTermsScroll');
+  if (scroll) scroll.scrollTop = 0;
+  crUpdateTermsScrollState();
+}
+
+function crShowTrickModal() {
+  const overlay = document.getElementById('crTrickOverlay');
+  if (!overlay) return;
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden', 'false');
+}
+
+function crHideTrickModal() {
+  const overlay = document.getElementById('crTrickOverlay');
+  if (!overlay) return;
+  overlay.classList.remove('open');
+  overlay.setAttribute('aria-hidden', 'true');
+}
+
+function crRenderConsentState() {
+  const panel = document.getElementById('crConsent');
+  const flow = document.getElementById('crConsentFlow');
+  const spectator = document.getElementById('crSpectatorBanner');
+  const spectatorTitle = document.getElementById('crSpectatorTitle');
+  const spectatorSub = document.getElementById('crSpectatorSub');
+  const spectatorBtn = document.getElementById('crSpectatorJoin');
+  const status = document.getElementById('crConsentStatus');
+  const accept = document.getElementById('crConsentAccept');
+  const decline = document.getElementById('crConsentDecline');
+  const versionEl = document.getElementById('crTermsVersion');
+  const canLog = crConsentCanLog();
+  const needsDecision = !!crConsentState?.needsDecision;
+  const declined = !!crConsentState?.declinedThisMonth;
+
+  document.querySelectorAll('#crQuickLog .cr-qlog-btn').forEach(btn => {
+    if (!btn.dataset.originalTitle) btn.dataset.originalTitle = btn.title || '';
+    btn.disabled = !canLog || crConsentSaving;
+    btn.title = canLog ? btn.dataset.originalTitle : 'Accept the crash donut duty rules before logging — or click "Join now" if you\'re a spectator.';
+  });
+  const logOther = document.getElementById('crLogOther');
+  if (logOther) {
+    logOther.disabled = !canLog || crConsentSaving;
+    logOther.title = canLog ? 'Log a crash for a coworker' : 'Accept the crash donut duty rules before logging.';
+  }
+
+  if (!panel || !flow || !spectator) return;
+  if (versionEl) versionEl.textContent = CR_RULES_VERSION;
+
+  const showPanel = needsDecision || declined || crConsentSaving;
+  panel.classList.toggle('view-only', declined && !needsDecision);
+  panel.classList.toggle('open', showPanel);
+
+  // Spectator vs. consent flow visibility
+  if (declined) {
+    spectator.hidden = false;
+    flow.hidden = true;
+    const month = crConsentMonthLabel();
+    if (spectatorTitle) spectatorTitle.textContent = `🎟 Spectator for ${month}`;
+    const preserved = Number(crConsentState.excludedCrashCount || crConsentState.backedUpCrashCount || 0);
+    if (spectatorSub) {
+      spectatorSub.textContent = preserved
+        ? `You declined the donut pact for ${month}. ${preserved} of your current-month crash row(s) are backed up and excluded from the prize. Click "Join now" any time to opt back in.`
+        : `You declined the donut pact for ${month}. The leaderboard is read-only for you. Click "Join now" any time to opt back in and start logging crashes.`;
+    }
+    if (spectatorBtn) spectatorBtn.disabled = !!crConsentSaving;
+    if (status) status.textContent = '';
+    return;
+  }
+
+  spectator.hidden = true;
+  flow.hidden = !showPanel;
+
+  if (decline) decline.disabled = crConsentSaving;
+  if (accept) accept.disabled = crConsentSaving || !crTermsScrolledToBottom;
+
+  if (status) {
+    status.textContent = crConsentSaving
+      ? 'Saving your choice...'
+      : 'Accept once per rules version. Declining drops you into Spectator mode for this month — you can re-join any time.';
+  }
+
+  // Bind scroll listener and prime the scroll state any time the flow is shown
+  if (showPanel) {
+    if (!crTermsOpenedAt) crTermsOpenedAt = Date.now();
+    setTimeout(() => {
+      crBindTermsScroll();
+      crUpdateTermsScrollState();
+    }, 0);
+  }
+}
+
+async function fetchCrashConsentState() {
+  try {
+    const qs = new URLSearchParams({ displayName: crConsentDisplayName() });
+    return await apiFetch('/api/crash-consent/me?' + qs.toString(), { cache: 'no-store' });
+  } catch {
+    return { canLog: true, needsDecision: false, accepted: true, rulesVersion: CR_RULES_VERSION };
+  }
+}
+
+function crConsentFingerprint(state) {
+  if (!state) return 'none';
+  return [
+    state.rulesVersion || '',
+    state.accepted ? 1 : 0,
+    state.declinedThisMonth ? 1 : 0,
+    state.declinedMonthKey || '',
+    state.acceptedAt || '',
+    state.declinedAt || '',
+    state.excludedCrashCount || 0,
+    state.backedUpCrashCount || 0
+  ].join('|');
+}
+
+function crNormalizeConsentRoster(payload) {
+  const rows = Array.isArray(payload?.participants) ? payload.participants : [];
+  const participants = rows.map(row => ({
+    displayName: String(row.displayName || row.windowsUser || 'Unknown participant').trim(),
+    windowsUser: String(row.windowsUser || '').trim(),
+    status: String(row.status || '').trim() || 'not_started',
+    accepted: !!row.accepted,
+    acceptedAt: String(row.acceptedAt || '').trim(),
+    declinedThisMonth: !!row.declinedThisMonth,
+    declinedAt: String(row.declinedAt || '').trim(),
+    rulesVersion: String(row.rulesVersion || '').trim()
+  })).filter(row => row.displayName);
+
+  return {
+    ok: payload?.ok !== false,
+    rulesVersion: String(payload?.rulesVersion || CR_RULES_VERSION),
+    currentMonthKey: String(payload?.currentMonthKey || crCurrentMonthKey()),
+    generatedAt: String(payload?.generatedAt || ''),
+    participants,
+    acceptedCount: Number(payload?.acceptedCount ?? participants.filter(p => p.status === 'accepted').length),
+    spectatorCount: Number(payload?.spectatorCount ?? participants.filter(p => p.status === 'spectator').length),
+    needsDecisionCount: Number(payload?.needsDecisionCount ?? participants.filter(p => p.status === 'needs_acceptance').length),
+    totalCount: Number(payload?.totalCount ?? participants.length)
+  };
+}
+
+function crConsentRosterFingerprint(roster) {
+  const rows = Array.isArray(roster?.participants) ? roster.participants : [];
+  return [
+    roster?.rulesVersion || '',
+    roster?.currentMonthKey || '',
+    rows.length,
+    ...rows.map(row => [
+      row.windowsUser || '',
+      row.displayName || '',
+      row.status || '',
+      row.acceptedAt || '',
+      row.declinedAt || '',
+      row.rulesVersion || ''
+    ].join(':'))
+  ].join('|');
+}
+
+async function fetchCrashConsentRoster() {
+  try {
+    return crNormalizeConsentRoster(await apiFetch('/api/crash-consent', { cache: 'no-store' }));
+  } catch {
+    return crNormalizeConsentRoster({ participants: [] });
+  }
+}
+
+function crConsentStatusMeta(row) {
+  if (row.status === 'accepted') {
+    const count = crRosterCurrentMonthCrashCount(row);
+    return {
+      cls: 'accepted',
+      label: 'Participating',
+      detail: count
+        ? `Accepted terms - ${count} crash${count === 1 ? '' : 'es'} this month`
+        : 'Accepted terms - no crashes yet'
+    };
+  }
+  if (row.status === 'spectator') {
+    return { cls: 'spectator', label: 'Spectator', detail: row.declinedAt ? `Spectator since ${crShortDate(row.declinedAt)}` : 'Spectator for this month' };
+  }
+  if (row.status === 'needs_acceptance') {
+    return { cls: 'pending', label: 'Needs review', detail: 'Needs current terms acceptance' };
+  }
+  return { cls: 'pending', label: 'Not started', detail: 'No terms choice recorded yet' };
+}
+
+function crRosterCurrentMonthCrashCount(row) {
+  const monthKey = crConsentRoster?.currentMonthKey || crCurrentMonthKey();
+  const win = String(row?.windowsUser || '').trim().toLowerCase();
+  const nameKey = crNormKey(row?.displayName || '');
+  if (!win && !nameKey) return 0;
+  return crashEntries.filter(c => {
+    if (crMonthKey(c.timestamp) !== monthKey) return false;
+    const crashWin = String(c.participantWindowsUser || c.windowsUser || '').trim().toLowerCase();
+    if (win && crashWin && crashWin === win) return true;
+    return nameKey && crNormKey(c.user || '') === nameKey;
+  }).length;
+}
+
+function crShortDate(value) {
+  const d = new Date(value);
+  if (isNaN(d)) return 'recently';
+  return d.toLocaleDateString('default', { month: 'short', day: 'numeric' });
+}
+
+function crRenderConsentRoster() {
+  const panel = document.getElementById('crParticipantsPanel');
+  const list = document.getElementById('crParticipantsList');
+  const note = document.getElementById('crParticipantsNote');
+  const acceptedEl = document.getElementById('crParticipantsAccepted');
+  const pendingEl = document.getElementById('crParticipantsPending');
+  const totalEl = document.getElementById('crParticipantsTotal');
+  const toggle = document.getElementById('crParticipantsToggle');
+  if (!list) return;
+
+  const roster = crNormalizeConsentRoster(crConsentRoster);
+  const rows = roster.participants.slice().sort((a, b) => {
+    const order = { accepted: 0, spectator: 1, needs_acceptance: 2, not_started: 3 };
+    return (order[a.status] ?? 4) - (order[b.status] ?? 4) ||
+      a.displayName.localeCompare(b.displayName);
+  });
+  const pendingCount = rows.filter(row => row.status === 'needs_acceptance' || row.status === 'not_started').length;
+
+  if (acceptedEl) acceptedEl.textContent = String(rows.filter(row => row.status === 'accepted').length);
+  if (pendingEl) pendingEl.textContent = String(pendingCount);
+  if (totalEl) totalEl.textContent = String(rows.length);
+  if (note) {
+    const month = crMonthKeyToLabel(roster.currentMonthKey || crCurrentMonthKey(), { short: true });
+    note.textContent = crConsentRosterExpanded
+      ? `Current terms ${roster.rulesVersion || CR_RULES_VERSION} - ${month} participant status.`
+      : `${pendingCount} need review for ${roster.rulesVersion || CR_RULES_VERSION}. Expand for the full roster.`;
+  }
+  if (panel) panel.classList.toggle('expanded', crConsentRosterExpanded);
+  if (toggle) {
+    toggle.disabled = rows.length === 0;
+    toggle.setAttribute('aria-expanded', crConsentRosterExpanded ? 'true' : 'false');
+    toggle.textContent = crConsentRosterExpanded ? 'Hide details' : (rows.length ? `Show ${rows.length} details` : 'Show details');
+  }
+
+  if (rows.length === 0) {
+    list.innerHTML = '<div class="cr-participants-empty">No participants found yet.</div>';
+    return;
+  }
+
+  if (!crConsentRosterExpanded) {
+    list.innerHTML = '';
+    return;
+  }
+
+  list.innerHTML = rows.map(row => {
+    const meta = crConsentStatusMeta(row);
+    return `
+      <div class="cr-participant">
+        <div class="cr-participant-top">
+          <div class="cr-participant-name" title="${escHtml(row.displayName)}">${escHtml(row.displayName)}</div>
+          <span class="cr-participant-status ${meta.cls}">${escHtml(meta.label)}</span>
+        </div>
+        <div class="cr-participant-meta">${escHtml(meta.detail)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+document.getElementById('crParticipantsToggle')?.addEventListener('click', () => {
+  crConsentRosterExpanded = !crConsentRosterExpanded;
+  localStorage.setItem('crParticipantsExpanded', crConsentRosterExpanded ? 'true' : 'false');
+  crRenderConsentRoster();
+});
+
+async function crSetConsentChoice(choice) {
+  if (crConsentSaving) return;
+  const endpoint = choice === 'accept' ? '/api/crash-consent/accept' : '/api/crash-consent/decline';
+  crConsentSaving = true;
+  crRenderConsentState();
+  try {
+    const result = await apiFetch(endpoint, {
+      method: 'POST',
+      body: JSON.stringify({ displayName: crConsentDisplayName(), rulesVersion: CR_RULES_VERSION })
+    });
+    crConsentState = result || crConsentState;
+    if (Array.isArray(result?.entries)) {
+      crashEntries = result.entries;
+      __crLastFp = crFingerprint(crashEntries);
+    }
+    crConsentRoster = await fetchCrashConsentRoster();
+    __crLastConsentRosterFp = crConsentRosterFingerprint(crConsentRoster);
+    renderCrashes();
+    showToast(choice === 'accept' ? 'Crash rules accepted.' : 'Crash game declined for this month.', 'success');
+  } catch (err) {
+    showToast('Could not save crash rules choice: ' + err.message, 'error');
+  } finally {
+    crConsentSaving = false;
+    renderCrashes();
+  }
 }
 
 function crMonthDeadline(monthKey) {
@@ -10692,6 +12546,8 @@ function crTiePollShouldShow() {
 
 function crRenderTiePollGlobal() {
   const bar = document.getElementById('crTiePollGlobal');
+  if (bar) bar.style.display = 'none';
+  return;
   const title = document.getElementById('crTiePollGlobalTitle');
   const text = document.getElementById('crTiePollGlobalText');
   const btn = document.getElementById('crTiePollGlobalBtn');
@@ -10729,6 +12585,8 @@ function crRenderTiePollGlobal() {
 
 function crRenderTiePollInline() {
   const box = document.getElementById('crTiePollInline');
+  if (box) box.style.display = 'none';
+  return;
   const text = document.getElementById('crTiePollInlineText');
   const btn = document.getElementById('crTiePollInlineBtn');
   if (!box || !text) return;
@@ -10824,20 +12682,12 @@ function crMaybeShowTiePoll() {
   crRenderTiePollInline();
   const overlay = document.getElementById('crTiePollOverlay');
   if (!overlay) return;
-  if (crTiePollShouldShow()) {
-    crRenderTiePollOverlay();
-    overlay.classList.add('open');
-  } else {
-    overlay.classList.remove('open');
-  }
+  overlay.classList.remove('open');
 }
 
 function crOpenTiePoll() {
-  const overlay = document.getElementById('crTiePollOverlay');
-  if (!overlay || !crTiePoll) return;
-  crTiePollPanelDismissed = false;
-  crRenderTiePollOverlay();
-  overlay.classList.add('open');
+  document.getElementById('crTiePollOverlay')?.classList.remove('open');
+  showToast('Tie-break poll is closed. The winning rule is applied automatically.', 'info');
 }
 
 async function crSubmitTiePollVote(optionId) {
@@ -11182,6 +13032,8 @@ function renderCrashes() {
 
   // Refresh the primary button label (auto-ID or remembered name)
   crUpdateLogBtn();
+  crRenderConsentState();
+  crRenderConsentRoster();
 
   // Build month tabs first (also resolves crSelectedMonth)
   renderMonthTabs();
@@ -11195,10 +13047,10 @@ function renderCrashes() {
 
   const agg = crAggregateMonth(monthKey);
   const total = crashEntries.filter(c => crMonthKey(c.timestamp) === monthKey).length;
-  const victims = agg.length;
+  const people = agg.length;
 
   document.getElementById('crStatMonth').textContent = total;
-  document.getElementById('crStatPeople').textContent = victims;
+  document.getElementById('crStatPeople').textContent = people;
 
   // "Since last team crash" stat — looks across ALL crashes (not just month).
   // Skip future-dated entries (historical seed data can drift past "now") so
@@ -11575,6 +13427,57 @@ document.getElementById('crRecapPayBtn')?.addEventListener('click', () => {
   crSetDonutStatus(monthKey, !isPaid);
 });
 
+document.getElementById('crConsentAccept')?.addEventListener('click', () => {
+  if (!crTermsScrolledToBottom) return;
+  if (Date.now() - crTermsOpenedAt < CR_TERMS_MIN_REVIEW_MS) {
+    crTermsRereadRequired = true;
+    crResetTermsScroll();
+    crShowTrickModal();
+    return;
+  }
+  // Accept only after the minimum review timer has elapsed.
+  crHideTrickModal();
+  crTermsRereadRequired = false;
+  crSetConsentChoice('accept');
+});
+
+document.getElementById('crConsentDecline')?.addEventListener('click', () => {
+  const month = crConsentMonthLabel();
+  const ok = confirm(`Are you sure?\n\nDeclining drops you into Spectator mode for ${month}. The leaderboard stays read-only for you and you cannot log crashes. You can click "Join now" any time this month to opt back in.`);
+  if (!ok) return;
+  crSetConsentChoice('decline');
+});
+
+document.getElementById('crTrickRetry')?.addEventListener('click', () => {
+  crHideTrickModal();
+  crResetTermsScroll();
+  // Refocus the terms area so PageDown / arrows scroll it
+  const scroll = document.getElementById('crTermsScroll');
+  if (scroll) scroll.focus({ preventScroll: true });
+});
+
+document.getElementById('crTrickBail')?.addEventListener('click', () => {
+  crHideTrickModal();
+  document.getElementById('crConsentDecline')?.click();
+});
+
+document.getElementById('crSpectatorJoin')?.addEventListener('click', () => {
+  if (crConsentSaving) return;
+  // Locally flip back into "needs decision" so the terms appear immediately,
+  // then let the user re-read and re-accept. The server allows re-accepting
+  // after decline (see Set-CrashConsentAccepted).
+  crConsentState = {
+    ...(crConsentState || {}),
+    declinedThisMonth: false,
+    needsDecision: true,
+    canLog: false,
+    accepted: false
+  };
+  crTermsRereadRequired = false;
+  crResetTermsScroll();
+  crRenderConsentState();
+});
+
 function crShowConfetti() {
   const container = document.createElement('div');
   container.className = 'cr-confetti';
@@ -11595,6 +13498,11 @@ function crShowConfetti() {
 // Shared crash-submit routine. Sends to server, updates UI, shows confetti.
 async function crSubmitCrash({ user, severity }) {
   try {
+    if (!crConsentCanLog()) {
+      crRenderConsentState();
+      showToast('Accept the crash donut duty rules before logging crashes.', 'info');
+      return false;
+    }
     const ts = new Date();
     const deadline = crCurrentEndOfMonth();
     if (ts >= deadline) {
@@ -11896,7 +13804,7 @@ function crRenderStats() {
   body.innerHTML = `
     <div class="cr-stats-grid">
       <div class="cr-stat-card"><div class="cr-stat-card-num">${total}</div><div class="cr-stat-card-lbl">Total crashes</div></div>
-      <div class="cr-stat-card"><div class="cr-stat-card-num">${uniqUsers}</div><div class="cr-stat-card-lbl">Unique victims</div></div>
+      <div class="cr-stat-card"><div class="cr-stat-card-num">${uniqUsers}</div><div class="cr-stat-card-lbl">Unique people</div></div>
       <div class="cr-stat-card"><div class="cr-stat-card-num">${monthsTracked}</div><div class="cr-stat-card-lbl">Months tracked</div></div>
       <div class="cr-stat-card"><div class="cr-stat-card-num">${majors}</div><div class="cr-stat-card-lbl">Major 😬</div></div>
       <div class="cr-stat-card"><div class="cr-stat-card-num">${catas}</div><div class="cr-stat-card-lbl">Catastrophic 🔥</div></div>
@@ -13641,18 +15549,26 @@ async function fetchCrashDonutStatuses() {
 
 async function loadData() {
   try {
-    const [clData, tkData, crData, pollData, donutStatusData] = await Promise.all([
+    const [clData, tkData, crData, pollData, donutStatusData, consentData, consentRosterData] = await Promise.all([
       apiFetch('/api/changelog'),
       apiFetch('/api/tickets'),
       apiFetch('/api/crashes'),
       fetchCrashTiePoll(),
-      fetchCrashDonutStatuses()
+      fetchCrashDonutStatuses(),
+      fetchCrashConsentState(),
+      fetchCrashConsentRoster()
     ]);
     changelogEntries = clData;
     ticketEntries = tkData;
     crashEntries = crData;
     crTiePoll = pollData;
     crDonutStatuses = donutStatusData;
+    crConsentState = consentData;
+    crConsentRoster = consentRosterData;
+    __crLastFp = crFingerprint(crashEntries);
+    __crLastDonutStatusFp = crDonutStatusFingerprint(crDonutStatuses);
+    __crLastConsentFp = crConsentFingerprint(crConsentState);
+    __crLastConsentRosterFp = crConsentRosterFingerprint(crConsentRoster);
     renderChangelog();
     renderTickets();
     renderCrashes();
@@ -13680,6 +15596,8 @@ function crDonutStatusFingerprint(list) {
 }
 let __crLastFp = '';
 let __crLastDonutStatusFp = '';
+let __crLastConsentFp = '';
+let __crLastConsentRosterFp = '';
 
 // Also tick "since last" every minute so it ages in real-time even when
 // nothing new comes in (no server round-trip).
@@ -13699,12 +15617,14 @@ setInterval(() => {
 // handler below that pokes the server the moment focus returns.
 async function refreshNow() {
   try {
-    const [clData, tkData, crData, pollData, donutStatusData] = await Promise.all([
+    const [clData, tkData, crData, pollData, donutStatusData, consentData, consentRosterData] = await Promise.all([
       apiFetch('/api/changelog'),
       apiFetch('/api/tickets'),
       apiFetch('/api/crashes'),
       fetchCrashTiePoll(),
-      fetchCrashDonutStatuses()
+      fetchCrashDonutStatuses(),
+      fetchCrashConsentState(),
+      fetchCrashConsentRoster()
     ]);
     if (clData.length !== changelogEntries.length) {
       changelogEntries = clData;
@@ -13730,6 +15650,18 @@ async function refreshNow() {
     if (dutyFp !== __crLastDonutStatusFp) {
       __crLastDonutStatusFp = dutyFp;
       crDonutStatuses = donutStatusData;
+      renderCrashes();
+    }
+    const consentFp = crConsentFingerprint(consentData);
+    if (consentFp !== __crLastConsentFp) {
+      __crLastConsentFp = consentFp;
+      crConsentState = consentData;
+      renderCrashes();
+    }
+    const consentRosterFp = crConsentRosterFingerprint(consentRosterData);
+    if (consentRosterFp !== __crLastConsentRosterFp) {
+      __crLastConsentRosterFp = consentRosterFp;
+      crConsentRoster = consentRosterData;
       renderCrashes();
     }
     refreshPolls().catch(() => {});
@@ -13891,7 +15823,7 @@ async function loadUsage() {
   const summary = document.getElementById('usageSummary');
   const rows = document.getElementById('usageRows');
   summary.innerHTML = '<span class="usage-pill">Loading...</span>';
-  rows.innerHTML = '<div style="padding:18px;color:var(--muted);font-size:0.85rem">Loading...</div>';
+  rows.innerHTML = '<div class="usage-loading">Loading...</div>';
 
   try {
     const usage = await apiFetch('/api/usage');
@@ -13900,11 +15832,11 @@ async function loadUsage() {
     summary.innerHTML = `
       <span class="usage-pill">${unique.length} unique viewer${unique.length === 1 ? '' : 's'}</span>
       <span class="usage-pill">${entries.length} recent open${entries.length === 1 ? '' : 's'}</span>
-      <span class="usage-pill">Log: ${usage.source ? escHtml(String(usage.source)) : 'not created yet'}</span>
+      <span class="usage-pill is-path">Log: ${usage.source ? escHtml(String(usage.source)) : 'not created yet'}</span>
     `;
 
     if (entries.length === 0) {
-      rows.innerHTML = '<div style="padding:18px;color:var(--muted);font-size:0.85rem">No usage has been logged yet.</div>';
+      rows.innerHTML = '<div class="usage-empty">No usage has been logged yet.</div>';
       return;
     }
 
@@ -13921,7 +15853,7 @@ async function loadUsage() {
     </table>`;
   } catch (err) {
     summary.innerHTML = '';
-    rows.innerHTML = `<div style="padding:18px;color:#ef4444;font-size:0.85rem">Could not load usage: ${escHtml(err.message)}</div>`;
+    rows.innerHTML = `<div class="usage-error">Could not load usage: ${escHtml(err.message)}</div>`;
   }
 }
 
@@ -14005,7 +15937,7 @@ function renderPokeTargetsAdmin(meta = {}) {
   `;
 
   if (pokeTargetDrafts.length === 0) {
-    rows.innerHTML = '<div style="padding:18px;color:var(--muted);font-size:0.85rem">No poke targets configured.</div>';
+    rows.innerHTML = '<div class="usage-empty">No poke targets configured.</div>';
     return;
   }
 
@@ -14043,7 +15975,7 @@ async function loadPokeTargetsAdmin() {
   const summary = document.getElementById('pokeTargetsSummary');
   const rows = document.getElementById('pokeTargetRows');
   summary.innerHTML = '<span class="usage-pill">Loading...</span>';
-  rows.innerHTML = '<div style="padding:18px;color:var(--muted);font-size:0.85rem">Loading...</div>';
+  rows.innerHTML = '<div class="usage-loading">Loading...</div>';
   try {
     const data = await apiFetch('/api/poke-targets');
     POKE_TARGETS = pokeNormalizeTargets(data.targets || []);
@@ -14052,7 +15984,7 @@ async function loadPokeTargetsAdmin() {
     renderPokeTargetsAdmin(data);
   } catch (err) {
     summary.innerHTML = '';
-    rows.innerHTML = `<div style="padding:18px;color:#ef4444;font-size:0.85rem">Could not load poke targets: ${escHtml(err.message)}</div>`;
+    rows.innerHTML = `<div class="usage-error">Could not load poke targets: ${escHtml(err.message)}</div>`;
   }
 }
 
@@ -14161,7 +16093,7 @@ async function loadCrashAlertSubscribers() {
   const summary = document.getElementById('crAlertSummary');
   const rows = document.getElementById('crAlertRows');
   summary.innerHTML = '<span class="usage-pill">Loading...</span>';
-  rows.innerHTML = '<div style="padding:18px;color:var(--muted);font-size:0.85rem">Loading...</div>';
+  rows.innerHTML = '<div class="usage-loading">Loading...</div>';
 
   try {
     const data = await apiFetch('/api/admin/crash-notifications');
@@ -14169,7 +16101,7 @@ async function loadCrashAlertSubscribers() {
     summary.innerHTML = `<span class="usage-pill">${subscribers.length} enabled subscriber${subscribers.length === 1 ? '' : 's'}</span>`;
 
     if (subscribers.length === 0) {
-      rows.innerHTML = '<div style="padding:18px;color:var(--muted);font-size:0.85rem">No one has crash notifications turned on.</div>';
+      rows.innerHTML = '<div class="usage-empty">No one has crash notifications turned on.</div>';
       return;
     }
 
@@ -14186,7 +16118,7 @@ async function loadCrashAlertSubscribers() {
     </table>`;
   } catch (err) {
     summary.innerHTML = '';
-    rows.innerHTML = `<div style="padding:18px;color:#ef4444;font-size:0.85rem">Could not load crash notification subscribers: ${escHtml(err.message)}</div>`;
+    rows.innerHTML = `<div class="usage-error">Could not load crash notification subscribers: ${escHtml(err.message)}</div>`;
   }
 }
 
@@ -14207,7 +16139,7 @@ async function loadUsers() {
   const summary = document.getElementById('usersSummary');
   const rows = document.getElementById('usersRows');
   summary.innerHTML = '<span class="usage-pill">Loading...</span>';
-  rows.innerHTML = '<div style="padding:18px;color:var(--muted);font-size:0.85rem">Loading...</div>';
+  rows.innerHTML = '<div class="usage-loading">Loading...</div>';
 
   try {
     const data = await apiFetch('/api/admin/users');
@@ -14220,7 +16152,7 @@ async function loadUsers() {
     `;
 
     if (users.length === 0) {
-      rows.innerHTML = '<div style="padding:18px;color:var(--muted);font-size:0.85rem">No users found yet.</div>';
+      rows.innerHTML = '<div class="usage-empty">No users found yet.</div>';
       return;
     }
 
@@ -14261,7 +16193,7 @@ async function loadUsers() {
     </table>`;
   } catch (err) {
     summary.innerHTML = '';
-    rows.innerHTML = `<div style="padding:18px;color:#ef4444;font-size:0.85rem">Could not load users: ${escHtml(err.message)}</div>`;
+    rows.innerHTML = `<div class="usage-error">Could not load users: ${escHtml(err.message)}</div>`;
   }
 }
 

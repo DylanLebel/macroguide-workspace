@@ -59,7 +59,8 @@ $previewBanner = @'
 $previewShim = @'
 <script>
 (() => {
-  const STORAGE_KEY = 'macroGuideGithubPreviewData.v1';
+  const STORAGE_KEY = 'macroGuideGithubPreviewData.v2';
+  const CRASH_RULES_VERSION = '2026-05-donut-duty-v3';
   const originalFetch = window.fetch.bind(window);
   const today = new Date().toISOString().slice(0, 10);
 
@@ -299,7 +300,37 @@ $previewShim = @'
       captchaQueue: [],
       pokeResets: [],
       pokeTargets: defaultPokeTargets(),
-      tiePollVotes: [],
+      crashConsents: [],
+      tiePollVotes: [
+        {
+          pollId: 'crash-tie-break-2026-04',
+          windowsUser: 'aacharya',
+          displayName: 'Ayugma Acharya',
+          optionId: 'split',
+          votedAt: '2026-04-30T18:09:23.3912450Z'
+        },
+        {
+          pollId: 'crash-tie-break-2026-04',
+          windowsUser: 'dlebel',
+          displayName: 'Dylan',
+          optionId: 'weeks',
+          votedAt: '2026-04-30T18:13:18.9283205Z'
+        },
+        {
+          pollId: 'crash-tie-break-2026-04',
+          windowsUser: 'dshank',
+          displayName: 'Other Dylan',
+          optionId: 'weeks',
+          votedAt: '2026-04-30T18:22:39.6579588Z'
+        },
+        {
+          pollId: 'crash-tie-break-2026-04',
+          windowsUser: 'barrowsmith',
+          displayName: 'Brandon Arrowsmith',
+          optionId: 'weeks',
+          votedAt: '2026-04-30T18:29:17.5788815Z'
+        }
+      ],
       version: 'github-preview-2026-04-16'
     };
   }
@@ -315,6 +346,7 @@ $previewShim = @'
         data.captchaQueue = Array.isArray(data.captchaQueue) ? data.captchaQueue : [];
         data.crashes = Array.isArray(data.crashes) ? data.crashes : [];
         data.donutStatuses = Array.isArray(data.donutStatuses) ? data.donutStatuses : [];
+        data.crashConsents = Array.isArray(data.crashConsents) ? data.crashConsents : [];
         return data;
       }
     } catch {}
@@ -357,6 +389,211 @@ $previewShim = @'
     return entries.reduce((max, entry) => Math.max(max, Number(entry.id) || 0), 0);
   }
 
+  function previewMonthKey(value = new Date()) {
+    const d = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(d.getTime())) return '';
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  function previewDisplayKey(value) {
+    return String(value || '').trim().replace(/\s+/g, ' ').toLowerCase();
+  }
+
+  function previewCurrentUser() {
+    return String(sessionStorage.getItem('winUser') || 'github-preview').trim().toLowerCase();
+  }
+
+  function previewDisplayName(fallback = '') {
+    return String(fallback || localStorage.getItem('mgUserName') || sessionStorage.getItem('winUserDisplay') || previewCurrentUser()).trim();
+  }
+
+  function previewCrashConsentState(data, displayName = '') {
+    data.crashConsents = Array.isArray(data.crashConsents) ? data.crashConsents : [];
+    const windowsUser = previewCurrentUser();
+    const currentMonthKey = previewMonthKey();
+    const row = data.crashConsents.find(r => String(r.windowsUser || '').trim().toLowerCase() === windowsUser);
+    const accepted = !!(row && row.rulesVersion === CRASH_RULES_VERSION && row.accepted);
+    const declinedThisMonth = !!(!accepted && row && row.declinedMonthKey === currentMonthKey);
+    return {
+      ok: true,
+      windowsUser,
+      displayName: previewDisplayName(displayName || row?.displayName || ''),
+      rulesVersion: CRASH_RULES_VERSION,
+      accepted,
+      acceptedAt: row?.acceptedAt || '',
+      declinedThisMonth,
+      declinedMonthKey: row?.declinedMonthKey || '',
+      declinedAt: row?.declinedAt || '',
+      deletedCrashCount: 0,
+      excludedCrashCount: Number(row?.excludedCrashCount || 0),
+      backedUpCrashCount: Array.isArray(row?.backedUpCrashes) ? row.backedUpCrashes.length : 0,
+      currentMonthKey,
+      canLog: accepted && !declinedThisMonth,
+      needsDecision: !accepted && !declinedThisMonth
+    };
+  }
+
+  function previewAddConsentParticipant(map, windowsUser, displayName = '', source = '') {
+    const win = String(windowsUser || '').trim().toLowerCase();
+    const display = String(displayName || '').trim();
+    if (!win && !display) return;
+    const displayKey = previewDisplayKey(display);
+    const nameOnlyKey = displayKey ? 'name:' + displayKey : '';
+    let matchingKey = '';
+    if (displayKey) {
+      for (const [existingKey, existing] of map.entries()) {
+        if (previewDisplayKey(existing.displayName) === displayKey) {
+          matchingKey = existingKey;
+          break;
+        }
+      }
+    }
+
+    let key = '';
+    if (win && map.has(win)) {
+      key = win;
+    } else if (win && matchingKey) {
+      const existing = map.get(matchingKey);
+      if (matchingKey === nameOnlyKey || !existing.windowsUser) {
+        map.delete(matchingKey);
+        map.set(win, existing);
+        key = win;
+      } else {
+        key = matchingKey;
+      }
+    } else if (win) {
+      key = win;
+    } else if (matchingKey) {
+      key = matchingKey;
+    } else {
+      key = nameOnlyKey;
+    }
+
+    if (!map.has(key)) {
+      map.set(key, {
+        windowsUser: win,
+        displayName: display || win,
+        sources: []
+      });
+    }
+    const row = map.get(key);
+    if (win && !row.windowsUser) row.windowsUser = win;
+    if (display && (!row.displayName || row.displayName === row.windowsUser)) row.displayName = display;
+    if (source && !row.sources.includes(source)) row.sources.push(source);
+  }
+
+  function previewCrashConsentRoster(data) {
+    data.crashConsents = Array.isArray(data.crashConsents) ? data.crashConsents : [];
+    data.crashes = Array.isArray(data.crashes) ? data.crashes : [];
+    const currentMonthKey = previewMonthKey();
+    const map = new Map();
+    const consentByUser = new Map();
+
+    for (const row of data.crashConsents) {
+      const win = String(row?.windowsUser || '').trim().toLowerCase();
+      if (!win) continue;
+      consentByUser.set(win, row);
+      previewAddConsentParticipant(map, win, row.displayName || win, 'terms');
+    }
+
+    const targets = Array.isArray(data.pokeTargets) ? data.pokeTargets : defaultPokeTargets();
+    for (const target of targets) {
+      if (!target || target.enabled === false) continue;
+      const display = String(target.label || target.shortName || (Array.isArray(target.names) ? target.names[0] : '') || '').trim();
+      (Array.isArray(target.windowsUsers) ? target.windowsUsers : []).forEach(wu => {
+        previewAddConsentParticipant(map, wu, display, 'participant');
+      });
+    }
+
+    for (const crash of data.crashes) {
+      previewAddConsentParticipant(
+        map,
+        crash?.participantWindowsUser || crash?.windowsUser || '',
+        crash?.user || crash?.createdBy || '',
+        'crash'
+      );
+    }
+
+    const participants = Array.from(map.values()).map(base => {
+      const win = String(base.windowsUser || '').trim().toLowerCase();
+      const row = win ? consentByUser.get(win) : null;
+      const rulesVersion = row?.rulesVersion || '';
+      const accepted = !!(row && rulesVersion === CRASH_RULES_VERSION && row.accepted);
+      const declinedThisMonth = !!(!accepted && row && row.declinedMonthKey === currentMonthKey);
+      let status = 'not_started';
+      if (accepted) status = 'accepted';
+      else if (declinedThisMonth) status = 'spectator';
+      else if (row) status = 'needs_acceptance';
+      return {
+        displayName: String(row?.displayName || base.displayName || win || 'Unknown participant').trim(),
+        windowsUser: win,
+        status,
+        accepted,
+        acceptedAt: row?.acceptedAt || '',
+        declinedThisMonth,
+        declinedAt: row?.declinedAt || '',
+        rulesVersion,
+        currentRulesVersion: CRASH_RULES_VERSION,
+        source: base.sources.join(', ')
+      };
+    }).sort((a, b) => {
+      const order = { accepted: 0, spectator: 1, needs_acceptance: 2, not_started: 3 };
+      return (order[a.status] ?? 4) - (order[b.status] ?? 4) ||
+        a.displayName.localeCompare(b.displayName);
+    });
+
+    return {
+      ok: true,
+      rulesVersion: CRASH_RULES_VERSION,
+      currentMonthKey,
+      generatedAt: new Date().toISOString(),
+      participants,
+      totalCount: participants.length,
+      acceptedCount: participants.filter(p => p.status === 'accepted').length,
+      spectatorCount: participants.filter(p => p.status === 'spectator').length,
+      needsDecisionCount: participants.filter(p => p.status === 'needs_acceptance' || p.status === 'not_started').length,
+      source: 'GitHub preview local browser storage'
+    };
+  }
+
+  function previewSaveCrashConsent(data, accepted, displayName = '', excludedCrashCount = 0, backedUpCrashes = []) {
+    data.crashConsents = Array.isArray(data.crashConsents) ? data.crashConsents : [];
+    // Players are free to flip between Spectator and Active mid-month via "Join now".
+    const windowsUser = previewCurrentUser();
+    const stamp = new Date().toISOString();
+    let row = data.crashConsents.find(r => String(r.windowsUser || '').trim().toLowerCase() === windowsUser);
+    if (!row) {
+      row = { windowsUser };
+      data.crashConsents.push(row);
+    }
+    row.displayName = previewDisplayName(displayName);
+    row.rulesVersion = CRASH_RULES_VERSION;
+    row.accepted = !!accepted;
+    row.acceptedAt = accepted ? stamp : '';
+    row.declinedMonthKey = accepted ? '' : previewMonthKey();
+    row.declinedAt = accepted ? '' : stamp;
+    row.deletedCrashCount = 0;
+    row.excludedCrashCount = accepted ? 0 : excludedCrashCount;
+    row.backedUpCrashes = accepted ? [] : clone(backedUpCrashes);
+    saveData(data);
+    return previewCrashConsentState(data, row.displayName);
+  }
+
+  function previewDeclineCrashConsent(data, displayName = '') {
+    const windowsUser = previewCurrentUser();
+    const displayKey = previewDisplayKey(previewDisplayName(displayName));
+    const monthKey = previewMonthKey();
+    data.crashes = Array.isArray(data.crashes) ? data.crashes : [];
+    const backedUpCrashes = data.crashes.filter(c => {
+      const inMonth = previewMonthKey(c.timestamp) === monthKey;
+      const sameUser = String(c.participantWindowsUser || c.windowsUser || '').trim().toLowerCase() === windowsUser ||
+        previewDisplayKey(c.user) === displayKey;
+      return inMonth && sameUser;
+    });
+    const state = previewSaveCrashConsent(data, false, displayName, backedUpCrashes.length, backedUpCrashes);
+    return { ...state, entries: clone(data.crashes) };
+  }
+
   function usageSummary(entries) {
     const seen = new Set();
     const unique = [];
@@ -372,6 +609,86 @@ $previewShim = @'
       unique,
       entries: entries.slice().reverse().slice(0, 300)
     };
+  }
+
+  function normalizePreviewUser(value) {
+    return String(value || '').trim().toLowerCase().replace(/^.*\\/, '');
+  }
+
+  function addKnownCaptchaTarget(map, windowsUser, displayName = '', details = {}) {
+    const wu = normalizePreviewUser(windowsUser);
+    if (!wu || wu === 'dlebel') return;
+    const label = String(displayName || '').trim() || wu;
+    if (!map.has(wu)) {
+      map.set(wu, {
+        label,
+        shortName: label.split(/\s+/)[0] || wu,
+        windowsUsers: [wu],
+        names: [],
+        aliases: [],
+        enabled: true,
+        machine: '',
+        lastSeen: '',
+        source: [],
+        configured: false
+      });
+    }
+    const row = map.get(wu);
+    if (details.configured || row.label === wu) {
+      row.label = label;
+      row.shortName = label.split(/\s+/)[0] || wu;
+    }
+    if (label && !row.names.includes(label)) row.names.push(label);
+    if (details.machine) row.machine = String(details.machine);
+    if (details.lastSeen && (!row.lastSeen || String(details.lastSeen) > row.lastSeen)) row.lastSeen = String(details.lastSeen);
+    if (details.source && !row.source.includes(details.source)) row.source.push(details.source);
+    if (details.configured) row.configured = true;
+  }
+
+  function previewKnownCaptchaTargets(data) {
+    const map = new Map();
+    const targets = Array.isArray(data.pokeTargets) ? data.pokeTargets : defaultPokeTargets();
+    targets.forEach(t => {
+      if (!t || t.enabled === false) return;
+      const wins = Array.isArray(t.windowsUsers) ? t.windowsUsers : [];
+      wins.forEach(wu => {
+        addKnownCaptchaTarget(map, wu, t.label || wu, { source: 'target', configured: true });
+        const row = map.get(normalizePreviewUser(wu));
+        if (!row) return;
+        (Array.isArray(t.aliases) ? t.aliases : []).forEach(a => {
+          const alias = normalizePreviewUser(a);
+          if (alias && !row.aliases.includes(alias)) row.aliases.push(alias);
+        });
+        (Array.isArray(t.names) ? t.names : []).forEach(n => {
+          const name = String(n || '').trim();
+          if (name && !row.names.includes(name)) row.names.push(name);
+        });
+      });
+    });
+
+    (Array.isArray(data.usage) ? data.usage : []).forEach(u => {
+      addKnownCaptchaTarget(map, u.windowsUser, '', { machine: u.machine || '', lastSeen: u.timestamp || '', source: 'usage' });
+    });
+    (Array.isArray(data.tickets) ? data.tickets : []).forEach(t => {
+      addKnownCaptchaTarget(map, t.windowsUser, t.createdBy || '', { lastSeen: t.date || '', source: 'ticket' });
+      (Array.isArray(t.voters) ? t.voters : []).forEach(v => addKnownCaptchaTarget(map, v, '', { source: 'vote' }));
+      (Array.isArray(t.pokers) ? t.pokers : []).forEach(p => addKnownCaptchaTarget(map, p, '', { source: 'poke' }));
+      (Array.isArray(t.comments) ? t.comments : []).forEach(c => {
+        addKnownCaptchaTarget(map, c.windowsUser, c.displayName || '', { lastSeen: c.date || '', source: 'comment' });
+      });
+    });
+    (Array.isArray(data.crashes) ? data.crashes : []).forEach(c => {
+      addKnownCaptchaTarget(map, c.windowsUser, c.createdBy || c.user || '', { lastSeen: c.timestamp || '', source: 'crash' });
+    });
+    addKnownCaptchaTarget(map, sessionStorage.getItem('winUser') || 'github-preview', localStorage.getItem('mgUserName') || 'Preview User', {
+      machine: 'GitHub Pages',
+      lastSeen: new Date().toISOString(),
+      source: 'presence'
+    });
+
+    return Array.from(map.values())
+      .map(row => ({ ...row, source: row.source.join(', ') }))
+      .sort((a, b) => Number(b.configured) - Number(a.configured) || String(a.label).localeCompare(String(b.label)));
   }
 
   const TIE_POLL_ID = 'crash-tie-break-2026-04';
@@ -524,6 +841,12 @@ $previewShim = @'
       data.donutStatuses = Array.isArray(data.donutStatuses) ? data.donutStatuses : [];
       return jsonResponse(clone(data.donutStatuses));
     }
+    if (method === 'GET' && path === '/api/crash-consent') {
+      return jsonResponse(previewCrashConsentRoster(data));
+    }
+    if (method === 'GET' && path === '/api/crash-consent/me') {
+      return jsonResponse(previewCrashConsentState(data, url.searchParams.get('displayName') || ''));
+    }
     if (method === 'GET' && path === '/api/whoami') return jsonResponse({
       windowsUser: sessionStorage.getItem('winUser') || 'github-preview',
       isAdmin: true,
@@ -557,6 +880,15 @@ $previewShim = @'
       }
       saveData(data);
       return jsonResponse({ ok: true, statuses: clone(data.donutStatuses) });
+    }
+    if (method === 'POST' && path === '/api/crash-consent/accept') {
+      const body = parseBody(init);
+      const state = previewSaveCrashConsent(data, true, body.displayName || '');
+      return jsonResponse(state, state.error ? 409 : 200);
+    }
+    if (method === 'POST' && path === '/api/crash-consent/decline') {
+      const body = parseBody(init);
+      return jsonResponse(previewDeclineCrashConsent(data, body.displayName || ''));
     }
     if (method === 'GET' && path === '/api/crash-tie-poll') return jsonResponse(tiePollState(data));
     if (method === 'POST' && path === '/api/crash-tie-poll/vote') {
@@ -593,7 +925,7 @@ $previewShim = @'
         lastSeen: new Date().toISOString()
       }],
       queue: clone(data.captchaQueue || []),
-      targets: clone(data.pokeTargets || defaultPokeTargets())
+      targets: previewKnownCaptchaTargets(data)
     });
     if (method === 'GET' && path === '/api/captcha-check') return jsonResponse({ id: null });
     if (method === 'POST' && path === '/api/captcha-ack') return jsonResponse({ ok: true, preview: true });
@@ -602,7 +934,7 @@ $previewShim = @'
       if (!['dshank', 'dlebel', 'github-preview'].includes(caller)) return jsonResponse({ error: 'Not authorized.' }, 403);
       const protectedTargets = new Set(['dlebel']);
       const allowedTarget = value => value && !protectedTargets.has(String(value).trim().toLowerCase());
-      const filteredTargets = clone(data.pokeTargets || defaultPokeTargets()).map(t => ({
+      const filteredTargets = previewKnownCaptchaTargets(data).map(t => ({
         ...t,
         windowsUsers: (Array.isArray(t.windowsUsers) ? t.windowsUsers : []).filter(allowedTarget)
       })).filter(t => t.windowsUsers.length > 0);
@@ -743,6 +1075,10 @@ $previewShim = @'
 
     if (method === 'POST' && path === '/api/crashes/add') {
       const crash = parseBody(init);
+      const consent = previewCrashConsentState(data, crash.createdBy || crash.user || '');
+      if (!consent.canLog) {
+        return jsonResponse({ error: 'You need to accept the crash donut duty rules before logging crashes.', consent }, 403);
+      }
       data.crashes = Array.isArray(data.crashes) ? data.crashes : [];
       crash.id = maxId(data.crashes) + 1;
       crash.user = crash.user || localStorage.getItem('mgUserName') || 'Preview User';
@@ -750,6 +1086,7 @@ $previewShim = @'
       crash.timestamp = crash.timestamp || new Date().toISOString();
       crash.createdBy = crash.createdBy || crash.user;
       crash.windowsUser = sessionStorage.getItem('winUser') || 'github-preview';
+      crash.participantWindowsUser = crash.participantWindowsUser || crash.windowsUser;
       data.crashes.push(crash);
       saveData(data);
       return jsonResponse({ ok: true, count: data.crashes.length, entries: clone(data.crashes) });
