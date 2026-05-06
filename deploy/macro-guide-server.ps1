@@ -80,7 +80,7 @@ $PokeTargetsFile = Join-Path $DataDir 'poke-targets.json'
 $PresenceFile = Join-Path $DataDir 'presence.json'
 $CaptchaQueueFile = Join-Path $DataDir 'captcha-queue.json'
 
-$CrashRulesVersion = '2026-05-donut-duty-v3'
+$CrashRulesVersion = '2026-05-donut-duty-v4'
 $CrashTiePollId = 'crash-tie-break-2026-04'
 $CrashTiePollQuestion = 'What should happen when crash duty ends in a tie?'
 $CrashTiePollClosesAt = [datetime]::new(2026, 4, 30, 16, 30, 0, [DateTimeKind]::Local)

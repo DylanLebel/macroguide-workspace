@@ -3126,12 +3126,169 @@
       font-size: 0.76rem;
       line-height: 1.35;
     }
+    .cr-participant-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 1px;
+    }
+    .cr-participant-view,
+    .cr-participants-view-terms {
+      min-height: 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.28);
+      background: rgba(15,23,42,0.46);
+      color: #cbd5e1;
+      font: inherit;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+    }
+    .cr-participant-view:hover,
+    .cr-participants-view-terms:hover {
+      border-color: rgba(34,197,94,0.58);
+      background: rgba(34,197,94,0.12);
+      color: var(--text);
+    }
     .cr-participants-empty {
       grid-column: 1 / -1;
       padding: 18px 16px;
       color: var(--muted);
       font-size: 0.84rem;
       text-align: center;
+    }
+    .cr-signed-terms-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 3900;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(2,6,23,0.78);
+      backdrop-filter: blur(6px);
+    }
+    .cr-signed-terms-overlay.open { display: flex; }
+    .cr-signed-terms-dialog {
+      width: min(920px, 100%);
+      max-height: calc(100vh - 48px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid rgba(148,163,184,0.34);
+      background: linear-gradient(150deg, #1e293b, #0f172a);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.58);
+      color: #dbe7ff;
+    }
+    .cr-signed-terms-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 20px 22px 14px;
+      border-bottom: 1px solid rgba(148,163,184,0.18);
+    }
+    .cr-signed-terms-kicker {
+      margin-bottom: 5px;
+      color: #9bbcff;
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .cr-signed-terms-head h3 {
+      margin: 0;
+      color: var(--text);
+      font-size: 1.05rem;
+      line-height: 1.25;
+    }
+    .cr-signed-terms-head p {
+      margin: 5px 0 0;
+      color: #b8c3da;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      max-width: 720px;
+    }
+    .cr-signed-terms-close {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.32);
+      background: rgba(15,23,42,0.72);
+      color: #cbd5e1;
+      font: inherit;
+      font-size: 1rem;
+      font-weight: 900;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .cr-signed-terms-close:hover {
+      border-color: rgba(255,255,255,0.48);
+      color: #fff;
+    }
+    .cr-signed-terms-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 8px;
+      padding: 14px 22px;
+      border-bottom: 1px solid rgba(148,163,184,0.14);
+      background: rgba(15,23,42,0.34);
+    }
+    .cr-signed-terms-meta-item {
+      min-width: 0;
+      border: 1px solid rgba(148,163,184,0.18);
+      border-radius: 10px;
+      background: rgba(8,15,32,0.44);
+      padding: 9px 10px;
+    }
+    .cr-signed-terms-meta-label {
+      margin-bottom: 3px;
+      color: #94a3b8;
+      font-size: 0.66rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .cr-signed-terms-meta-value {
+      color: var(--text);
+      font-size: 0.82rem;
+      line-height: 1.3;
+      overflow-wrap: anywhere;
+    }
+    .cr-signed-terms-body {
+      overflow: auto;
+      padding: 16px 22px 22px;
+    }
+    .cr-signed-terms-notice {
+      margin: 0 0 14px;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px dashed rgba(255,180,84,0.42);
+      background: rgba(255,180,84,0.08);
+      color: #f6d59a;
+      font-size: 0.82rem;
+      line-height: 1.48;
+    }
+    .cr-signed-terms-text {
+      color: #cdd6e8;
+      font-size: 0.84rem;
+      line-height: 1.58;
+    }
+    .cr-signed-terms-text h4 {
+      margin: 15px 0 4px;
+      color: #fff;
+      font-size: 0.92rem;
+    }
+    .cr-signed-terms-text h4:first-child { margin-top: 0; }
+    .cr-signed-terms-text p { margin: 0 0 8px; }
+    .cr-signed-terms-text strong { color: #ffe1a8; }
+    .cr-signed-terms-text em { color: #b8e0ff; font-style: italic; }
+    .cr-signed-terms-text .cr-terms-end {
+      margin-top: 14px !important;
     }
     @media (max-width: 620px) {
       .cr-alert-strip { align-items: stretch; flex-direction: column; }
@@ -3141,6 +3298,15 @@
       .cr-alert-admin { width: 100%; justify-content: center; }
       .cr-participants-head { flex-direction: column; }
       .cr-participants-actions { width: 100%; justify-content: flex-start; }
+      .cr-participants-view-terms { width: 100%; }
+      .cr-signed-terms-overlay { padding: 12px; }
+      .cr-signed-terms-dialog { max-height: calc(100vh - 24px); }
+      .cr-signed-terms-head,
+      .cr-signed-terms-meta,
+      .cr-signed-terms-body {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
     }
 
     /* Fade "someone else" link when no user is known */
@@ -5024,18 +5190,18 @@
       <div class="cr-consent-flow" id="crConsentFlow">
         <div class="cr-consent-top">
           <div>
-            <h3 class="cr-consent-title" id="crConsentTitle">Crash Donut Duty — Official Terms &amp; Conditions</h3>
-            <p class="cr-consent-copy" id="crConsentCopy">By logging a crash you are entering a binding inter-office donut pact. Read the full terms below — the "Agree and play" button stays locked until you scroll all the way to the bottom.</p>
+            <h3 class="cr-consent-title" id="crConsentTitle">Crash Donut Duty — Official Terms, Conditions &amp; Ceremonial Acceptance Record</h3>
+            <p class="cr-consent-copy" id="crConsentCopy">By logging a crash you are executing the office's most serious non-legal donut pact. Read the full terms below — the "Agree and play" button stays locked until you scroll all the way to the bottom.</p>
           </div>
         </div>
 
         <div class="cr-terms-wrap">
           <div class="cr-terms" id="crTermsScroll" tabindex="0">
             <h4>Article 1 — Preamble</h4>
-            <p>Welcome to <strong>Crash Donut Duty</strong> ("the Game"), a voluntary, morale-boosting monthly competition operated inside Nordic Minesteel by the Macro Guide. The Game exists to turn the shared experience of SolidWorks unexpectedly closing into something lighter for the team, while keeping the monthly donut duty clear and visible. By clicking "Agree and play" below, you ("the Player" or "you") enter into a non-binding-but-socially-binding agreement with every other Player ("the League"), the Macro Guide ("the Platform"), and the Commissioner of Donut Duty ("Dylan Lebel"). This document supersedes any previous agreement, verbal handshake, donut promise, or scratch-pad scoring scheme.</p>
+            <p>Welcome to <strong>Crash Donut Duty</strong> ("the Game"), a voluntary, morale-boosting monthly competition operated inside Nordic Minesteel by the Macro Guide. The Game exists to turn the shared experience of SolidWorks unexpectedly closing into something lighter for the team, while keeping the monthly donut duty clear and visible. By clicking "Agree and play" below, you ("the Player" or "you") enter into a ceremonial, non-legal, office-social agreement with every other Player ("the League"), the Macro Guide ("the Platform"), and the Commissioner of Donut Duty ("Dylan Lebel"). This document supersedes any previous agreement, verbal handshake, donut promise, snack-side letter, or scratch-pad scoring scheme.</p>
 
             <h4>Article 2 — Eligibility &amp; Enrollment</h4>
-            <p>The Game is open to any Nordic Minesteel team member who regularly uses SolidWorks and wants to join a light office competition. Enrollment is performed by clicking "Agree and play." The act of clicking confirms that you have read, understood, and freely accepted these Terms in their entirety. The scroll requirement exists so everyone has a fair chance to review the rules before joining.</p>
+            <p>The Game is open to any Nordic Minesteel team member who regularly uses SolidWorks and wants to join a light office competition. Enrollment is performed by clicking "Agree and play." The act of clicking constitutes your electronic acknowledgement, ceremonial signature, and office-game acceptance of these Terms in their entirety. The scroll requirement and minimum review timer exist so everyone has a fair chance to review the rules before joining.</p>
 
             <h4>Article 3 — What Counts as a Crash</h4>
             <p>A "Crash" means any unscheduled, involuntary, software-induced cessation of SolidWorks functionality that interrupts your work. This includes hard freezes, the "SolidWorks has stopped responding" dialog, the quiet close that loses unsaved work, and the full-PC reboot. <em>Severity does not matter for scoring.</em> A minor "ugh, save again" counts the same as a catastrophic "I'm rebuilding the assembly from a backup" event. The League decided this in the interest of speed; questions can be raised with the Commissioner.</p>
@@ -5065,7 +5231,7 @@
             <p>Players may opt in or out of crash notifications independently of their playing status. Receipt of a notification does not create any additional obligation to bring donuts, react immediately, or comment on someone else's crash.</p>
 
             <h4>Article 12 — Privacy</h4>
-            <p>The Game records, for each Crash, the Player who logged it, the chosen severity level, the timestamp, and the Windows account that submitted the entry. It also records each Player's current Terms acceptance status so the team can see who is participating under the current version. This data is stored locally on the Y: drive in plain JSON and is visible to anyone with access to the Macro Guide. The Game does not record the contents of your model, the cause of the crash, or anything else from your workstation.</p>
+            <p>The Game records, for each Crash, the Player who logged it, the chosen severity level, the timestamp, and the Windows account that submitted the entry. It also records each Player's current Terms acceptance status, acceptance timestamp, display name, Windows username, and rules version so the team can see who is participating under the current version and review the ceremonial signature record. This data is stored locally on the Y: drive in plain JSON and is visible to anyone with access to the Macro Guide. The Game does not record the contents of your model, the cause of the crash, or anything else from your workstation.</p>
 
             <h4>Article 13 — Commissioner's Authority</h4>
             <p><strong>Dylan Lebel ("the Commissioner") reserves the unilateral right to modify, amend, suspend, replace, retire, reinstate, or completely rewrite these Terms at any point, for any reason or for no reason, with or without notice, with or without explanation, and with or without your continued blessing.</strong> Such changes may be applied retroactively to the current month if, in the Commissioner's sole judgment, the change is necessary to preserve the spirit of the Game, prevent a loophole, accommodate an act of God, accommodate a sudden donut shortage, or simply because it sounded funnier that way. When these Terms change, every Player will be required to re-accept the new version before logging any further crashes. Players who disagree with a change may decline that month and remain in Spectator Mode; they may not, however, retroactively unaccept previously logged crashes or escape Donut Duty already earned.</p>
@@ -5083,7 +5249,13 @@
             <p>These Terms constitute the entire agreement between you and the League with respect to Crash Donut Duty and supersede any prior verbal agreement, slack message, hallway promise, or scribbled whiteboard scoring system. There are no oral side-letters, no secret bonus categories, and no exempt status for senior staff.</p>
 
             <h4>Article 18 — Acceptance</h4>
-            <p>By clicking "Agree and play," you confirm: (i) you have read these Terms in their entirety, or at least scrolled past every word of them with sincere intent to read; (ii) you understand and accept Article 7; (iii) you acknowledge that the Commissioner can, per Article 13, change the rules at any time, and you accept this in advance; (iv) you are mentally prepared to bring donuts; and (v) you understand that nothing here is legally binding but everything here is socially binding, which in a workplace is the binding that actually matters.</p>
+            <p>By clicking "Agree and play," you confirm: (i) you have read these Terms in their entirety, or at least scrolled past every word of them with sincere intent to read; (ii) you understand and accept Article 7; (iii) you acknowledge that the Commissioner can, per Article 13, change the rules at any time, and you accept this in advance; (iv) you adopt your display name and Windows username as your ceremonial electronic signature for Game records; (v) you are mentally prepared to bring donuts; and (vi) you understand that nothing here is legally binding but everything here is socially binding, which in a workplace is the binding that actually matters.</p>
+
+            <h4>Article 19 — Signed Terms Record</h4>
+            <p>Upon acceptance, the Platform shall create and retain a ceremonial acceptance record showing the Player's display name, Windows username, acceptance timestamp, and accepted rules version. The League may inspect accepted Players' signed Terms from the Participants &amp; terms panel. Such inspection is intended for transparency, jokes, snack accountability, and gentle prevention of "I never agreed to this" arguments.</p>
+
+            <h4>Article 20 — Ceremonial Non-Legal Status</h4>
+            <p>For the avoidance of doubt, and with maximum fake solemnity, these Terms are drafted to resemble an Extremely Serious Agreement while remaining an office game document only. Nothing herein creates an employment contract, payroll deduction authorization, purchase order, legal claim, court-enforceable obligation, or actual attorney-client anything. The intended enforcement mechanisms are leaderboard visibility, peer accountability, and the ancient power of remembering who promised donuts.</p>
 
             <p class="cr-terms-end" id="crTermsEnd">— End of Terms &amp; Conditions, version <span id="crTermsVersion"></span>. Scroll up if you need to re-read any of it. The "Agree and play" button is now armed below.</p>
           </div>
@@ -5116,6 +5288,21 @@
       </div>
     </div>
 
+    <div class="cr-signed-terms-overlay" id="crSignedTermsOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="crSignedTermsTitle">
+      <div class="cr-signed-terms-dialog">
+        <div class="cr-signed-terms-head">
+          <div>
+            <div class="cr-signed-terms-kicker">Crash Donut Duty record</div>
+            <h3 id="crSignedTermsTitle">Current terms and conditions</h3>
+            <p id="crSignedTermsSubtitle">Review the active Crash Donut Duty terms. Accepted rows include the ceremonial signature record saved by the Macro Guide.</p>
+          </div>
+          <button class="cr-signed-terms-close" id="crSignedTermsClose" type="button" aria-label="Close signed terms">x</button>
+        </div>
+        <div class="cr-signed-terms-meta" id="crSignedTermsMeta"></div>
+        <div class="cr-signed-terms-body" id="crSignedTermsBody"></div>
+      </div>
+    </div>
+
     <div class="cr-alert-strip" id="crAlertStrip">
       <div class="cr-alert-main">
         <div class="cr-alert-icon" aria-hidden="true">@</div>
@@ -5142,6 +5329,7 @@
             <span class="cr-participants-pill"><strong id="crParticipantsPending">0</strong> needs review</span>
             <span class="cr-participants-pill"><strong id="crParticipantsTotal">0</strong> total</span>
           </div>
+          <button class="cr-participants-view-terms" id="crParticipantsViewTerms" type="button">View current terms</button>
           <button class="cr-participants-toggle" id="crParticipantsToggle" type="button" aria-expanded="false" aria-controls="crParticipantsList">Show details</button>
         </div>
       </div>
@@ -6533,7 +6721,7 @@ function closeDetailModal() {
 
 document.getElementById('closeBtn').addEventListener('click', closeDetailModal);
 overlay.addEventListener('click', e => { if (e.target === overlay) closeDetailModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDetailModal(); closeAddModal(); closeTkModal(); closeCancelModal(); closeEditModal(); const u1=document.getElementById('usageOverlay'); if(u1) u1.style.display='none'; const u2=document.getElementById('usersOverlay'); if(u2) u2.style.display='none'; const p=document.getElementById('pokeTargetsOverlay'); if(p) p.style.display='none'; const c=document.getElementById('crAlertOverlay'); if(c) c.style.display='none'; const lb=document.getElementById('lightbox'); if(lb) lb.classList.remove('open'); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDetailModal(); closeAddModal(); closeTkModal(); closeCancelModal(); closeEditModal(); if (typeof crCloseSignedTerms === 'function') crCloseSignedTerms(); const u1=document.getElementById('usageOverlay'); if(u1) u1.style.display='none'; const u2=document.getElementById('usersOverlay'); if(u2) u2.style.display='none'; const p=document.getElementById('pokeTargetsOverlay'); if(p) p.style.display='none'; const c=document.getElementById('crAlertOverlay'); if(c) c.style.display='none'; const lb=document.getElementById('lightbox'); if(lb) lb.classList.remove('open'); } });
 document.addEventListener('click', e => {
   if (!e.target.closest('.emoji-picker') && !e.target.closest('.tk-comment-tool-btn')) {
     document.querySelectorAll('.emoji-picker.open').forEach(p => p.classList.remove('open'));
@@ -10814,6 +11002,7 @@ let crDonutStatuses = [];
 let crConsentState = { canLog: false, needsDecision: true, accepted: false, declinedThisMonth: false };
 let crConsentRoster = { participants: [], acceptedCount: 0, needsDecisionCount: 0, spectatorCount: 0, totalCount: 0 };
 let crConsentRosterExpanded = localStorage.getItem('crParticipantsExpanded') === 'true';
+let crConsentRosterRenderedRows = [];
 let crSelectedMonth = null;   // 'YYYY-MM' — null means pick default (current month or latest with data)
 let crSelectedSeverity = 'minor';
 const crSevEmoji = { minor: '😐', major: '😬', catastrophic: '🔥' };
@@ -10822,7 +11011,7 @@ let crTiePollSaving = false;
 let crDonutStatusSaving = false;
 let crConsentSaving = false;
 let crTiePollPanelDismissed = false;
-const CR_RULES_VERSION = '2026-05-donut-duty-v3';
+const CR_RULES_VERSION = '2026-05-donut-duty-v4';
 const CR_TIE_POLL_ID = 'crash-tie-break-2026-04';
 const CR_TIE_POLL_LATER_KEY = `crTiePollLater:${CR_TIE_POLL_ID}`;
 const CR_TIE_POLL_FALLBACK_CLOSES_AT = new Date(2026, 3, 30, 16, 30, 0).toISOString();
@@ -11170,6 +11359,100 @@ function crShortDate(value) {
   return d.toLocaleDateString('default', { month: 'short', day: 'numeric' });
 }
 
+function crLongDateTime(value) {
+  const d = new Date(value);
+  if (isNaN(d)) return value ? String(value) : 'Not recorded';
+  return d.toLocaleString('default', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+}
+
+function crCurrentRosterRow(rows = crConsentRosterRenderedRows) {
+  const win = String(sessionStorage.getItem('winUser') || crConsentState?.windowsUser || '').trim().toLowerCase();
+  const nameKey = crNormKey(crConsentDisplayName());
+  if (win) {
+    const byWin = rows.find(row => String(row.windowsUser || '').trim().toLowerCase() === win);
+    if (byWin) return byWin;
+  }
+  if (nameKey) {
+    return rows.find(row => crNormKey(row.displayName || '') === nameKey) || null;
+  }
+  return null;
+}
+
+function crCloneTermsHtml() {
+  const source = document.getElementById('crTermsScroll');
+  if (!source) return '<p>Terms are not available right now.</p>';
+  const clone = source.cloneNode(true);
+  clone.removeAttribute('id');
+  clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+  const version = clone.querySelector('.cr-terms-end span');
+  if (version) version.textContent = CR_RULES_VERSION;
+  return clone.innerHTML;
+}
+
+function crSignedTermsMetaItem(label, value) {
+  return `
+    <div class="cr-signed-terms-meta-item">
+      <div class="cr-signed-terms-meta-label">${escHtml(label)}</div>
+      <div class="cr-signed-terms-meta-value">${escHtml(value || 'Not recorded')}</div>
+    </div>
+  `;
+}
+
+function crOpenSignedTerms(row = null) {
+  const overlay = document.getElementById('crSignedTermsOverlay');
+  const title = document.getElementById('crSignedTermsTitle');
+  const subtitle = document.getElementById('crSignedTermsSubtitle');
+  const meta = document.getElementById('crSignedTermsMeta');
+  const body = document.getElementById('crSignedTermsBody');
+  if (!overlay || !title || !subtitle || !meta || !body) return;
+
+  const accepted = !!(row && row.status === 'accepted' && row.accepted);
+  const displayName = row?.displayName || crConsentState?.displayName || crConsentDisplayName() || 'Current viewer';
+  const windowsUser = row?.windowsUser || crConsentState?.windowsUser || sessionStorage.getItem('winUser') || '';
+  const acceptedAt = row?.acceptedAt || crConsentState?.acceptedAt || '';
+  const rulesVersion = row?.rulesVersion || CR_RULES_VERSION;
+  const currentMonth = crMonthKeyToLabel(crConsentRoster?.currentMonthKey || crCurrentMonthKey(), { short: true });
+
+  title.textContent = accepted ? `Signed terms - ${displayName}` : 'Current terms and conditions';
+  subtitle.textContent = accepted
+    ? 'Ceremonial acceptance record saved by the Macro Guide. Office-serious, legally unserious.'
+    : 'Current Crash Donut Duty terms. Accepting them later creates a signed office-game record.';
+
+  meta.innerHTML = [
+    crSignedTermsMetaItem('Participant', displayName),
+    crSignedTermsMetaItem('Windows user', windowsUser),
+    crSignedTermsMetaItem('Rules version', rulesVersion),
+    crSignedTermsMetaItem('Accepted at', accepted ? crLongDateTime(acceptedAt) : 'Not signed in this view'),
+    crSignedTermsMetaItem('Current month', currentMonth),
+    crSignedTermsMetaItem('Record status', accepted ? 'Ceremonially signed for office-game purposes' : 'Unsigned reference copy')
+  ].join('');
+
+  body.innerHTML = `
+    <p class="cr-signed-terms-notice">
+      ${accepted
+        ? `${escHtml(displayName)} accepted this version by clicking "Agree and play." This is a transparency record for the donut game, not an actual legal contract.`
+        : 'This is a reference copy of the active terms. It becomes a signed office-game record only after the participant accepts the current version.'}
+    </p>
+    <div class="cr-signed-terms-text">${crCloneTermsHtml()}</div>
+  `;
+
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden', 'false');
+}
+
+function crCloseSignedTerms() {
+  const overlay = document.getElementById('crSignedTermsOverlay');
+  if (!overlay) return;
+  overlay.classList.remove('open');
+  overlay.setAttribute('aria-hidden', 'true');
+}
+
 function crRenderConsentRoster() {
   const panel = document.getElementById('crParticipantsPanel');
   const list = document.getElementById('crParticipantsList');
@@ -11178,6 +11461,7 @@ function crRenderConsentRoster() {
   const pendingEl = document.getElementById('crParticipantsPending');
   const totalEl = document.getElementById('crParticipantsTotal');
   const toggle = document.getElementById('crParticipantsToggle');
+  const viewTerms = document.getElementById('crParticipantsViewTerms');
   if (!list) return;
 
   const roster = crNormalizeConsentRoster(crConsentRoster);
@@ -11186,11 +11470,15 @@ function crRenderConsentRoster() {
     return (order[a.status] ?? 4) - (order[b.status] ?? 4) ||
       a.displayName.localeCompare(b.displayName);
   });
+  crConsentRosterRenderedRows = rows;
   const pendingCount = rows.filter(row => row.status === 'needs_acceptance' || row.status === 'not_started').length;
+  const currentRow = crCurrentRosterRow(rows);
+  const currentRowAccepted = !!(currentRow && currentRow.status === 'accepted' && currentRow.accepted);
 
   if (acceptedEl) acceptedEl.textContent = String(rows.filter(row => row.status === 'accepted').length);
   if (pendingEl) pendingEl.textContent = String(pendingCount);
   if (totalEl) totalEl.textContent = String(rows.length);
+  if (viewTerms) viewTerms.textContent = currentRowAccepted ? 'View my signed terms' : 'View current terms';
   if (note) {
     const month = crMonthKeyToLabel(roster.currentMonthKey || crCurrentMonthKey(), { short: true });
     note.textContent = crConsentRosterExpanded
@@ -11223,6 +11511,11 @@ function crRenderConsentRoster() {
           <span class="cr-participant-status ${meta.cls}">${escHtml(meta.label)}</span>
         </div>
         <div class="cr-participant-meta">${escHtml(meta.detail)}</div>
+        ${row.status === 'accepted' ? `
+          <div class="cr-participant-actions">
+            <button class="cr-participant-view" type="button" data-cr-signed-index="${rows.indexOf(row)}">View signed terms</button>
+          </div>
+        ` : ''}
       </div>
     `;
   }).join('');
@@ -11232,6 +11525,24 @@ document.getElementById('crParticipantsToggle')?.addEventListener('click', () =>
   crConsentRosterExpanded = !crConsentRosterExpanded;
   localStorage.setItem('crParticipantsExpanded', crConsentRosterExpanded ? 'true' : 'false');
   crRenderConsentRoster();
+});
+
+document.getElementById('crParticipantsViewTerms')?.addEventListener('click', () => {
+  const row = crCurrentRosterRow();
+  crOpenSignedTerms(row && row.status === 'accepted' ? row : null);
+});
+
+document.getElementById('crParticipantsList')?.addEventListener('click', e => {
+  const btn = e.target.closest('[data-cr-signed-index]');
+  if (!btn) return;
+  const index = Number(btn.getAttribute('data-cr-signed-index'));
+  const row = crConsentRosterRenderedRows[index];
+  if (row) crOpenSignedTerms(row);
+});
+
+document.getElementById('crSignedTermsClose')?.addEventListener('click', crCloseSignedTerms);
+document.getElementById('crSignedTermsOverlay')?.addEventListener('click', e => {
+  if (e.target?.id === 'crSignedTermsOverlay') crCloseSignedTerms();
 });
 
 async function crSetConsentChoice(choice) {

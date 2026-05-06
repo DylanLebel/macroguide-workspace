@@ -60,7 +60,7 @@ $previewShim = @'
 <script>
 (() => {
   const STORAGE_KEY = 'macroGuideGithubPreviewData.v2';
-  const CRASH_RULES_VERSION = '2026-05-donut-duty-v3';
+  const CRASH_RULES_VERSION = '2026-05-donut-duty-v4';
   const originalFetch = window.fetch.bind(window);
   const today = new Date().toISOString().slice(0, 10);
 
